@@ -33,10 +33,14 @@ function aawp_pcbuild_get_products($category) {
     $request_payload = [
         'Keywords'     => $category,
         'SearchIndex'  => 'Electronics',
+        //'SearchIndex'  => aawp_pcbuild_get_search_index($category),
         'Resources'    => [
-            'Images.Primary.Large',
-            'ItemInfo.Title',
-            'Offers.Listings.Price'
+            'Images.Primary.Large',                               // ✅ Product image
+            'ItemInfo.Title',                                     // ✅ Product title
+            'Offers.Listings.Price',                              // ✅ Price
+            'Offers.Listings.DeliveryInfo.IsFreeShippingEligible',// ✅ Shipping info
+            'Offers.Listings.Promotions',                         // ✅ Promo info
+            'Offers.Listings.Availability.Message',               // ✅ Availability
         ],
         'PartnerTag'   => $associate_tag,
         'PartnerType'  => 'Associates',
@@ -80,6 +84,24 @@ function aawp_pcbuild_get_products($category) {
     set_transient($cache_key, $data, $cache_time);
     return $data;
 }
+
+/* function aawp_pcbuild_get_search_index($category) {
+    $category_to_search_index = [
+        'cpu'              => 'Electronics',
+        'cpu cooler'       => 'Electronics',
+        'motherboard'      => 'Electronics',
+        'memory'           => 'Electronics',
+        'storage'          => 'Electronics',
+        'video card'       => 'Electronics',
+        'case'             => 'Electronics',
+        'power supply'     => 'Electronics',
+        'operating system' => 'Software',
+        'monitor'          => 'Electronics',
+    ];
+
+    $key = strtolower(trim($category));
+    return $map[$key] ?? $map['default'];
+} */
 
 function getSignatureKey($key, $dateStamp, $regionName, $serviceName) {
     $kSecret  = 'AWS4' . $key;

@@ -300,6 +300,14 @@ function pcbuild_render_ui_shortcode() {
                         </div>
 
                     </div>
+
+                    <div id="checkoutWrapper" style="margin-top: 30px; text-align: right;">
+                      <button id="checkoutAllBtn"
+                              style="padding: 12px 24px; background: #ff9900; color: #fff; font-weight: bold; font-size: 16px; border: none; border-radius: 8px; cursor: pointer;">
+                        Checkout All on Amazon
+                      </button>
+                    </div>
+
                 </div>
 
                 <div id="tab2" class="tab-content">
@@ -414,10 +422,13 @@ document.addEventListener("DOMContentLoaded", function () {
       const availability = button.dataset.availability;
       const price = button.dataset.price;
       const category = button.dataset.category;
+      const affiliateUrl = button.dataset.affiliateUrl;
+      const asin = button.dataset.asin;
 
       const productData = {
-        title, image, base, promo, shipping, tax, availability, price
+        title, image, base, promo, shipping, tax, availability, price, affiliateUrl, asin
       };
+      
       localStorage.setItem(`pcbuild_${category.toLowerCase()}`, JSON.stringify(productData));
 
       updateRow(category, productData);
@@ -425,32 +436,135 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // === Reusable function to update a specific row ===
   function updateRow(category, data) {
     const rows = document.querySelectorAll(".row");
+
     rows.forEach(row => {
       const categorySpan = row.querySelector(".componentName");
       if (categorySpan && categorySpan.textContent.trim().toLowerCase() === category.toLowerCase()) {
 
-        if (row.querySelector(".selection")) {
+        // Safe fallback values
+        const base = data.base || '';
+        const promo = data.promo || '';
+        const shipping = data.shipping || '';
+        const tax = data.tax || '';
+        const availability = data.availability || '';
+        const price = data.price || '';
+        const affiliateUrl = data.affiliateUrl || '#';
+
+        // Truncate and escape title
+        const truncatedTitle = data.title.length > 75 ? data.title.slice(0, 75) + "..." : data.title;
+        const escapedTitle = truncatedTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+        // ✅ Update selection column
+        /* if (row.querySelector(".selection")) {
           row.querySelector(".selection").innerHTML = `
             <div class="product-selected" style="display:flex; gap:10px; align-items:center;">
-              <img src="${data.image}" alt="${data.title}" style="width:50px; height:50px; object-fit:cover;">
-              <div>
-                <strong>${data.title}</strong>
-              </div>
+              <img src="${data.image}" alt="${escapedTitle}" style="width:50px; height:50px; object-fit:cover;">
+              <div><strong>${escapedTitle}</strong></div>
             </div>`;
+        } */
+
+        if (row.querySelector(".selection")) {
+          row.querySelector(".selection").innerHTML = `
+            <div class="product-selected" style="display: flex; align-items: center; gap: 12px;">
+              <img src="${data.image}" alt="${escapedTitle}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
+              <div style="flex: 1;">
+                <strong style="font-size: 14px; display: block;">${escapedTitle}</strong>
+              </div>
+            </div>
+          `;
         }
 
-        if (row.querySelector(".base")) row.querySelector(".base").textContent = data.base;
-        if (row.querySelector(".promo")) row.querySelector(".promo").textContent = data.promo;
-        if (row.querySelector(".shiping")) row.querySelector(".shiping").textContent = data.shipping;
-        if (row.querySelector(".tax")) row.querySelector(".tax").textContent = data.tax;
-        if (row.querySelector(".availability")) row.querySelector(".availability").textContent = data.availability;
-        if (row.querySelector(".price")) row.querySelector(".price").textContent = data.price;
+
+        // ✅ Update data fields
+        if (row.querySelector(".base")) row.querySelector(".base").textContent = base;
+        if (row.querySelector(".promo")) row.querySelector(".promo").textContent = promo;
+        if (row.querySelector(".shiping")) row.querySelector(".shiping").textContent = shipping;
+        if (row.querySelector(".tax")) row.querySelector(".tax").textContent = tax;
+        if (row.querySelector(".availability")) row.querySelector(".availability").textContent = availability;
+        if (row.querySelector(".price")) row.querySelector(".price").textContent = price;
+
+        // ✅ Where column with Amazon logo
+        if (row.querySelector(".where")) {
+          row.querySelector(".where").innerHTML = `
+            <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+              <img src="https://cdna.pcpartpicker.com/static/img/vendor-logos/logo2_merchant_amazon.png" 
+                alt="Buy on Amazon" style="width:80px; height:auto;" />
+            </a>`;
+        }
+
+        // ✅ Buy button
+        if (row.querySelector(".buy")) {
+          row.querySelector(".buy").innerHTML = `
+            <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+              <button style="background:#28a745; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
+                Buy
+              </button>
+            </a>`;
+        }
+
+        // ✅ Cancel button
+        if (row.querySelector(".cancel")) {
+          row.querySelector(".cancel").innerHTML = `
+            <button class="remove-from-builder" data-category="${category}"
+              style="background:none; border:none; font-size:30px; font-weight:bold; cursor:pointer; color:#ccc; line-height:1;">
+              &times;
+            </button>`;
+        }
       }
     });
+}
+
+document.addEventListener("click", function (e) {
+  if (e.target.classList.contains("remove-from-builder")) {
+    const category = e.target.dataset.category.toLowerCase();
+
+    // Remove from localStorage
+    localStorage.removeItem(`pcbuild_${category}`);
+
+    // Reset the row to initial state (page refresh also works)
+    location.reload(); // Or manually clear the row if you prefer
   }
+});
+
+document.getElementById("checkoutAllBtn").addEventListener("click", function () {
+  const rows = document.querySelectorAll(".row");
+  let asins = [];
+  const associateTag = "yourtag-20"; // ✅ Replace with your Amazon Associate Tag
+
+  rows.forEach(row => {
+    const categorySpan = row.querySelector(".componentName");
+    if (categorySpan) {
+      const category = categorySpan.textContent.trim().toLowerCase();
+      const storedData = localStorage.getItem(`pcbuild_${category}`);
+      if (storedData) {
+        try {
+          const product = JSON.parse(storedData);
+          if (product.asin) {
+            asins.push(product.asin);
+          }
+        } catch (e) {
+          console.error(`Invalid JSON for ${category}`, e);
+        }
+      }
+    }
+  });
+
+  if (asins.length === 0) {
+    alert("Please select some parts before checking out.");
+    return;
+  }
+
+  // Build Amazon cart URL
+  let cartUrl = `https://www.amazon.com/gp/aws/cart/add.html?AssociateTag=${associateTag}`;
+  asins.forEach((asin, index) => {
+    const num = index + 1;
+    cartUrl += `&ASIN.${num}=${asin}&Quantity.${num}=1`;
+  });
+
+  window.open(cartUrl, "_blank");
+});
 
   // === Function to close modal ===
   window.closePartModal = function () {
@@ -458,11 +572,17 @@ document.addEventListener("DOMContentLoaded", function () {
     modalOverlay.style.display = "none";
     popupContent.innerHTML = '';
   };
+
 });
+
 </script>
 
 
 <style>
+
+.where img {
+  filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));
+}
 
 #cpuModal {
   display: none;

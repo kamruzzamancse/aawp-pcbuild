@@ -1,3 +1,32 @@
+$request_payload = [
+        'Keywords'     => $category,
+        'SearchIndex'  => 'Electronics',
+        'Resources'    => [
+            'Images.Primary.Large',
+            'ItemInfo.Title',
+            'Offers.Listings.Price',
+            'Offers.Listings.DeliveryInfo.IsFreeShippingEligible',
+            'Offers.Listings.Promotions',
+            'Offers.Listings.IsEligibleForPrime',
+            'Offers.Listings.Availability.Message',
+            'DetailPageURL'
+        ],
+        'PartnerTag'   => $associate_tag,
+        'PartnerType'  => 'Associates',
+        'Marketplace'  => 'www.amazon.com'
+    ];
+
+
+
+
+
+
+
+
+
+
+
+
 <!-- START: PC Builder Section -->
 <section id="buildOverview">
         <!-- ====modal===== -->
