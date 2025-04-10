@@ -301,7 +301,7 @@ function pcbuild_render_ui_shortcode() {
 
                     </div>
 
-                    <div id="checkoutWrapper" style="margin-top: 30px; text-align: right;">
+                    <div id="checkoutWrapper" style="margin-top: 30px; text-align: right; display:none">
                       <button id="checkoutAllBtn"
                               style="padding: 12px 24px; background: #ff9900; color: #fff; font-weight: bold; font-size: 16px; border: none; border-radius: 8px; cursor: pointer;">
                         Checkout All on Amazon
@@ -428,7 +428,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const productData = {
         title, image, base, promo, shipping, tax, availability, price, affiliateUrl, asin
       };
-      
+
       localStorage.setItem(`pcbuild_${category.toLowerCase()}`, JSON.stringify(productData));
 
       updateRow(category, productData);

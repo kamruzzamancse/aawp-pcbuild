@@ -85,24 +85,6 @@ function aawp_pcbuild_get_products($category) {
     return $data;
 }
 
-/* function aawp_pcbuild_get_search_index($category) {
-    $category_to_search_index = [
-        'cpu'              => 'Electronics',
-        'cpu cooler'       => 'Electronics',
-        'motherboard'      => 'Electronics',
-        'memory'           => 'Electronics',
-        'storage'          => 'Electronics',
-        'video card'       => 'Electronics',
-        'case'             => 'Electronics',
-        'power supply'     => 'Electronics',
-        'operating system' => 'Software',
-        'monitor'          => 'Electronics',
-    ];
-
-    $key = strtolower(trim($category));
-    return $map[$key] ?? $map['default'];
-} */
-
 function getSignatureKey($key, $dateStamp, $regionName, $serviceName) {
     $kSecret  = 'AWS4' . $key;
     $kDate    = hash_hmac('sha256', $dateStamp, $kSecret, true);
