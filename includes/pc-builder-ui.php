@@ -350,6 +350,21 @@ document.addEventListener("DOMContentLoaded", function () {
   const modalOverlay = document.getElementById("modalOverlay");
   const popupContent = document.getElementById("popupContent");
 
+  // === Restore previous selections from localStorage ===
+  const rows = document.querySelectorAll(".row");
+  rows.forEach(row => {
+    const categorySpan = row.querySelector(".componentName");
+    if (categorySpan) {
+      const category = categorySpan.textContent.trim().toLowerCase();
+      const savedData = localStorage.getItem(`pcbuild_${category}`);
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        updateRow(category, parsedData);
+      }
+    }
+  });
+
+  // === Setup click triggers to open modal and load content ===
   if (partTriggers.length && partModal && modalOverlay && popupContent) {
     partTriggers.forEach(trigger => {
       trigger.addEventListener("click", function () {
@@ -379,69 +394,73 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
 
-    // Hide modal on overlay click
+    // Close modal when overlay is clicked
     modalOverlay.addEventListener("click", function () {
       closePartModal();
     });
   }
 
+  // === Handle Add to Builder button clicks ===
   document.addEventListener("click", function (e) {
-  if (e.target.classList.contains("add-to-builder")) {
-    const button = e.target;
+    if (e.target.classList.contains("add-to-builder")) {
+      const button = e.target;
 
-    // Get all data attributes from the button
-    const title = button.dataset.title;
-    const image = button.dataset.image;
-    const base = button.dataset.base;
-    const promo = button.dataset.promo;
-    const shipping = button.dataset.shipping;
-    const tax = button.dataset.tax;
-    const availability = button.dataset.availability;
-    const price = button.dataset.price;
-    const category = button.dataset.category;
+      const title = button.dataset.title;
+      const image = button.dataset.image;
+      const base = button.dataset.base;
+      const promo = button.dataset.promo;
+      const shipping = button.dataset.shipping;
+      const tax = button.dataset.tax;
+      const availability = button.dataset.availability;
+      const price = button.dataset.price;
+      const category = button.dataset.category;
 
+      const productData = {
+        title, image, base, promo, shipping, tax, availability, price
+      };
+      localStorage.setItem(`pcbuild_${category.toLowerCase()}`, JSON.stringify(productData));
+
+      updateRow(category, productData);
+      closePartModal();
+    }
+  });
+
+  // === Reusable function to update a specific row ===
+  function updateRow(category, data) {
     const rows = document.querySelectorAll(".row");
     rows.forEach(row => {
       const categorySpan = row.querySelector(".componentName");
       if (categorySpan && categorySpan.textContent.trim().toLowerCase() === category.toLowerCase()) {
 
-        // Update selection column
-        const selectionCard = row.querySelector(".selection");
-        if (selectionCard) {
-          selectionCard.innerHTML = `
+        if (row.querySelector(".selection")) {
+          row.querySelector(".selection").innerHTML = `
             <div class="product-selected" style="display:flex; gap:10px; align-items:center;">
-              <img src="${image}" alt="${title}" style="width:50px; height:50px; object-fit:cover;">
+              <img src="${data.image}" alt="${data.title}" style="width:50px; height:50px; object-fit:cover;">
               <div>
-                <strong>${title}</strong><br>
+                <strong>${data.title}</strong>
               </div>
-            </div>
-          `;
+            </div>`;
         }
 
-        // Update other respective columns
-        if (row.querySelector(".base")) row.querySelector(".base").textContent = base;
-        if (row.querySelector(".promo")) row.querySelector(".promo").textContent = promo;
-        if (row.querySelector(".shiping")) row.querySelector(".shiping").textContent = shipping;
-        if (row.querySelector(".tax")) row.querySelector(".tax").textContent = tax;
-        if (row.querySelector(".availability")) row.querySelector(".availability").textContent = availability;
-        if (row.querySelector(".price")) row.querySelector(".price").textContent = price;
-
-        // Optionally close modal
-        closePartModal();
+        if (row.querySelector(".base")) row.querySelector(".base").textContent = data.base;
+        if (row.querySelector(".promo")) row.querySelector(".promo").textContent = data.promo;
+        if (row.querySelector(".shiping")) row.querySelector(".shiping").textContent = data.shipping;
+        if (row.querySelector(".tax")) row.querySelector(".tax").textContent = data.tax;
+        if (row.querySelector(".availability")) row.querySelector(".availability").textContent = data.availability;
+        if (row.querySelector(".price")) row.querySelector(".price").textContent = data.price;
       }
     });
   }
+
+  // === Function to close modal ===
+  window.closePartModal = function () {
+    partModal.style.display = "none";
+    modalOverlay.style.display = "none";
+    popupContent.innerHTML = '';
+  };
 });
-
-
-});
-
-function closePartModal() {
-  document.getElementById("cpuModal").style.display = "none";
-  document.getElementById("modalOverlay").style.display = "none";
-  document.getElementById("popupContent").innerHTML = '';
-}
 </script>
+
 
 <style>
 
