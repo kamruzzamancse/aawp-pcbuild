@@ -43,13 +43,13 @@ function aawp_pcbuild_enqueue_styles() {
     );
 
     // Scripts
-    wp_enqueue_script(
+    /* wp_enqueue_script(
         'aawp-pcbuild-products-card',
         $plugin_url . 'assets/js/productsCard.js',
         array('jquery'), // Dependencies
         filemtime($plugin_path . 'assets/js/productsCard.js'),
         true // Load in footer
-    );
+    ); */
 
     wp_enqueue_script(
         'aawp-pcbuild-main-script',
@@ -61,6 +61,7 @@ function aawp_pcbuild_enqueue_styles() {
 
     wp_localize_script('aawp-pcbuild-main-script', 'pcbuild_ajax_object', array(
         'ajax_url' => admin_url('admin-ajax.php'),
+        'associate_tag' => get_option('aawp_pcbuild_amazon_associate_tag'),
     ));
 }
 add_action('wp_enqueue_scripts', 'aawp_pcbuild_enqueue_styles');

@@ -14,7 +14,7 @@ const products = [
 
 // Function to Populate Product Cards
 function generateProductCards() {
-    const productContainer = document.getElementById("productCardWarpper");
+    const productContainer = document.getElementById("overviewContainer");
 
     // Generate product cards using template literals
     productContainer.innerHTML = products.map(product => `
@@ -34,6 +34,5 @@ function generateProductCards() {
 
 // Call function to generate products
 window.onload = generateProductCards;
-
 
 console.log("this from product card");
