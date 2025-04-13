@@ -1,5 +1,6 @@
 
-let component_modal = document.getElementById('component_modal');
+document.addEventListener("DOMContentLoaded", function () {
+.let component_modal = document.getElementById('component_modal');
 let itemWarpper = document.createElement('div');
 itemWarpper.classList.add('itemWarpper');
 
@@ -196,3 +197,4 @@ function closeModal() {
   component_modal.style.display = "none";
   itemWarpper.innerHTML = ""
 }
+});

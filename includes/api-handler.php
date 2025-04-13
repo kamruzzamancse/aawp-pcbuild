@@ -41,6 +41,9 @@ function aawp_pcbuild_get_products($category) {
             'Offers.Listings.DeliveryInfo.IsFreeShippingEligible',// ✅ Shipping info
             'Offers.Listings.Promotions',                         // ✅ Promo info
             'Offers.Listings.Availability.Message',               // ✅ Availability
+            'CustomerReviews.StarRating',                         // ✅ Rating
+            'ItemInfo.Features',                                  // ✅ About
+            //'ItemInfo.CustomerReviews.StarRating'                 // ✅ Rating
         ],
         'PartnerTag'   => $associate_tag,
         'PartnerType'  => 'Associates',

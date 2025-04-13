@@ -29,12 +29,14 @@ function aawp_pcbuild_display_parts($atts) {
             $raw_image = $item['Images']['Primary']['Large']['URL'] ?? '';
             $raw_price = $item['Offers']['Listings'][0]['Price']['DisplayAmount'] ?? __('Price not available', 'aawp-pcbuild');
             $product_url = $item['DetailPageURL'] ?? '#';
+            $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
 
             // Escaped values
             $title = esc_html($raw_title);
             $image = esc_url($raw_image);
             $price = esc_html($raw_price);
             $category_escaped = esc_attr($category);
+            $data_features = esc_attr(json_encode($features));
 
             $availability_message = $item['Offers']['Listings'][0]['Availability']['Message'] ?? 'In stock';
             $is_prime = $item['Offers']['Listings'][0]['IsEligibleForPrime'] ?? false;
@@ -65,6 +67,7 @@ function aawp_pcbuild_display_parts($atts) {
                 data-price="' . esc_attr($raw_price) . '"
                 data-category="' . esc_attr($category) . '"
                 data-affiliate-url="' . esc_url($product_url) . '"
+                data-features="' . $data_features . '"
                 style="display:inline-block; margin-top:10px; padding:8px 12px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                 ' . __('Add to Builder', 'aawp-pcbuild') . '
             </button>';
