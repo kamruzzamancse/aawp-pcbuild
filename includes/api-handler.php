@@ -30,10 +30,11 @@ function aawp_pcbuild_get_products($category) {
     $host = 'webservices.amazon.com';
     $uri_path = '/paapi5/searchitems';
 
+    $search_data = aawp_pcbuild_get_search_index($category);
+
     $request_payload = [
-        'Keywords'     => $category,
-        'SearchIndex'  => 'Electronics',
-        //'SearchIndex'  => aawp_pcbuild_get_search_index($category),
+        'Keywords'     => $category,       // ✅ কিওয়ার্ড ঠিকমতো যাচ্ছে
+        'SearchIndex'  => $search_data['search_index'],     // ✅ স্ট্রিং হিসেবে সঠিক ভ্যালু যাচ্ছে
         'Resources'    => [
             'Images.Primary.Large',                               // ✅ Product image
             'ItemInfo.Title',                                     // ✅ Product title
@@ -43,7 +44,6 @@ function aawp_pcbuild_get_products($category) {
             'Offers.Listings.Availability.Message',               // ✅ Availability
             'CustomerReviews.StarRating',                         // ✅ Rating
             'ItemInfo.Features',                                  // ✅ About
-            //'ItemInfo.CustomerReviews.StarRating'                 // ✅ Rating
         ],
         'PartnerTag'   => $associate_tag,
         'PartnerType'  => 'Associates',
@@ -72,7 +72,7 @@ function aawp_pcbuild_get_products($category) {
     curl_close($ch);
 
     // Debug log
-    error_log("Amazon API Response (code $http_code): " . $response);
+    //error_log("Amazon API Response (code $http_code): " . $response);
 
     if ($http_code !== 200 || !$response) {
         return "Error: Amazon API request failed with status code $http_code.";
@@ -87,6 +87,57 @@ function aawp_pcbuild_get_products($category) {
     set_transient($cache_key, $data, $cache_time);
     return $data;
 }
+
+function aawp_pcbuild_get_search_index($category) {
+    $category = strtolower($category);
+
+    $mapping = [
+        'cpu'              => 'Computers',
+        'cpu cooler'       => 'Computers',
+        'motherboard'      => 'Computers',
+        'memory'           => 'Computers',
+        'storage'          => 'Computers',
+        'video card'       => 'Computers',
+        'case'             => 'Computers',
+        'power supply'     => 'Computers',
+        'operating system' => 'Software',
+        'monitor'          => 'Electronics',
+    ];
+
+    // Default keyword logic
+    $keywords = match ($category) {
+        'case' => 'desktop computer case',
+        'storage' => 'SSD or HDD',
+        default => $category,
+    };
+
+    // Smart keyword builder for Operating System
+    if (str_contains($category, 'operating system') || str_contains($category, 'windows')) {
+        preg_match_all('/windows\s*(10|11)?\s*(home|pro)?\s*(oem|retail)?\s*(dvd|usb|download)?\s*(32\/64-bit|64-bit|32-bit)?\s*(french)?/i', $category, $matches);
+
+        $version = $matches[1][0] ?? '11';
+        $edition = ucfirst($matches[2][0] ?? 'Home');
+        $license = strtoupper($matches[3][0] ?? 'OEM');
+        $format  = strtoupper($matches[4][0] ?? 'DVD');
+        $bit     = $matches[5][0] ?? '64-bit';
+        $lang    = ucfirst($matches[6][0] ?? '');
+
+        $base = "Microsoft Windows $version $edition";
+        if (!empty($lang)) {
+            $base .= " $lang";
+        }
+        $keywords = "$base $license - $format $bit";
+
+        // Exclude hardware-related results
+        $keywords .= " -server -NAS -bundle -device";
+    }
+
+    return [
+        'search_index' => $mapping[$category] ?? 'Electronics',
+        'keywords'     => $keywords,
+    ];
+}
+
 
 function getSignatureKey($key, $dateStamp, $regionName, $serviceName) {
     $kSecret  = 'AWS4' . $key;

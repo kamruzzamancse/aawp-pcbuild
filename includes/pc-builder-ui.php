@@ -6,12 +6,23 @@ if (!defined('ABSPATH')) {
 // Shortcode to render full PC Builder UI
 function pcbuild_render_ui_shortcode() {
     ob_start();
+    $cards = [
+        'base',
+        'promo',
+        'shipping',
+        'tax',
+        'availability',
+        'price',
+        'where',
+        'buy',
+        'cancel'
+    ];
     ?>
-    <!-- START: PC Builder Section -->
+    <!-- Start of the PC Builder section which contains the UI for selecting and reviewing PC components -->
     <section id="buildOverview">
-        <!-- ====modal===== -->
+        <!-- Placeholder for modal that will show component selection details or options -->
         <div id="component_modal"></div>
-            <!-- ===parts header==== -->
+            <!-- Header section that includes tabs for navigating between component selection and overview -->
             <div class="partsHeader">
                 <h3>Choose Your Parts</h3>
                 <div class="navNtab">
@@ -26,20 +37,18 @@ function pcbuild_render_ui_shortcode() {
                 </div>
             </div>
             <div class="container">
-                <!-- =========url section===== -->
-                <!-- [URL and markup section unchanged for brevity] -->
 
                 <div class="tab_Content_Warpper">
-                <!-- =====over view======= -->
+                <!-- Wrapper for all the tabbed content, including component selection and build overview -->
                 <div id="tab1" class="tab-content active">
                     <div class="cardWarpper">
-                    <!-- =======row heading===== -->
+                    <!-- Header row that labels each column in the component selection table -->
                     <div class="row">
                         <div class="comp card"><span class="rowHeading">Component</span></div>
                         <div class="selection card"><span class="rowHeading">Selection</span></div>
                         <div class="base card"><span class="rowHeading">Base</span></div>
                         <div class="promo card"><span class="rowHeading">Promo</span></div>
-                        <div class="shiping card"><span class="rowHeading">Shipping</span></div>
+                        <div class="shipping card"><span class="rowHeading">Shipping</span></div>
                         <div class="tax card"><span class="rowHeading">Tax</span></div>
                         <div class="availability card"><span class="rowHeading">Availability</span></div>
                         <div class="price card"><span class="rowHeading">Price</span></div>
@@ -48,8 +57,8 @@ function pcbuild_render_ui_shortcode() {
                         <div class="cancel card"></div>
                     </div>
 
-                    <!-- =======cpu====== -->
-                    <div class="row">
+                    <!-- Row for CPU selection and its associated pricing and availability information -->
+                        <div class="row">
                             <div class="comp card">
                                 <a href="javascript:void(0)" class="pc-part">
                                     <span class="componentName">CPU</span>
@@ -63,17 +72,9 @@ function pcbuild_render_ui_shortcode() {
                                     </a>
                                 </button>
                             </div>
-                            <div class="base card"></div>
-                            <div class="promo card"></div>
-                            <div class="shiping card"></div>
-                            <div class="tax card"></div>
-                            <div class="availability card"></div>
-                            <div class="price card"></div>
-                            <div class="where card"></div>
-                            <div class="buy card"></div>
-                            <div class="cancel card"></div>
+                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                         </div>
-                        <!-- =======CPU Cooler====== -->
+                        <!-- Row for CPU Cooler selection with dynamic pricing and vendor details -->
                         <div class="row">
                             <div class="comp card">
                                 <a href="javascript:void(0)" class="pc-part">
@@ -88,17 +89,9 @@ function pcbuild_render_ui_shortcode() {
                                     </a>
                                 </button>
                             </div>
-                            <div class="base card"></div>
-                            <div class="promo card"></div>
-                            <div class="shiping card"></div>
-                            <div class="tax card"></div>
-                            <div class="availability card"></div>
-                            <div class="price card"></div>
-                            <div class="where card"></div>
-                            <div class="buy card"></div>
-                            <div class="cancel card"></div>
+                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                         </div>
-                        <!-- =======Motherboard====== -->
+                        <!-- Row for selecting the motherboard and displaying related data -->
                         <div class="row">
                             <div class="comp card">
                                 <a href="javascript:void(0)" class="pc-part">
@@ -113,17 +106,9 @@ function pcbuild_render_ui_shortcode() {
                                     </a>
                                 </button>
                             </div>
-                            <div class="base card"></div>
-                            <div class="promo card"></div>
-                            <div class="shiping card"></div>
-                            <div class="tax card"></div>
-                            <div class="availability card"></div>
-                            <div class="price card"></div>
-                            <div class="where card"></div>
-                            <div class="buy card"></div>
-                            <div class="cancel card"></div>
+                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                         </div>
-                        <!-- =======Memory====== -->
+                        <!-- Memory selection row including price, promo, tax, etc. -->
                         <div class="row">
                             <div class="comp card">
                                 <a href="javascript:void(0)" class="pc-part">
@@ -138,17 +123,9 @@ function pcbuild_render_ui_shortcode() {
                                     </a>
                                 </button>
                             </div>
-                            <div class="base card"></div>
-                            <div class="promo card"></div>
-                            <div class="shiping card"></div>
-                            <div class="tax card"></div>
-                            <div class="availability card"></div>
-                            <div class="price card"></div>
-                            <div class="where card"></div>
-                            <div class="buy card"></div>
-                            <div class="cancel card"></div>
+                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                         </div>
-                        <!-- =======Storage====== -->
+                        <!-- Storage device selection row with associated info and controls -->
                         <div class="row">
                             <div class="comp card">
                                 <a href="javascript:void(0)" class="pc-part">
@@ -163,17 +140,9 @@ function pcbuild_render_ui_shortcode() {
                                     </a>
                                 </button>
                             </div>
-                            <div class="base card"></div>
-                            <div class="promo card"></div>
-                            <div class="shiping card"></div>
-                            <div class="tax card"></div>
-                            <div class="availability card"></div>
-                            <div class="price card"></div>
-                            <div class="where card"></div>
-                            <div class="buy card"></div>
-                            <div class="cancel card"></div>
+                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                         </div>
-                        <!-- =======Video Card====== -->
+                        <!-- Row for choosing a GPU or video card with details like price, tax, and source -->
                         <div class="row">
                             <div class="comp card">
                                 <a href="javascript:void(0)" class="pc-part">
@@ -188,17 +157,9 @@ function pcbuild_render_ui_shortcode() {
                                     </a>
                                 </button>
                             </div>
-                            <div class="base card"></div>
-                            <div class="promo card"></div>
-                            <div class="shiping card"></div>
-                            <div class="tax card"></div>
-                            <div class="availability card"></div>
-                            <div class="price card"></div>
-                            <div class="where card"></div>
-                            <div class="buy card"></div>
-                            <div class="cancel card"></div>
+                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                         </div>
-                        <!-- =======Case====== -->
+                        <!-- PC case selection row along with its pricing and availability -->
                         <div class="row">
                             <div class="comp card">
                                 <a href="javascript:void(0)" class="pc-part">
@@ -213,17 +174,9 @@ function pcbuild_render_ui_shortcode() {
                                     </a>
                                 </button>
                             </div>
-                            <div class="base card"></div>
-                            <div class="promo card"></div>
-                            <div class="shiping card"></div>
-                            <div class="tax card"></div>
-                            <div class="availability card"></div>
-                            <div class="price card"></div>
-                            <div class="where card"></div>
-                            <div class="buy card"></div>
-                            <div class="cancel card"></div>
+                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                         </div>
-                        <!-- =======Power Supply====== -->
+                        <!-- Row for selecting a PSU (Power Supply Unit) and its metadata -->
                         <div class="row">
                             <div class="comp card">
                                 <a href="javascript:void(0)" class="pc-part">
@@ -238,17 +191,9 @@ function pcbuild_render_ui_shortcode() {
                                     </a>
                                 </button>
                             </div>
-                            <div class="base card"></div>
-                            <div class="promo card"></div>
-                            <div class="shiping card"></div>
-                            <div class="tax card"></div>
-                            <div class="availability card"></div>
-                            <div class="price card"></div>
-                            <div class="where card"></div>
-                            <div class="buy card"></div>
-                            <div class="cancel card"></div>
+                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                         </div>
-                        <!-- =======Operating System====== -->
+                        <!-- Operating System selection row with related information -->
                         <div class="row">
                             <div class="comp card">
                                 <a href="javascript:void(0)" class="pc-part">
@@ -263,17 +208,9 @@ function pcbuild_render_ui_shortcode() {
                                     </a>
                                 </button>
                             </div>
-                            <div class="base card"></div>
-                            <div class="promo card"></div>
-                            <div class="shiping card"></div>
-                            <div class="tax card"></div>
-                            <div class="availability card"></div>
-                            <div class="price card"></div>
-                            <div class="where card"></div>
-                            <div class="buy card"></div>
-                            <div class="cancel card"></div>
+                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                         </div>
-                        <!-- =======Monitor====== -->
+                        <!-- Monitor selection row showing pricing, availability, and purchase options -->
                         <div class="row">
                             <div class="comp card">
                                 <a href="javascript:void(0)" class="pc-part">
@@ -288,17 +225,8 @@ function pcbuild_render_ui_shortcode() {
                                     </a>
                                 </button>
                             </div>
-                            <div class="base card"></div>
-                            <div class="promo card"></div>
-                            <div class="shiping card"></div>
-                            <div class="tax card"></div>
-                            <div class="availability card"></div>
-                            <div class="price card"></div>
-                            <div class="where card"></div>
-                            <div class="buy card"></div>
-                            <div class="cancel card"></div>
+                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                         </div>
-
                     </div>
 
                     <div id="checkoutWrapper" style="margin-top: 30px; text-align: right;">
@@ -407,7 +335,7 @@ function pcbuild_render_ui_shortcode() {
                   Object.entries(data).map(([key, val]) => {
                     if (['image', 'title', 'affiliateUrl', 'asin'].includes(key)) return '';
 
-                    // ⭐ Special formatting for Rating
+                    // Special formatting for Rating
                     if (key === 'rating') {
                       let ratingText = '(Not Rated)';
                       let starsHTML = '☆☆☆☆☆';
@@ -429,7 +357,7 @@ function pcbuild_render_ui_shortcode() {
                       `;
                     }
 
-                    // 🔁 Default rows
+                    // Default rows
                     const formattedKey = key
                       .replace(/([A-Z])/g, ' $1')
                       .replace(/^./, str => str.toUpperCase())
@@ -448,8 +376,13 @@ function pcbuild_render_ui_shortcode() {
           </div>
         `;
       }
-</script>
 
+      // Close modal if cross button is clicked
+      function closeCpuModal() {
+        closePartModal(); // মূল modal বন্ধ করার ফাংশন
+      }
+      
+</script>
 
 
 <script>
@@ -507,6 +440,7 @@ function pcbuild_render_ui_shortcode() {
         modalOverlay.addEventListener("click", function () {
           closePartModal();
         });
+
       }
 
       // Handle "Add to Builder" button clicks
@@ -554,7 +488,7 @@ function pcbuild_render_ui_shortcode() {
             const title = data.title || '';
             const image = data.image || '';
 
-            const truncatedTitle = title.length > 75 ? title.slice(0, 75) + "..." : title;
+            const truncatedTitle = title.length > 70 ? title.slice(0, 70) + "..." : title;
             const escapedTitle = truncatedTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
             // Update selected image and title
@@ -571,7 +505,7 @@ function pcbuild_render_ui_shortcode() {
             // Update pricing, availability, and shipping info
             if (row.querySelector(".base")) row.querySelector(".base").textContent = base;
             if (row.querySelector(".promo")) row.querySelector(".promo").textContent = promo;
-            if (row.querySelector(".shiping")) row.querySelector(".shiping").textContent = shipping;
+            if (row.querySelector(".shipping")) row.querySelector(".shipping").textContent = shipping;
             if (row.querySelector(".tax")) row.querySelector(".tax").textContent = tax;
             if (row.querySelector(".availability")) row.querySelector(".availability").textContent = availability;
             if (row.querySelector(".price")) row.querySelector(".price").textContent = price;
@@ -580,7 +514,7 @@ function pcbuild_render_ui_shortcode() {
             if (row.querySelector(".where")) {
               row.querySelector(".where").innerHTML = `
                 <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
-                  <img src="https://cdna.pcpartpicker.com/static/img/vendor-logos/logo2_merchant_amazon.png" 
+                  <img src="http://localhost/pcbuildparts/wp-content/uploads/2025/04/amazon-logo.png" 
                     alt="Buy on Amazon" style="width:80px; height:auto;" />
                 </a>`;
             }
