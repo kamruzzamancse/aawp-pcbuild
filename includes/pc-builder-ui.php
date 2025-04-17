@@ -59,32 +59,31 @@ function pcbuild_render_ui_shortcode() {
 
                     <!-- Row for CPU selection and its associated pricing and availability information -->
                         <div class="row">
-                            <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part">
-                                    <span class="componentName">CPU</span>
-                                </a>
-                            </div>
-                            <div class="selection card">
-                                <button class="selectionBTN">
-                                    <span style="font-size:20px;">&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part">
-                                        <span>Chose a CPU</span>
-                                    </a>
-                                </button>
-                            </div>
+                          <div class="comp card">
+                              <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/cpu">
+                                  <span class="componentName">CPU</span>
+                              </a>
+                          </div>
+
+                          <div class="selection card">
+                              <button class="selectionBTN" data-redirect="/pcbuildparts/products/cpu">
+                                  <span style="font-size:20px;">&#43;</span>
+                                  <span class="pc-part">Choose a CPU</span>
+                              </button>
+                          </div>
                             <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                         </div>
                         <!-- Row for CPU Cooler selection with dynamic pricing and vendor details -->
                         <div class="row">
                             <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part">
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/cpu-cooler">
                                     <span class="componentName">CPU Cooler</span>
                                 </a>
                             </div>
                             <div class="selection card">
                                 <button class="selectionBTN">
                                     <span style="font-size:20px;">&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/cpu-cooler">
                                         <span>Choose A CPU Cooler</span>
                                     </a>
                                 </button>
@@ -112,7 +111,7 @@ function pcbuild_render_ui_shortcode() {
                         <div class="row">
                             <div class="comp card">
                                 <a href="javascript:void(0)" class="pc-part">
-                                    <span class="componentName">Memory</span>
+                                <span class="componentName" data-key="ram">Memory</span>
                                 </a>
                             </div>
                             <div class="selection card">
@@ -229,6 +228,8 @@ function pcbuild_render_ui_shortcode() {
                         </div>
                     </div>
 
+                    <div id="products_total_price"></div>
+
                     <div id="checkoutWrapper" style="margin-top: 30px; text-align: right;">
                       <button id="checkoutAllBtn"
                               style="padding: 12px 24px; background: #ff9900; color: #fff; font-weight: bold; font-size: 16px; border: none; border-radius: 8px; cursor: pointer;">
@@ -250,142 +251,59 @@ function pcbuild_render_ui_shortcode() {
             </div>
         </div>
     </section>
-    <!-- END: PC Builder Section -->
-
-    <!-- Popup Modal -->
-    <div class="modal-overlay" id="modalOverlay"></div>
-
-    <!-- Modal Content Area -->
-    <div id="cpuModal" class="popup-window">
-      <button onclick="closeCpuModal()" class="close-btn">X</button>
-      <div id="popupContent">
-        <!-- This is where the shortcode content will load -->
-      </div>
-    </div>
-
-    <script>
-      function openTab(evt, tabId) {
-        document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
-        document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
-
-        document.getElementById(tabId).classList.add("active");
-        evt.currentTarget.classList.add("active");
-
-        if (tabId === "tab2") {
-          loadOverviewImagesOnly();
-        }
-      }
-
-      function loadOverviewImagesOnly() {
-        const container = document.getElementById("overviewContainer");
-        container.innerHTML = "";
-
-        const keys = Object.keys(localStorage).filter(key => key.startsWith("pcbuild_"));
-
-        keys.forEach(key => {
-          try {
-            const data = JSON.parse(localStorage.getItem(key));
-            const category = key.replace("pcbuild_", "");
-
-            const imgCard = `
-              <div onclick="showProductDetails('${category}')" style="
-                width: 120px; height: 120px; border: 1px solid #ccc; border-radius: 10px;
-                display: flex; flex-direction: column; align-items: center; justify-content: center;
-                margin: 10px; cursor: pointer; transition: 0.3s;" 
-                onmouseover="this.style.boxShadow='0 4px 8px rgba(0,0,0,0.1)'"
-                onmouseout="this.style.boxShadow='none'">
-                <img src="${data.image}" alt="${data.title}" style="width: 60px; height: 60px; object-fit: contain;">
-                <p style="font-size: 12px; margin-top: 5px;">${category}</p>
-              </div>
-              <div id="details_${category}" class="product-details" style="margin-top:10px;"></div>
-            `;
-            container.insertAdjacentHTML("beforeend", imgCard);
-          } catch (e) {
-            console.error("Invalid localStorage data", key, e);
-          }
-        });
-      }
-
-      function showProductDetails(category) {
-        const data = JSON.parse(localStorage.getItem(`pcbuild_${category}`));
-        const detailsWrapper = document.getElementById('overviewProductDetails');
-
-        if (!data || !detailsWrapper) return;
-
-        detailsWrapper.innerHTML = `
-          <div class="product-detail-card" style="
-            display: flex;
-            flex-direction: row;
-            gap: 24px;
-            background: #ffffff;
-            padding: 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-          ">
-            <div class="product-detail-img" style="flex: 1; max-width: 320px;">
-              <img src="${data.image}" alt="${data.title}" style="width: 100%; border-radius: 8px; object-fit: contain;">
-            </div>
-
-            <div class="product-detail-content" style="flex: 2;">
-              <h2 style="font-size: 22px; color: #111; margin-bottom: 12px;">${data.title}</h2>
-
-              <table class="product-specs" style="width: 100%; border-collapse: collapse; font-size: 14px; color: #333;">
-                ${
-                  Object.entries(data).map(([key, val]) => {
-                    if (['image', 'title', 'affiliateUrl', 'asin'].includes(key)) return '';
-
-                    // Special formatting for Rating
-                    if (key === 'rating') {
-                      let ratingText = '(Not Rated)';
-                      let starsHTML = '☆☆☆☆☆';
-
-                      if (val && !isNaN(parseFloat(val))) {
-                        const numeric = parseFloat(val);
-                        const fullStars = Math.floor(numeric);
-                        const halfStar = numeric % 1 >= 0.5 ? 1 : 0;
-                        const emptyStars = 5 - fullStars - halfStar;
-                        starsHTML = '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(emptyStars);
-                        ratingText = `(${val})`;
-                      }
-
-                      return `
-                        <tr style="border-bottom: 1px solid #f5f5f5;">
-                          <td style="padding: 6px 10px; font-weight: 600; color: #444; width: 160px;">Rating</td>
-                          <td style="padding: 6px 10px; color: #f39c12;">${starsHTML} ${ratingText}</td>
-                        </tr>
-                      `;
-                    }
-
-                    // Default rows
-                    const formattedKey = key
-                      .replace(/([A-Z])/g, ' $1')
-                      .replace(/^./, str => str.toUpperCase())
-                      .replace('About', 'About This Item');
-
-                    return `
-                      <tr style="border-bottom: 1px solid #f5f5f5;">
-                        <td style="padding: 6px 10px; font-weight: 600; color: #444; width: 160px;">${formattedKey}</td>
-                        <td style="padding: 6px 10px; color: #222;">${val}</td>
-                      </tr>
-                    `;
-                  }).join('')
-                }
-              </table>
-            </div>
-          </div>
-        `;
-      }
-
-      // Close modal if cross button is clicked
-      function closeCpuModal() {
-        closePartModal(); // মূল modal বন্ধ করার ফাংশন
-      }
-      
-</script>
-
 
 <script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+      // Build checkout URL and open cart in Amazon
+      document.getElementById("checkoutAllBtn").addEventListener("click", function () {
+          const rows = document.querySelectorAll(".row");
+          let asins = [];
+          const associateTag = pcbuild_ajax_object.associate_tag;
+
+          rows.forEach(row => {
+            const categorySpan = row.querySelector(".componentName");
+            if (categorySpan) {
+              const category = categorySpan.textContent.trim().toLowerCase();
+              const storedData = localStorage.getItem(`pcbuild_${category}`);
+              if (storedData) {
+                try {
+                  const product = JSON.parse(storedData);
+                  if (product.asin) {
+                    asins.push(product.asin);
+                  }
+                } catch (e) {
+                  console.error(`Invalid JSON for ${category}`, e);
+                }
+              }
+            }
+          });
+
+          if (asins.length === 0) {
+            alert("Please select some parts before checking out.");
+            return;
+          }
+
+          let cartUrl = `https://www.amazon.com/gp/aws/cart/add.html?AssociateTag=${associateTag}`;
+          asins.forEach((asin, index) => {
+            const num = index + 1;
+            cartUrl += `&ASIN.${num}=${asin}&Quantity.${num}=1`;
+          });
+
+          window.open(cartUrl, "_blank");
+        });
+        
+        // Redicting function
+        document.querySelectorAll('[data-redirect]').forEach(el => {
+            el.addEventListener("click", function () {
+                const target = this.getAttribute("data-redirect");
+                if (target) window.location.href = target;
+            });
+        });
+
+    });
+
     document.addEventListener("DOMContentLoaded", function () {
       const partTriggers = document.querySelectorAll(".pc-part");
       const partModal = document.getElementById("cpuModal");
@@ -510,7 +428,7 @@ function pcbuild_render_ui_shortcode() {
             if (row.querySelector(".availability")) row.querySelector(".availability").textContent = availability;
             if (row.querySelector(".price")) row.querySelector(".price").textContent = price;
 
-            // 🛒 Update "Buy from Amazon" button
+            // Update "Buy from Amazon" button
             if (row.querySelector(".where")) {
               row.querySelector(".where").innerHTML = `
                 <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
@@ -538,7 +456,43 @@ function pcbuild_render_ui_shortcode() {
             }
           }
         });
+        calculateTotalPrice();
       }
+
+      function calculateTotalPrice() {
+        let total = 0;
+        let parts = 0;
+
+        const priceElements = document.querySelectorAll('.row .price');
+
+        priceElements.forEach(priceEl => {
+          const priceText = priceEl.textContent.replace(/[^0-9.]/g, ''); // Remove $ and commas
+          const priceValue = parseFloat(priceText);
+          if (!isNaN(priceValue)) {
+            total += priceValue;
+            parts++;
+          }
+        });
+
+        // Store total in localStorage
+        localStorage.setItem('cartTotal', total.toFixed(2));
+        localStorage.setItem('cartPartsCount', parts);
+
+        // Update builder list total (if exists)
+        const totalDiv = document.getElementById('products_total_price');
+        if (totalDiv) {
+          totalDiv.style.cssText = 'margin-top: 20px; font-size: 18px; font-weight: bold; text-align: right;';
+          totalDiv.textContent = `Total: $${total.toFixed(2)}`;
+        }
+
+        // Update parts count and total on another page
+        const partsCountEl = document.getElementById('parts_count');
+        const partsTotalEl = document.getElementById('parts_total_price');
+
+        if (partsCountEl) partsCountEl.textContent = parts;
+        if (partsTotalEl) partsTotalEl.textContent = `$${total.toFixed(2)}`;
+      }
+
 
       // Remove item from builder and refresh
       document.addEventListener("click", function (e) {
@@ -547,44 +501,6 @@ function pcbuild_render_ui_shortcode() {
           localStorage.removeItem(`pcbuild_${category}`);
           location.reload(); // Optional: Use more elegant UI clearing
         }
-      });
-
-      // Build checkout URL and open cart in Amazon
-      document.getElementById("checkoutAllBtn").addEventListener("click", function () {
-        const rows = document.querySelectorAll(".row");
-        let asins = [];
-        const associateTag = pcbuild_ajax_object.associate_tag;
-
-        rows.forEach(row => {
-          const categorySpan = row.querySelector(".componentName");
-          if (categorySpan) {
-            const category = categorySpan.textContent.trim().toLowerCase();
-            const storedData = localStorage.getItem(`pcbuild_${category}`);
-            if (storedData) {
-              try {
-                const product = JSON.parse(storedData);
-                if (product.asin) {
-                  asins.push(product.asin);
-                }
-              } catch (e) {
-                console.error(`Invalid JSON for ${category}`, e);
-              }
-            }
-          }
-        });
-
-        if (asins.length === 0) {
-          alert("Please select some parts before checking out.");
-          return;
-        }
-
-        let cartUrl = `https://www.amazon.com/gp/aws/cart/add.html?AssociateTag=${associateTag}`;
-        asins.forEach((asin, index) => {
-          const num = index + 1;
-          cartUrl += `&ASIN.${num}=${asin}&Quantity.${num}=1`;
-        });
-
-        window.open(cartUrl, "_blank");
       });
 
       // Close modal and clear content
@@ -597,127 +513,130 @@ function pcbuild_render_ui_shortcode() {
     });
   </script>
 
-    <style>
+<script>
+  // Function to handle tab switching
+  function openTab(evt, tabId) {
+    // Hide all tab contents and deactivate all tab buttons
+    document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
 
-    .where img {
-      filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));
-    }
+    // Show the selected tab content and activate the clicked tab button
+    document.getElementById(tabId).classList.add("active");
+    evt.currentTarget.classList.add("active");
 
-    #cpuModal {
-      display: none;
-      position: fixed;
-      top: 150px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 1470px;
-      max-width: 100%;
-      background: #fff;
-      border-radius: 10px;
-      padding: 50px;
-      z-index: 1001;
-      overflow-y: auto;
-      max-height: 90vh;
+    // If switching to the "Overview" tab, load stored product overview images
+    if (tabId === "tab2") {
+      loadOverviewImagesOnly();
     }
+  }
 
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
-    }
+  // Load only the overview image cards for each saved product in localStorage
+  function loadOverviewImagesOnly() {
+    const container = document.getElementById("overviewContainer");
+    container.innerHTML = "";
 
-    .popup-window {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 1470px;
-      max-width: 95%;
-      background: #fff;
-      z-index: 9999;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    }
+    // Filter localStorage keys for saved PC build items
+    const keys = Object.keys(localStorage).filter(key => key.startsWith("pcbuild_"));
 
-    .close-btn {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      background: transparent;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      font-weight: bold;
-      color: #000;
-    }
+    keys.forEach(key => {
+      try {
+        const data = JSON.parse(localStorage.getItem(key));
+        const category = key.replace("pcbuild_", "");
 
-    #overviewContainer {
-      display: flex;
-      justify-content: center;
-      padding: 30px 0;
-    }
+        // Create image card for each category
+        const imgCard = `
+          <div onclick="showProductDetails('${category}')" style="
+            width: 120px; height: 120px; border: 1px solid #ccc; border-radius: 10px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            margin: 10px; cursor: pointer; transition: 0.3s;" 
+            onmouseover="this.style.boxShadow='0 4px 8px rgba(0,0,0,0.1)'"
+            onmouseout="this.style.boxShadow='none'">
+            <img src="${data.image}" alt="${data.title}" style="width: 60px; height: 60px; object-fit: contain;">
+            <p style="font-size: 12px; margin-top: 5px;">${category}</p>
+          </div>
+          <div id="details_${category}" class="product-details" style="margin-top:10px;"></div>
+        `;
+        container.insertAdjacentHTML("beforeend", imgCard);
+      } catch (e) {
+        console.error("Invalid localStorage data", key, e);
+      }
+    });
+  }
 
-    .product-overview-box {
-      display: flex;
-      flex-wrap: wrap;
-      max-width: 850px;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
+  // Display detailed information about a selected product
+  function showProductDetails(category) {
+    const data = JSON.parse(localStorage.getItem(`pcbuild_${category}`));
+    const detailsWrapper = document.getElementById('overviewProductDetails');
 
-    .product-left {
-      flex: 1 1 300px;
-      background-color: #f8f8f8;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 30px;
-    }
+    if (!data || !detailsWrapper) return;
 
-    .product-left img.overview-image {
-      max-width: 100%;
-      max-height: 300px;
-      object-fit: contain;
-      border-radius: 8px;
-    }
+    // Build the product detail layout
+    detailsWrapper.innerHTML = `
+      <div class="product-detail-card" style="
+        display: flex;
+        flex-direction: row;
+        gap: 24px;
+        background: #ffffff;
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      ">
+        <div class="product-detail-img" style="flex: 1; max-width: 320px;">
+          <img src="${data.image}" alt="${data.title}" style="width: 100%; border-radius: 8px; object-fit: contain;">
+        </div>
 
-    .product-right {
-      flex: 1 1 400px;
-      padding: 30px;
-    }
+        <div class="product-detail-content" style="flex: 2;">
+          <h2 style="font-size: 22px; color: #111; margin-bottom: 12px;">${data.title}</h2>
 
-    .overview-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 20px;
-      color: #333;
-    }
+          <table class="product-specs" style="width: 100%; border-collapse: collapse; font-size: 14px; color: #333;">
+            ${
+              Object.entries(data).map(([key, val]) => {
+                // Skip non-display keys
+                if (['image', 'title', 'affiliateUrl', 'asin'].includes(key)) return '';
 
-    .overview-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+                // Special handling for "Rating"
+                if (key === 'rating') {
+                  let ratingText = '(Not Rated)';
+                  let starsHTML = '☆☆☆☆☆';
 
-    .overview-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #eaeaea;
-      vertical-align: top;
-    }
+                  if (val && !isNaN(parseFloat(val))) {
+                    const numeric = parseFloat(val);
+                    const fullStars = Math.floor(numeric);
+                    const halfStar = numeric % 1 >= 0.5 ? 1 : 0;
+                    const emptyStars = 5 - fullStars - halfStar;
+                    starsHTML = '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(emptyStars);
+                    ratingText = `(${val})`;
+                  }
 
-    .overview-table td:first-child {
-      font-weight: 500;
-      color: #444;
-      width: 35%;
-      text-transform: capitalize;
-    }
-    
-    </style>
+                  return `
+                    <tr style="border-bottom: 1px solid #f5f5f5;">
+                      <td style="padding: 6px 10px; font-weight: 600; color: #444; width: 160px;">Rating</td>
+                      <td style="padding: 6px 10px; color: #f39c12;">${starsHTML} ${ratingText}</td>
+                    </tr>
+                  `;
+                }
+
+                // Default product detail rows
+                const formattedKey = key
+                  .replace(/([A-Z])/g, ' $1')
+                  .replace(/^./, str => str.toUpperCase())
+                  .replace('About', 'About This Item');
+
+                return `
+                  <tr style="border-bottom: 1px solid #f5f5f5;">
+                    <td style="padding: 6px 10px; font-weight: 600; color: #444; width: 160px;">${formattedKey}</td>
+                    <td style="padding: 6px 10px; color: #222;">${val}</td>
+                  </tr>
+                `;
+              }).join('')
+            }
+          </table>
+        </div>
+      </div>
+    `;
+  }
+</script>
 
   <?php
   return ob_get_clean();

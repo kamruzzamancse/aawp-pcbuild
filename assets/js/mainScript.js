@@ -1,6 +1,6 @@
 
 document.addEventListener("DOMContentLoaded", function () {
-.let component_modal = document.getElementById('component_modal');
+let component_modal = document.getElementById('component_modal');
 let itemWarpper = document.createElement('div');
 itemWarpper.classList.add('itemWarpper');
 
@@ -131,40 +131,6 @@ function component_card_modal(event, id) {
   if (id === "CPU") {
     console.log(cpu[0].Image);
 
-    // itemWarpper.innerHTML = `
-    // <div class="test_warpper">
-    //       <div class="itemcard">
-    //           <div class="productImage">CPU</div>
-    //           <h3 class="product_title">CPU TITLE</h3>
-    //           <p class="product_category"> CPU CAREGORY</p>
-    //           <div class="productPrice">
-    //               <span class="old_price">1200</span>
-    //               <div class="new_price">1100</div>
-    //           </div>
-    //       </div>
-
-    //       <div class="itemcard">
-    //           <div class="productImage">CPU</div>
-    //           <h3 class="product_title">CPU TITLE</h3>
-    //           <p class="product_category"> CPU CAREGORY</p>
-    //           <div class="productPrice">
-    //               <span class="old_price">1200</span>
-    //               <div class="new_price">1100</div>
-    //           </div>
-    //       </div>
-
-    //       <div class="itemcard">
-    //           <div class="productImage">CPU</div>
-    //           <h3 class="product_title">CPU TITLE</h3>
-    //           <p class="product_category"> CPU CAREGORY</p>
-    //           <div class="productPrice">
-    //               <span class="old_price">1200</span>
-    //               <div class="new_price">1100</div>
-    //           </div>
-    //       </div>
-    //   </div>
-    // `
-
     itemWarpper.innerHTML = `
   <div class="test_warpper">
     ${cpu.map(cpu => 
@@ -185,14 +151,11 @@ function component_card_modal(event, id) {
   </div>
 `;
 
-    
 
     component_modal.appendChild(itemWarpper);
-
   }
-
-
 }
+
 function closeModal() {
   component_modal.style.display = "none";
   itemWarpper.innerHTML = ""

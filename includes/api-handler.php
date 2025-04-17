@@ -16,8 +16,8 @@ function aawp_pcbuild_get_products($category) {
     }
 
     // Fetch plugin settings
-    $access_key = get_option('aawp_pcbuild_amazon_access_key');
-    $secret_key = get_option('aawp_pcbuild_amazon_secret_key');
+    $access_key    = get_option('aawp_pcbuild_amazon_access_key');
+    $secret_key    = get_option('aawp_pcbuild_amazon_secret_key');
     $associate_tag = get_option('aawp_pcbuild_amazon_associate_tag');
 
     if (!$access_key || !$secret_key || !$associate_tag) {
@@ -25,67 +25,88 @@ function aawp_pcbuild_get_products($category) {
     }
 
     // Request Setup
-    $region = 'us-east-1'; // Required for signing
+    $region   = 'us-east-1';
     $endpoint = 'https://webservices.amazon.com/paapi5/searchitems';
-    $host = 'webservices.amazon.com';
+    $host     = 'webservices.amazon.com';
     $uri_path = '/paapi5/searchitems';
 
     $search_data = aawp_pcbuild_get_search_index($category);
+    $all_items = [];
+    $max_pages = 25; // 10 items per page, 5 pages = 50 items
 
-    $request_payload = [
-        'Keywords'     => $category,       // ✅ কিওয়ার্ড ঠিকমতো যাচ্ছে
-        'SearchIndex'  => $search_data['search_index'],     // ✅ স্ট্রিং হিসেবে সঠিক ভ্যালু যাচ্ছে
-        'Resources'    => [
-            'Images.Primary.Large',                               // ✅ Product image
-            'ItemInfo.Title',                                     // ✅ Product title
-            'Offers.Listings.Price',                              // ✅ Price
-            'Offers.Listings.DeliveryInfo.IsFreeShippingEligible',// ✅ Shipping info
-            'Offers.Listings.Promotions',                         // ✅ Promo info
-            'Offers.Listings.Availability.Message',               // ✅ Availability
-            'CustomerReviews.StarRating',                         // ✅ Rating
-            'ItemInfo.Features',                                  // ✅ About
-        ],
-        'PartnerTag'   => $associate_tag,
-        'PartnerType'  => 'Associates',
-        'Marketplace'  => 'www.amazon.com'
+    for ($page = 1; $page <= $max_pages; $page++) {
+        $request_payload = [
+            'Keywords'     => $search_data['keywords'],
+            'SearchIndex'  => $search_data['search_index'],
+            'ItemPage'     => $page,
+            'Resources'    => [
+                'Images.Primary.Large',
+                'ItemInfo.Title',
+                'Offers.Listings.Price',
+                'Offers.Listings.DeliveryInfo.IsFreeShippingEligible',
+                'Offers.Listings.Promotions',
+                'Offers.Listings.Availability.Message',
+                'CustomerReviews.Count',
+                'CustomerReviews.StarRating',
+                'ItemInfo.Features',
+            ],
+            'PartnerTag'   => $associate_tag,
+            'PartnerType'  => 'Associates',
+            'Marketplace'  => 'www.amazon.com'
+        ];
+
+        $json_payload = json_encode($request_payload);
+        $timestamp = gmdate('Ymd\THis\Z');
+
+        // Build signed headers
+        $headers = generateSignedHeaders_v2($access_key, $secret_key, $region, $host, $uri_path, $json_payload, $timestamp);
+
+        // Make the request via cURL
+        $ch = curl_init($endpoint);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $json_payload);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+
+        $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($http_code !== 200 || !$response) {
+            continue; // Skip this page on error
+        }
+
+        $data = json_decode($response, true);
+
+        if (isset($data['Errors'])) {
+            error_log('Amazon API Errors (Page ' . $page . '): ' . print_r($data['Errors'], true));
+            continue; // Skip this page if it has errors
+        }
+
+        if (!empty($data['SearchResult']['Items'])) {
+            $all_items = array_merge($all_items, $data['SearchResult']['Items']);
+        }
+
+        // Stop early if fewer than 10 items returned (likely last page)
+        if (count($data['SearchResult']['Items']) < 10) {
+            break;
+        }
+
+        // Optional: avoid throttling (Amazon PAAPI recommends delay)
+        // sleep(1);
+    }
+
+    $final_data = [
+        'SearchResult' => [
+            'Items' => $all_items
+        ]
     ];
 
-    $json_payload = json_encode($request_payload);
-    $timestamp = gmdate('Ymd\THis\Z');
-
-    // Build signed headers
-    $headers = generateSignedHeaders_v2($access_key, $secret_key, $region, $host, $uri_path, $json_payload, $timestamp);
-
-    // Use cURL to make request
-    $ch = curl_init($endpoint);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $json_payload);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-
-    $response = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $error_msg = curl_error($ch);
-    curl_close($ch);
-
-    // Debug log
-    //error_log("Amazon API Response (code $http_code): " . $response);
-
-    if ($http_code !== 200 || !$response) {
-        return "Error: Amazon API request failed with status code $http_code.";
-    }
-
-    $data = json_decode($response, true);
-    if (isset($data['Errors'])) {
-        error_log('Amazon API Errors: ' . print_r($data['Errors'], true));
-        return 'Error: Amazon API returned an error.';
-    }
-
-    set_transient($cache_key, $data, $cache_time);
-    return $data;
+    set_transient($cache_key, $final_data, $cache_time);
+    return $final_data;
 }
 
 function aawp_pcbuild_get_search_index($category) {
@@ -96,40 +117,41 @@ function aawp_pcbuild_get_search_index($category) {
         'cpu cooler'       => 'Computers',
         'motherboard'      => 'Computers',
         'memory'           => 'Computers',
+        'ram'              => 'Computers',
         'storage'          => 'Computers',
         'video card'       => 'Computers',
+        'gpu'              => 'Computers',
         'case'             => 'Computers',
+        'pc-case'          => 'Computers',
         'power supply'     => 'Computers',
         'operating system' => 'Software',
         'monitor'          => 'Electronics',
+        'keyboard'         => 'Electronics',
+        'mouse'            => 'Electronics',
     ];
 
-    // Default keyword logic
-    $keywords = match ($category) {
-        'case' => 'desktop computer case',
-        'storage' => 'SSD or HDD',
-        default => $category,
-    };
-
-    // Smart keyword builder for Operating System
-    if (str_contains($category, 'operating system') || str_contains($category, 'windows')) {
-        preg_match_all('/windows\s*(10|11)?\s*(home|pro)?\s*(oem|retail)?\s*(dvd|usb|download)?\s*(32\/64-bit|64-bit|32-bit)?\s*(french)?/i', $category, $matches);
-
-        $version = $matches[1][0] ?? '11';
-        $edition = ucfirst($matches[2][0] ?? 'Home');
-        $license = strtoupper($matches[3][0] ?? 'OEM');
-        $format  = strtoupper($matches[4][0] ?? 'DVD');
-        $bit     = $matches[5][0] ?? '64-bit';
-        $lang    = ucfirst($matches[6][0] ?? '');
-
-        $base = "Microsoft Windows $version $edition";
-        if (!empty($lang)) {
-            $base .= " $lang";
-        }
-        $keywords = "$base $license - $format $bit";
-
-        // Exclude hardware-related results
-        $keywords .= " -server -NAS -bundle -device";
+    switch ($category) {
+        case 'case':
+        case 'pc-case':
+            $keywords = 'desktop computer case ATX RGB tower';
+            break;
+        case 'storage':
+            $keywords = 'SSD NVMe or HDD SATA';
+            break;
+        case 'memory':
+        case 'ram':
+            $keywords = 'DDR4 or DDR5 RAM 16GB 3200MHz';
+            break;
+        case 'video card':
+        case 'gpu':
+            $keywords = 'NVIDIA GeForce RTX 3060 or AMD Radeon RX 6600';
+            break;
+        case 'operating system':
+            $keywords = 'Microsoft Windows 11 Home OEM DVD 64-bit -server -NAS -bundle -device';
+            break;
+        default:
+            $keywords = $category;
+            break;
     }
 
     return [
@@ -137,7 +159,6 @@ function aawp_pcbuild_get_search_index($category) {
         'keywords'     => $keywords,
     ];
 }
-
 
 function getSignatureKey($key, $dateStamp, $regionName, $serviceName) {
     $kSecret  = 'AWS4' . $key;
@@ -154,21 +175,16 @@ function generateSignedHeaders_v2($access_key, $secret_key, $region, $host, $uri
     $date = gmdate('Ymd');
     $credential_scope = "$date/$region/$service/aws4_request";
 
-    // Canonical Request
     $canonical_headers = "content-encoding:amz-1.0\ncontent-type:application/json; charset=utf-8\nhost:$host\nx-amz-date:$timestamp\nx-amz-target:com.amazon.paapi5.v1.ProductAdvertisingAPIv1.SearchItems\n";
     $signed_headers = "content-encoding;content-type;host;x-amz-date;x-amz-target";
     $payload_hash = hash('sha256', $payload);
 
     $canonical_request = "POST\n$uri_path\n\n$canonical_headers\n$signed_headers\n$payload_hash";
-
-    // String to Sign
     $string_to_sign = "$algorithm\n$timestamp\n$credential_scope\n" . hash('sha256', $canonical_request);
 
-    // Signature
     $signing_key = getSignatureKey($secret_key, $date, $region, $service);
     $signature = hash_hmac('sha256', $string_to_sign, $signing_key);
 
-    // Authorization Header
     $authorization_header = "$algorithm Credential=$access_key/$credential_scope, SignedHeaders=$signed_headers, Signature=$signature";
 
     return [
@@ -180,4 +196,3 @@ function generateSignedHeaders_v2($access_key, $secret_key, $region, $host, $uri
         "Authorization: $authorization_header"
     ];
 }
-
