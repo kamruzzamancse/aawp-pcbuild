@@ -28,10 +28,12 @@ searchInput.addEventListener("input", function () {
     });
 });
   
+
 // ADD TO BUILDER FUNCTIONALITY
 document.querySelectorAll(".add-to-builder").forEach(button => {
-    button.addEventListener("click", function () {
-        const category = button.dataset.category.toLowerCase();
+    button.addEventListener("click", () => {
+        const category = button.dataset.category?.toLowerCase() || 'other';
+
         const productData = {
             title: button.dataset.title,
             image: button.dataset.image,
@@ -44,13 +46,29 @@ document.querySelectorAll(".add-to-builder").forEach(button => {
             affiliateUrl: button.dataset.affiliateUrl,
             asin: button.dataset.asin,
             features: button.dataset.features,
-            rating: button.dataset.rating || ''
+            rating: button.dataset.rating || '',
+            socket: button.dataset.socket || '',
+            chipset: button.dataset.chipset || '',
+            category
         };
 
-        // Save to localStorage
+        // Save product to localStorage
         localStorage.setItem(`pcbuild_${category}`, JSON.stringify(productData));
 
-        // Redirect or update UI
+        // CPU-specific logic
+        if (category === 'cpu') {
+            localStorage.setItem('selected_cpu_socket', productData.socket);
+            localStorage.setItem('pcbuild_cpu', JSON.stringify(productData));
+            //filterByCompatibility(); // Optional, if GPU compatibility is handled
+        }
+
+        // Motherboard-specific logic
+        if (category === 'motherboard') {
+            localStorage.setItem('selected_motherboard_socket', productData.socket);
+            localStorage.setItem('selected_motherboard_chipset', productData.chipset);
+        }
+
+        // UI update or redirect
         if (window.location.pathname.includes("/pcbuildparts/pc-build-parts")) {
             if (typeof updateRow === "function") {
                 updateRow(category, productData);
@@ -60,6 +78,27 @@ document.querySelectorAll(".add-to-builder").forEach(button => {
         }
     });
 });
+
+
+// Function to filter GPUs based on selected CPU
+function filterGPUByCPUSelected() {
+    const selectedCPU = localStorage.getItem('pcbuild_cpu');
+    const gpuRows = document.querySelectorAll('.gpu-row');
+
+    // If no CPU is selected, hide all GPU rows
+    if (!selectedCPU) {
+        gpuRows.forEach(row => row.style.display = 'none');
+    } else {
+        // Otherwise, show all GPU rows
+        gpuRows.forEach(row => row.style.display = 'table-row');
+    }
+}
+
+// Ensure GPU rows are filtered when the page loads based on existing localStorage data
+document.addEventListener("DOMContentLoaded", function() {
+    filterGPUByCPUSelected();  // Check if CPU is selected when page is loaded
+});
+
 
 // SCROLL TO TABLE ON PAGINATION
 const params = new URLSearchParams(window.location.search);

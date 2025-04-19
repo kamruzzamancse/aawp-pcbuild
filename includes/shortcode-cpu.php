@@ -348,6 +348,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
             filterByPrice();
         });
     </script>
+    
     <?php
     return ob_get_clean();
 }

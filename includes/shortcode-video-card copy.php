@@ -366,7 +366,7 @@ function aawp_pcbuild_display_parts_gpu($atts) {
                 }
             });
         </script>
-
+        
     <?php
     return ob_get_clean();
 }

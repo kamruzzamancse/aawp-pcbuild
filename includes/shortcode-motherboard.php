@@ -336,6 +336,36 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
         });
     </script>
 
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const selectedCpuSocket = localStorage.getItem('selected_cpu_socket');
+        if (!selectedCpuSocket) return; // No CPU selected yet, show all motherboards
+
+        const rows = document.querySelectorAll("#pcbuild-table tbody tr");
+        let compatibleCount = 0;
+
+        rows.forEach(row => {
+            const socketCell = row.querySelector("td:nth-child(2)"); // Socket column
+            if (socketCell && socketCell.textContent.trim().toUpperCase().includes(selectedCpuSocket.toUpperCase())) {
+                row.style.display = ""; // Show compatible
+                compatibleCount++;
+            } else {
+                row.style.display = "none"; // Hide incompatible
+            }
+        });
+
+        if (compatibleCount === 0) {
+            const table = document.getElementById("pcbuild-table");
+            const noMatchRow = document.createElement("tr");
+            noMatchRow.innerHTML = `<td colspan="9" style="text-align:center; padding:20px; background:#ffecec; color:#cc0000;">
+                No compatible motherboards found for CPU socket: <strong>${selectedCpuSocket}</strong>
+            </td>`;
+            table.querySelector("tbody").appendChild(noMatchRow);
+        }
+    });
+</script>
+
+
     <?php
     return ob_get_clean();
 }

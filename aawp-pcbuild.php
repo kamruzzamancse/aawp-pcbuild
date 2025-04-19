@@ -28,9 +28,9 @@ require_once AAWP_PCBUILD_PATH . 'includes/shortcode-memory.php';
 require_once AAWP_PCBUILD_PATH . 'includes/shortcode-storage.php';
 require_once AAWP_PCBUILD_PATH . 'includes/shortcode-video-card.php';
 require_once AAWP_PCBUILD_PATH . 'includes/shortcode-case.php';
-/* require_once AAWP_PCBUILD_PATH . 'includes/shortcode-power-supply.php';
+require_once AAWP_PCBUILD_PATH . 'includes/shortcode-power-supply.php';
 require_once AAWP_PCBUILD_PATH . 'includes/shortcode-operating-system.php';
-require_once AAWP_PCBUILD_PATH . 'includes/shortcode-monitor.php'; */
+require_once AAWP_PCBUILD_PATH . 'includes/shortcode-monitor.php';
 require_once AAWP_PCBUILD_PATH . 'includes/admin-settings.php';
 require_once AAWP_PCBUILD_PATH . 'includes/pc-builder-ui.php';
 

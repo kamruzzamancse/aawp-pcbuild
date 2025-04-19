@@ -178,14 +178,14 @@ function pcbuild_render_ui_shortcode() {
                         <!-- Row for selecting a PSU (Power Supply Unit) and its metadata -->
                         <div class="row">
                             <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part">
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/power-supply">
                                     <span class="componentName">Power Supply</span>
                                 </a>
                             </div>
                             <div class="selection card">
                                 <button class="selectionBTN">
                                     <span style='font-size:20px;'>&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/power-supply">
                                         <span>Choose A Power Supply</span>
                                     </a>
                                 </button>
@@ -195,14 +195,14 @@ function pcbuild_render_ui_shortcode() {
                         <!-- Operating System selection row with related information -->
                         <div class="row">
                             <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part">
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/operating-system">
                                     <span class="componentName">Operating System</span>
                                 </a>
                             </div>
                             <div class="selection card">
                                 <button class="selectionBTN">
                                     <span style='font-size:20px;'>&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/operating-system">
                                         <span>Choose A Operating System</span>
                                     </a>
                                 </button>
@@ -212,14 +212,14 @@ function pcbuild_render_ui_shortcode() {
                         <!-- Monitor selection row showing pricing, availability, and purchase options -->
                         <div class="row">
                             <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part">
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/monitor">
                                     <span class="componentName">Monitor</span>
                                 </a>
                             </div>
                             <div class="selection card">
                                 <button class="selectionBTN">
                                     <span style='font-size:20px;'>&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/monitor">
                                         <span>Choose A Monitor</span>
                                     </a>
                                 </button>
