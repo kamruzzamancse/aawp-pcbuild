@@ -1,38 +1,19 @@
 <?php
-function aawp_pcbuild_display_parts_cpu($atts) {
-    $atts = shortcode_atts(array('category' => 'CPU'), $atts);
+function aawp_pcbuild_display_parts_motherboard($atts) {
+    $atts = shortcode_atts(array('category' => 'motherboard'), $atts);
     $input_category = sanitize_title($atts['category']);
 
-    /* $category_map = [
-        'cpu' => 'CPU',
-        'gpu' => 'Video Card',
-        'video-card' => 'Video Card',
-        'motherboard' => 'Motherboard',
-        'cpu-cooler' => 'CPU Cooler',
-        'power-supply' => 'Power Supply',
-        'ram' => 'Memory',
-        'memory' => 'Memory',
-        'storage' => 'Storage',
-        'case' => 'Case',
-        'pc-case' => 'Case',
-        'monitor' => 'Monitor',
-        'keyboard' => 'Keyboard',
-        'mouse' => 'Mouse',
-        'operating-system' => 'Operating System',
-    ]; */
-
     $category_map = [
-        'cpu' => 'CPU',
+        'motherboard' => 'Motherboard',
     ];
 
-    $category = $category_map[$input_category] ?? 'CPU';
+    $category = $category_map[$input_category] ?? 'Motherboard';
     $products = aawp_pcbuild_get_products($category);
 
     if (!is_array($products) || empty($products['SearchResult']['Items'])) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';
     }
 
-    // Pagination setup
     $all_items = $products['SearchResult']['Items'];
     $total_items = count($all_items);
     $items_per_page = 25;
@@ -48,7 +29,6 @@ function aawp_pcbuild_display_parts_cpu($atts) {
     </div>
     <div style="width:90%; margin:0 auto; font-family:sans-serif;">
         <div style="display:flex; gap:20px; margin-top:20px;">
-            <!-- Sidebar -->
             <div style="width:250px; background:#f9f9f9; padding:20px; border-radius:8px;">
                 <div style="margin-bottom:20px;"><strong>Part</strong> | <strong>List</strong></div>
                 <div style="margin-bottom:20px;"><label><input type="checkbox" checked disabled /> Compatibility Filter</label></div>
@@ -56,7 +36,6 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                     <div>PARTS: <strong id="parts_count"></strong></div>
                     <div>TOTAL: <strong id="parts_total_price"></strong></div>
                 </div>
-                <!-- <div style="margin-bottom:20px;">ESTIMATED WATTAGE: <strong style="color:#007bff;">120W</strong></div> -->
                 <div style="margin-bottom:20px;">
                     <strong>PRICE</strong>
                     <div id="price-slider" style="margin-top: 15px;"></div>
@@ -75,7 +54,6 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                         <label><input type="checkbox" name="rating" value="unrated" /> Unrated</label>
                     </div>
                 </div>
-
             </div>
 
             <!-- Main Table Section -->
@@ -93,24 +71,29 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                                     <span class="sort-arrow">&#9654;</span> Name
                                 </span>
                             </th>
-                            <th class="sortable-header" data-key="core_count">
+                            <th class="sortable-header" data-key="socket">
                                 <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Core Count
+                                    <span class="sort-arrow">&#9654;</span> Socket / CPU
                                 </span>
                             </th>
-                            <th class="sortable-header" data-key="base_clock">
+                            <th class="sortable-header" data-key="form_factor">
                                 <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Base Clock
+                                    <span class="sort-arrow">&#9654;</span> Form Factor
                                 </span>
                             </th>
-                            <th class="sortable-header" data-key="boost_clock">
+                            <th class="sortable-header" data-key="memory_max">
                                 <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Boost Clock
+                                    <span class="sort-arrow">&#9654;</span> Memory Max
                                 </span>
                             </th>
-                            <th class="sortable-header" data-key="microarch">
+                            <th class="sortable-header" data-key="memory_slots">
                                 <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Microarchitecture
+                                    <span class="sort-arrow">&#9654;</span> Memory Slots
+                                </span>
+                            </th>
+                            <th class="sortable-header" data-key="color">
+                                <span class="sort-header-label">
+                                    <span class="sort-arrow">&#9654;</span> Color
                                 </span>
                             </th>
                             <th class="sortable-header" data-key="rating">
@@ -123,7 +106,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                                     <span class="sort-arrow">&#9654;</span> Price
                                 </span>
                             </th>
-                            <th style="padding:10px;">Action</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -133,7 +116,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             $full_title = $item['ItemInfo']['Title']['DisplayValue'] ?? 'Unknown Product';
                             $title = esc_html(implode(' ', array_slice(explode(' ', $full_title), 0, 4)));
                             $raw_title = esc_attr($full_title);
-                            $image = $item['Images']['Primary']['Large']['URL'] ?? $item['Images']['Primary']['Medium']['URL'] ?? $item['Images']['Primary']['Small']['URL'] ?? '';
+                            $image = $item['Images']['Primary']['Large']['URL'] ?? '';
                             $raw_image = esc_url($image);
                             $price = $item['Offers']['Listings'][0]['Price']['DisplayAmount'] ?? 'N/A';
                             $base_price = $price;
@@ -142,16 +125,19 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
 
-                            // Extract new data points
-                            preg_match('/(\d+)[ -]?[Cc]ore/', $features_string, $core_match);
-                            preg_match('/(\d+(\.\d+)?)[ ]?GHz/i', $features_string, $base_match);
-                            preg_match('/(?:Boost Clock|Max Boost|Turbo Clock|Turbo Frequency|up to)[^\d]*([\d\.]+)\s?GHz/i', $features_string, $boost_match);
-                            preg_match('/Zen\s?[\d\.]+|Zen\s?[a-zA-Z]+/', $features_string, $arch_match);
+                            // Extract values
+                            preg_match('/(LGA\s?\d+|AM\d+)/i', $features_string, $socket_match);
+                            preg_match('/(E-?ATX|Extended\s?ATX|XL-?ATX|Micro\s?-?ATX|Mini\s?-?ITX|mATX|ITX|ATX)/i', $features_string . ' ' . $full_title, $form_match);
+                            preg_match('/(\d+\s?GB)/i', $features_string, $memory_max_match);
+                            preg_match('/(\d+)\s?(x\s?)?(DIMM|DDR)/i', $features_string, $memory_slots_match);
+                            preg_match('/(Black|White|Red|Blue|Silver|Gray|RGB)/i', $features_string, $color_match);
 
-                            $core_count = $core_match[1] ?? '-';
-                            $base_clock = $base_match[1] ?? '-';
-                            $boost_clock = $boost_match[1] ?? '-';
-                            $microarch = $arch_match[0] ?? '-';
+                            // Assign values
+                            $socket = $socket_match[1] ?? '-';
+                            $form_factor = $form_match[1] ?? '-';
+                            $memory_max = $memory_max_match[1] ?? '-';
+                            $memory_slots = $memory_slots_match[1] ?? '-';
+                            $color = $color_match[1] ?? '-';
                             $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
                             $rating_count = $item['CustomerReviews']['Count'] ?? null;
                             $rating_display = ($rating !== null && $rating_count !== null) ? number_format($rating, 1) . ' / 5 (' . number_format($rating_count) . ' reviews)' : '-';
@@ -161,10 +147,11 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                                 <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>" style="width:125px; height:125px; object-fit:cover; border-radius:4px;" />
                                 <?php echo $title; ?>
                             </td>
-                            <td style="padding:10px;"><?php echo $core_count; ?></td>
-                            <td style="padding:10px;"><?php echo $base_clock !== '-' ? $base_clock . ' GHz' : '-'; ?></td>
-                            <td style="padding:10px;"><?php echo $boost_clock !== '-' ? $boost_clock . ' GHz' : '-'; ?></td>
-                            <td style="padding:10px;"><?php echo $microarch; ?></td>
+                            <td style="padding:10px;"><?php echo esc_html($socket); ?></td>
+                            <td style="padding:10px;"><?php echo esc_html($form_factor); ?></td>
+                            <td style="padding:10px;"><?php echo esc_html($memory_max); ?></td>
+                            <td style="padding:10px;"><?php echo esc_html($memory_slots); ?></td>
+                            <td style="padding:10px;"><?php echo esc_html($color); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($rating_display); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
@@ -173,9 +160,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                                     data-title="<?php echo esc_attr($full_title); ?>"
                                     data-image="<?php echo esc_url($image); ?>"
                                     data-base="<?php echo esc_attr($base_price); ?>"
-                                    data-promo=""
                                     data-shipping="FREE"
-                                    data-tax=""
                                     data-availability="<?php echo esc_attr($availability); ?>"
                                     data-price="<?php echo esc_attr($base_price); ?>"
                                     data-category="<?php echo esc_attr($category); ?>"
@@ -210,7 +195,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
     </div>
 
     <script>
-        // SORTING LOGIC
+        // SORTING LOGIC for MOTHERBOARD TABLE
         document.addEventListener('DOMContentLoaded', () => {
             const table = document.getElementById("pcbuild-table");
             const headers = table.querySelectorAll(".sortable-header");
@@ -262,21 +247,21 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                 });
             }
 
-            // Column index mapping based on data-key
+            // Column index mapping based on data-key for motherboard
             function getColumnIndex(key) {
                 const mapping = {
                     name: 1,
-                    core_count: 2,
-                    base_clock: 3,
-                    boost_clock: 4,
-                    microarch: 5,
-                    rating: 6,
-                    price: 7
+                    socket: 2,
+                    form_factor: 3,
+                    memory_max: 4,
+                    memory_slots: 5,
+                    color: 6,
+                    rating: 7,
+                    price: 8
                 };
                 return mapping[key];
             }
         });
-        
     </script>
 
     <!-- PRICE RANGE SLIDER FILTER -->
@@ -291,7 +276,8 @@ function aawp_pcbuild_display_parts_cpu($atts) {
 
             const rows = Array.from(table.querySelectorAll("tbody tr"));
             const prices = rows.map(row => {
-                const priceText = row.querySelector("td:nth-child(7)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+                // Assuming price is in the 8th column (index 8)
+                const priceText = row.querySelector("td:nth-child(8)")?.textContent.replace(/[^0-9.]/g, '') || "0";
                 return parseFloat(priceText) || 0;
             });
 
@@ -323,7 +309,8 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                 maxLabel.textContent = `$${maxVal}`;
 
                 rows.forEach(row => {
-                    const priceText = row.querySelector("td:nth-child(7)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+                    // Update selector to target the correct column (8th column for price)
+                    const priceText = row.querySelector("td:nth-child(8)")?.textContent.replace(/[^0-9.]/g, '') || "0";
                     const price = parseFloat(priceText) || 0;
 
                     row.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
@@ -348,7 +335,8 @@ function aawp_pcbuild_display_parts_cpu($atts) {
             filterByPrice();
         });
     </script>
+
     <?php
     return ob_get_clean();
 }
-add_shortcode('pcbuild_parts_cpu', 'aawp_pcbuild_display_parts_cpu');
+add_shortcode('pcbuild_parts_motherboard', 'aawp_pcbuild_display_parts_motherboard');

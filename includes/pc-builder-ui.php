@@ -93,14 +93,14 @@ function pcbuild_render_ui_shortcode() {
                         <!-- Row for selecting the motherboard and displaying related data -->
                         <div class="row">
                             <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part">
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/motherboard">
                                     <span class="componentName">Motherboard</span>
                                 </a>
                             </div>
                             <div class="selection card">
                                 <button class="selectionBTN">
                                     <span style="font-size:20px;">&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/motherboard">
                                         <span>Choose A Motherboard</span>
                                     </a>
                                 </button>
@@ -110,14 +110,14 @@ function pcbuild_render_ui_shortcode() {
                         <!-- Memory selection row including price, promo, tax, etc. -->
                         <div class="row">
                             <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part">
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/memory">
                                 <span class="componentName" data-key="ram">Memory</span>
                                 </a>
                             </div>
                             <div class="selection card">
                                 <button class="selectionBTN">
                                     <span style='font-size:20px;'>&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/memory">
                                         <span>Choose A Memory</span>
                                     </a>
                                 </button>
@@ -127,14 +127,14 @@ function pcbuild_render_ui_shortcode() {
                         <!-- Storage device selection row with associated info and controls -->
                         <div class="row">
                             <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part">
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/storage">
                                     <span class="componentName">Storage</span>
                                 </a>
                             </div>
                             <div class="selection card">
                                 <button class="selectionBTN">
                                     <span style='font-size:20px;'>&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/storage">
                                         <span>Choose A Storage</span>
                                     </a>
                                 </button>
@@ -144,14 +144,14 @@ function pcbuild_render_ui_shortcode() {
                         <!-- Row for choosing a GPU or video card with details like price, tax, and source -->
                         <div class="row">
                             <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part">
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/video-card">
                                     <span class="componentName">Video Card</span>
                                 </a>
                             </div>
                             <div class="selection card">
                                 <button class="selectionBTN">
                                     <span style='font-size:20px;'>&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/video-card">
                                         <span>Choose A Video Card</span>
                                     </a>
                                 </button>
@@ -161,14 +161,14 @@ function pcbuild_render_ui_shortcode() {
                         <!-- PC case selection row along with its pricing and availability -->
                         <div class="row">
                             <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part">
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/case">
                                     <span class="componentName">Case</span>
                                 </a>
                             </div>
                             <div class="selection card">
                                 <button class="selectionBTN">
                                     <span style='font-size:20px;'>&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/case">
                                         <span>Choose A Case</span>
                                     </a>
                                 </button>

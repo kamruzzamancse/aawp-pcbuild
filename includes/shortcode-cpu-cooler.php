@@ -4,21 +4,7 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
     $input_category = sanitize_title($atts['category']);
 
     $category_map = [
-        'cpu' => 'CPU',
-        'gpu' => 'Video Card',
-        'video-card' => 'Video Card',
-        'motherboard' => 'Motherboard',
         'cpu-cooler' => 'CPU Cooler',
-        'power-supply' => 'Power Supply',
-        'ram' => 'Memory',
-        'memory' => 'Memory',
-        'storage' => 'Storage',
-        'case' => 'Case',
-        'pc-case' => 'Case',
-        'monitor' => 'Monitor',
-        'keyboard' => 'Keyboard',
-        'mouse' => 'Mouse',
-        'operating-system' => 'Operating System',
     ];
 
     $category = $category_map[$input_category] ?? 'CPU';
@@ -84,12 +70,36 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                 <table id="pcbuild-table" style="width:100%; border-collapse:collapse;">
                     <thead style="background:#f0f0f0;">
                         <tr>
-                            <th class="sortable-header" data-key="name">&#9654; Name</th>
-                            <th class="sortable-header" data-key="fan_rpm">&#9654; Fan RPM</th>
-                            <th class="sortable-header" data-key="noise">&#9654; Noise Level</th>
-                            <th class="sortable-header" data-key="radiator">&#9654; Radiator Size</th>
-                            <th class="sortable-header" data-key="rating">&#9654; Rating</th>
-                            <th class="sortable-header" data-key="price">&#9654; Price</th>
+                            <th class="sortable-header" data-key="name">
+                                <span class="sort-header-label">
+                                    <span class="sort-arrow">&#9654;</span> Name
+                                </span>
+                            </th>
+                            <th class="sortable-header" data-key="fan_rpm">
+                                <span class="sort-header-label">
+                                    <span class="sort-arrow">&#9654;</span> Fan RPM
+                                </span>
+                            </th>
+                            <th class="sortable-header" data-key="noise">
+                                <span class="sort-header-label">
+                                    <span class="sort-arrow">&#9654;</span> Noise Level
+                                </span>
+                            </th>
+                            <th class="sortable-header" data-key="radiator">
+                                <span class="sort-header-label">
+                                    <span class="sort-arrow">&#9654;</span> Radiator Size
+                                </span>
+                            </th>
+                            <th class="sortable-header" data-key="rating">
+                                <span class="sort-header-label">
+                                    <span class="sort-arrow">&#9654;</span> Rating
+                                </span>
+                            </th>
+                            <th class="sortable-header" data-key="price">
+                                <span class="sort-header-label">
+                                    <span class="sort-arrow">&#9654;</span> Price
+                                </span>
+                            </th>
                             <th style="padding:10px;">Action</th>
                         </tr>
                     </thead>
@@ -309,35 +319,6 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
             filterByPrice();
         });
     </script>
-
-    <style>
-        .sortable-header {
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-        .sortable-header:hover {
-            text-decoration: underline;
-        }
-        .entry-content thead th, .entry-content tr th {
-            padding: 10px !important;
-        }
-        #min-price,
-        #max-price {
-            background-color: #CCC;
-        }
-
-        #rating-filter label {
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 4px;
-            font-size: 14px;
-        }
-        #rating-filter input[type="checkbox"] {
-            transform: scale(1.1);
-        }
-
-    </style>
     <?php
     return ob_get_clean();
 }

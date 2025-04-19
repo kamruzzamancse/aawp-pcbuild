@@ -23,6 +23,14 @@ define('AAWP_PCBUILD_URL', plugin_dir_url(__FILE__));
 require_once AAWP_PCBUILD_PATH . 'includes/api-handler.php';
 require_once AAWP_PCBUILD_PATH . 'includes/shortcode-cpu.php';
 require_once AAWP_PCBUILD_PATH . 'includes/shortcode-cpu-cooler.php';
+require_once AAWP_PCBUILD_PATH . 'includes/shortcode-motherboard.php';
+require_once AAWP_PCBUILD_PATH . 'includes/shortcode-memory.php';
+require_once AAWP_PCBUILD_PATH . 'includes/shortcode-storage.php';
+require_once AAWP_PCBUILD_PATH . 'includes/shortcode-video-card.php';
+require_once AAWP_PCBUILD_PATH . 'includes/shortcode-case.php';
+/* require_once AAWP_PCBUILD_PATH . 'includes/shortcode-power-supply.php';
+require_once AAWP_PCBUILD_PATH . 'includes/shortcode-operating-system.php';
+require_once AAWP_PCBUILD_PATH . 'includes/shortcode-monitor.php'; */
 require_once AAWP_PCBUILD_PATH . 'includes/admin-settings.php';
 require_once AAWP_PCBUILD_PATH . 'includes/pc-builder-ui.php';
 
@@ -36,23 +44,6 @@ function aawp_pcbuild_enqueue_styles() {
         AAWP_PCBUILD_URL . 'assets/css/style.css',
         array(),
         filemtime(AAWP_PCBUILD_PATH . 'assets/css/style.css')
-    );
-
-    // noUiSlider CDN CSS
-    wp_enqueue_style(
-        'nouislider-css',
-        'https://cdn.jsdelivr.net/npm/nouislider@15.6.1/dist/nouislider.min.css',
-        array(),
-        '15.6.1'
-    );
-
-     // noUiSlider CDN JS
-     wp_enqueue_script(
-        'nouislider-js',
-        'https://cdn.jsdelivr.net/npm/nouislider@15.6.1/dist/nouislider.min.js',
-        array(),
-        '15.6.1',
-        true
     );
 
     // jQuery dependency is loaded by default in WP, but explicitly listed
