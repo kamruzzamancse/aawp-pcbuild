@@ -337,7 +337,7 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
     </script>
 
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
+/*     document.addEventListener("DOMContentLoaded", () => {
         const selectedCpuSocket = localStorage.getItem('selected_cpu_socket');
         if (!selectedCpuSocket) return; // No CPU selected yet, show all motherboards
 
@@ -362,7 +362,7 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
             </td>`;
             table.querySelector("tbody").appendChild(noMatchRow);
         }
-    });
+    }); */
 </script>
 
 
