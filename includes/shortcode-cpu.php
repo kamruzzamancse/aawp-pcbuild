@@ -26,7 +26,18 @@ function aawp_pcbuild_display_parts_cpu($atts) {
     ];
 
     $category = $category_map[$input_category] ?? 'CPU';
-    $products = aawp_pcbuild_get_products($category);
+    $transient_key = 'aawp_pcbuild_' . md5($category);
+
+    if (is_user_logged_in() && current_user_can('manage_options') && isset($_GET['clear_cache'])) {
+        delete_transient($transient_key);
+    }
+    
+    $products = get_transient($transient_key);
+
+    if ($products === false) {
+        $products = aawp_pcbuild_get_products($category);
+        set_transient($transient_key, $products, HOUR_IN_SECONDS);
+    }
 
     if (!is_array($products) || empty($products['SearchResult']['Items'])) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';
@@ -141,12 +152,21 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             $product_url = $item['DetailPageURL'] ?? '#';
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
+                            $combined_string = $features_string . ' ' . $full_title;
 
                             // Extract new data points
                             preg_match('/(\d+)[ -]?[Cc]ore/', $features_string, $core_match);
                             preg_match('/(\d+(\.\d+)?)[ ]?GHz/i', $features_string, $base_match);
                             preg_match('/(?:Boost Clock|Max Boost|Turbo Clock|Turbo Frequency|up to)[^\d]*([\d\.]+)\s?GHz/i', $features_string, $boost_match);
                             preg_match('/Zen\s?[\d\.]+|Zen\s?[a-zA-Z]+/', $features_string, $arch_match);
+                            // Extract socket
+                            preg_match('/(LGA\s?\d{3,4}|AM\d+)/i', $combined_string, $socket_match);
+                            $socket = $socket_match[1] ?? '';
+
+                            // Extract chipset (if mentioned, usually only applies to motherboards, but some CPUs mention compatibility)
+                            preg_match('/(?:X|B|A|Z|H)[0-9]{3}/i', $features_string, $chipset_match);
+                            $chipset = $chipset_match[0] ?? '';
+
 
                             $core_count = $core_match[1] ?? '-';
                             $base_clock = $base_match[1] ?? '-';
@@ -181,6 +201,9 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                                     data-category="<?php echo esc_attr($category); ?>"
                                     data-affiliate-url="<?php echo esc_url($product_url); ?>"
                                     data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+                                    data-rating="<?php echo isset($rating_display) ? esc_attr($rating_display) : ''; ?>"
+                                    data-socket="<?php echo isset($socket) ? esc_attr($socket) : ''; ?>"
+                                    data-chipset="<?php echo isset($chipset) ? esc_attr($chipset) : ''; ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                     <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
                                 </button>

@@ -28,7 +28,6 @@ searchInput.addEventListener("input", function () {
     });
 });
   
-
 // ADD TO BUILDER FUNCTIONALITY
 document.querySelectorAll(".add-to-builder").forEach(button => {
     button.addEventListener("click", () => {
@@ -46,26 +45,50 @@ document.querySelectorAll(".add-to-builder").forEach(button => {
             affiliateUrl: button.dataset.affiliateUrl,
             asin: button.dataset.asin,
             features: button.dataset.features,
-            rating: button.dataset.rating || '',
-            socket: button.dataset.socket || '',
-            chipset: button.dataset.chipset || '',
-            category
+            rating: button.dataset.rating,
+            socket: button.dataset.socket,
+            chipset: button.dataset.chipset,
+            category: button.dataset.category
         };
 
         // Save product to localStorage
         localStorage.setItem(`pcbuild_${category}`, JSON.stringify(productData));
 
-        // CPU-specific logic
-        if (category === 'cpu') {
-            localStorage.setItem('selected_cpu_socket', productData.socket);
-            localStorage.setItem('pcbuild_cpu', JSON.stringify(productData));
-            //filterByCompatibility(); // Optional, if GPU compatibility is handled
-        }
-
-        // Motherboard-specific logic
-        if (category === 'motherboard') {
-            localStorage.setItem('selected_motherboard_socket', productData.socket);
-            localStorage.setItem('selected_motherboard_chipset', productData.chipset);
+        // Category-specific logic
+        switch (category) {
+            case 'cpu':
+                localStorage.setItem('selected_cpu_socket', productData.socket);
+                localStorage.setItem('pcbuild_cpu', JSON.stringify(productData));
+                break;
+            case 'cpu cooler':
+                localStorage.setItem('pcbuild_cooler', JSON.stringify(productData.socket));
+                break;
+            case 'motherboard':
+                localStorage.setItem('pcbuild_motherboard', JSON.stringify(productData.socket));
+                break;
+            case 'memory':
+                localStorage.setItem('pcbuild_memory', JSON.stringify(productData.socket));
+                break;
+            case 'storage':
+                localStorage.setItem('pcbuild_storage', JSON.stringify(productData.socket));
+                break;
+            case 'video card':
+                localStorage.setItem('pcbuild_gpu', JSON.stringify(productData.socket));
+                break;
+            case 'case':
+                localStorage.setItem('pcbuild_case', JSON.stringify(productData.socket));
+                break;
+            case 'power supply':
+                localStorage.setItem('pcbuild_psu', JSON.stringify(productData.socket));
+                break;
+            case 'operating system':
+                localStorage.setItem('pcbuild_os', JSON.stringify(productData.socket));
+                break;
+            case 'monitor':
+                localStorage.setItem('pcbuild_monitor', JSON.stringify(productData.socket));
+                break;
+            default:
+                break;
         }
 
         // UI update or redirect
@@ -78,27 +101,6 @@ document.querySelectorAll(".add-to-builder").forEach(button => {
         }
     });
 });
-
-
-// Function to filter GPUs based on selected CPU
-function filterGPUByCPUSelected() {
-    const selectedCPU = localStorage.getItem('pcbuild_cpu');
-    const gpuRows = document.querySelectorAll('.gpu-row');
-
-    // If no CPU is selected, hide all GPU rows
-    if (!selectedCPU) {
-        gpuRows.forEach(row => row.style.display = 'none');
-    } else {
-        // Otherwise, show all GPU rows
-        gpuRows.forEach(row => row.style.display = 'table-row');
-    }
-}
-
-// Ensure GPU rows are filtered when the page loads based on existing localStorage data
-document.addEventListener("DOMContentLoaded", function() {
-    filterGPUByCPUSelected();  // Check if CPU is selected when page is loaded
-});
-
 
 // SCROLL TO TABLE ON PAGINATION
 const params = new URLSearchParams(window.location.search);

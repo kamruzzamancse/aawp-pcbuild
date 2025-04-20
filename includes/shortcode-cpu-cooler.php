@@ -8,13 +8,24 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
     ];
 
     $category = $category_map[$input_category] ?? 'CPU';
-    $products = aawp_pcbuild_get_products($category);
+    $transient_key = 'aawp_pcbuild_' . md5($category);
+
+    if (is_user_logged_in() && current_user_can('manage_options') && isset($_GET['clear_cache'])) {
+        delete_transient($transient_key);
+    }
+    
+    $products = get_transient($transient_key);
+
+    if ($products === false) {
+        $products = aawp_pcbuild_get_products($category);
+        set_transient($transient_key, $products, HOUR_IN_SECONDS);
+    }
 
     if (!is_array($products) || empty($products['SearchResult']['Items'])) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';
     }
 
-    // Pagination setup
+    // Pagination
     $all_items = $products['SearchResult']['Items'];
     $total_items = count($all_items);
     $items_per_page = 25;
@@ -31,14 +42,13 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
     <div style="width:90%; margin:0 auto; font-family:sans-serif;">
         <div style="display:flex; gap:20px; margin-top:20px;">
             <!-- Sidebar -->
-            <div style="width:250px; background:#f9f9f9; padding:20px; border-radius:8px;">
+            <div class="pcbuild-sidebar" style="width:250px; background:#f9f9f9; padding:20px; border-radius:8px;">
                 <div style="margin-bottom:20px;"><strong>Part</strong> | <strong>List</strong></div>
-                <div style="margin-bottom:20px;"><label><input type="checkbox" checked disabled /> Compatibility Filter</label></div>
+                <!-- <div style="margin-bottom:20px;"><label><input type="checkbox" checked disabled /> Compatibility Filter</label></div> -->
                 <div style="margin-bottom:20px;">
                     <div>PARTS: <strong id="parts_count"></strong></div>
                     <div>TOTAL: <strong id="parts_total_price"></strong></div>
                 </div>
-                <!-- <div style="margin-bottom:20px;">ESTIMATED WATTAGE: <strong style="color:#007bff;">120W</strong></div> -->
                 <div style="margin-bottom:20px;">
                     <strong>PRICE</strong>
                     <div id="price-slider" style="margin-top: 15px;"></div>
@@ -57,10 +67,9 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                         <label><input type="checkbox" name="rating" value="unrated" /> Unrated</label>
                     </div>
                 </div>
-
             </div>
 
-            <!-- Main Table Section -->
+            <!-- Main Section -->
             <div style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div style="font-weight:bold;"><?php echo $total_items; ?> Products</div>
@@ -70,40 +79,15 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                 <table id="pcbuild-table" style="width:100%; border-collapse:collapse;">
                     <thead style="background:#f0f0f0;">
                         <tr>
-                            <th class="sortable-header" data-key="name">
-                                <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Name
-                                </span>
-                            </th>
-                            <th class="sortable-header" data-key="fan_rpm">
-                                <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Fan RPM
-                                </span>
-                            </th>
-                            <th class="sortable-header" data-key="noise">
-                                <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Noise Level
-                                </span>
-                            </th>
-                            <th class="sortable-header" data-key="radiator">
-                                <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Radiator Size
-                                </span>
-                            </th>
-                            <th class="sortable-header" data-key="rating">
-                                <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Rating
-                                </span>
-                            </th>
-                            <th class="sortable-header" data-key="price">
-                                <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Price
-                                </span>
-                            </th>
+                            <th class="sortable-header" data-key="name"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Name</span></th>
+                            <th class="sortable-header" data-key="fan_rpm"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Fan RPM</span></th>
+                            <th class="sortable-header" data-key="noise"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Noise Level</span></th>
+                            <th class="sortable-header" data-key="radiator"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Radiator Size</span></th>
+                            <th class="sortable-header" data-key="rating"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Rating</span></th>
+                            <th class="sortable-header" data-key="price"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Price</span></th>
                             <th style="padding:10px;">Action</th>
                         </tr>
                     </thead>
-
                     <tbody>
                         <?php foreach ($display_items as $index => $item):
                             $row_bg = ($index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
@@ -120,29 +104,31 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
 
-                            // Extract new data points
+                            // Extract values
                             preg_match('/(\d{3,4})\s?RPM/i', $features_string, $rpm_match);
                             preg_match('/(\d+(\.\d+)?\s?dB)/i', $features_string, $noise_match);
                             preg_match('/(120|240|280|360)\s?mm/i', $features_string, $rad_match);
+                            preg_match_all('/(AM4|AM5|LGA ?1200|LGA ?1700|LGA ?1151|LGA ?2066|TR4|sTRX4|FM2\+?)/i', $features_string . ' ' . $full_title, $socket_matches);
 
                             $fan_rpm = $rpm_match[1] ?? '-';
                             $noise_level = $noise_match[1] ?? '-';
-                            $color = $color_match[1] ?? '-';
                             $radiator = $rad_match[1] ?? '-';
+                            $compatible_sockets = array_map('trim', array_unique($socket_matches[1]));
+                            if (empty($compatible_sockets)) $compatible_sockets[] = 'all';
+
                             $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
                             $rating_count = $item['CustomerReviews']['Count'] ?? null;
                             $rating_display = ($rating !== null && $rating_count !== null) ? number_format($rating, 1) . ' / 5 (' . number_format($rating_count) . ' reviews)' : '-';
                         ?>
-                        <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 16px">
+                        <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 16px"
+                            data-compatible-sockets="<?php echo esc_attr(implode(',', $compatible_sockets)); ?>">
                             <td style="font-weight:800; padding:10px; display:flex; align-items:center; gap:10px;" title="<?php echo $raw_title; ?>">
                                 <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>" style="width:125px; height:125px; object-fit:cover; border-radius:4px;" />
                                 <?php echo $title; ?>
                             </td>
                             <td style="padding:10px;"><?php echo esc_html($fan_rpm); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($noise_level); ?></td>
-                            <td style="padding:10px;">
-                                <?php echo ($radiator !== '-') ? esc_html($radiator) . ' mm' : '-'; ?>
-                            </td>
+                            <td style="padding:10px;"><?php echo ($radiator !== '-') ? esc_html($radiator) . ' mm' : '-'; ?></td>
                             <td style="padding:10px;"><?php echo esc_html($rating_display); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
@@ -157,6 +143,8 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                                     data-category="<?php echo esc_attr($category); ?>"
                                     data-affiliate-url="<?php echo esc_url($product_url); ?>"
                                     data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+                                    data-rating="<?php echo isset($rating_display) ? esc_attr($rating_display) : ''; ?>"
+                                    data-socket="<?php echo isset($socket) ? esc_attr($socket) : ''; ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                     <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
                                 </button>
@@ -166,7 +154,6 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                     </tbody>
                 </table>
 
-                <!-- Pagination UI -->
                 <?php if ($total_pages > 1): ?>
                     <div style="margin-top: 20px; text-align: center;">
                         <?php for ($i = 1; $i <= $total_pages; $i++):
@@ -185,7 +172,130 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
         </div>
     </div>
 
-    <script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const selectedCpuSocket = localStorage.getItem('selected_cpu_socket');
+        console.log(selectedCpuSocket);
+
+        const pcbuild_cooler = localStorage.getItem('pcbuild_cooler');
+        console.log(pcbuild_cooler);
+
+        /* const pcbuild_motherboard = localStorage.getItem('pcbuild_motherboard');
+        console.log(pcbuild_motherboard);
+
+        const pcbuild_memory = localStorage.getItem('pcbuild_memory');
+        console.log(pcbuild_memory);
+
+        const pcbuild_storage = localStorage.getItem('pcbuild_storage');
+        console.log(pcbuild_storage);
+
+        const pcbuild_gpu = localStorage.getItem('pcbuild_gpu');
+        console.log(pcbuild_gpu);
+
+        const pcbuild_case = localStorage.getItem('pcbuild_case');
+        console.log(pcbuild_case);
+
+        const pcbuild_psu = localStorage.getItem('pcbuild_psu');
+        console.log(pcbuild_psu);
+
+        const pcbuild_os = localStorage.getItem('pcbuild_os');
+        console.log(selectedCpuSocket);
+
+        const pcbuild_monitor = localStorage.getItem('pcbuild_monitor');
+        console.log(pcbuild_monitor); */
+
+        const compatibilityToggle = document.createElement('div');
+        compatibilityToggle.innerHTML = `
+            <div style="margin-bottom:20px;">
+                <label>
+                    <input type="checkbox" id="compatibility-toggle" checked /> 
+                    Compatibility Filter
+                </label>
+            </div>
+        `;
+        document.querySelector('.pcbuild-sidebar > div:first-child').after(compatibilityToggle);
+
+        const noticeElement = document.createElement('div');
+        noticeElement.id = 'compatibility-notice';
+        noticeElement.style.display = 'none';
+        noticeElement.style.marginBottom = '20px';
+        noticeElement.style.padding = '10px';
+        noticeElement.style.background = '#fff8e1';
+        noticeElement.style.borderLeft = '4px solid #ffc107';
+        noticeElement.innerHTML = '<strong>Compatibility Filter Active:</strong> <span id="compatibility-message"></span>';
+        compatibilityToggle.after(noticeElement);
+
+        filterCompatibleCoolers();
+
+        document.getElementById('compatibility-toggle').addEventListener('change', function () {
+            localStorage.setItem('cooler_compatibility_filter', this.checked ? 'on' : 'off');
+            filterCompatibleCoolers();
+        });
+
+        // Delay to allow content to fully load before striping
+        setTimeout(() => applyZebraStriping(), 50);
+    });
+
+    function filterCompatibleCoolers() {
+        const compatibilityEnabled = localStorage.getItem('cooler_compatibility_filter') !== 'off';
+        const noticeElement = document.getElementById('compatibility-notice');
+        const messageElement = document.getElementById('compatibility-message');
+        document.getElementById('compatibility-toggle').checked = compatibilityEnabled;
+
+        const allRows = document.querySelectorAll('#pcbuild-table tbody tr');
+
+        if (!compatibilityEnabled) {
+            noticeElement.style.display = 'none';
+            allRows.forEach(row => row.style.display = '');
+            applyZebraStriping(); // Apply to all visible rows
+            return;
+        }
+
+        const selectedCpuSocket = localStorage.getItem('selected_cpu_socket');
+        if (selectedCpuSocket) {
+            noticeElement.style.display = '';
+            messageElement.textContent = `Showing only coolers compatible with ${selectedCpuSocket} socket`;
+
+            let compatibleCount = 0;
+            allRows.forEach(row => {
+                const sockets = row.dataset.compatibleSockets?.toUpperCase().split(',') || [];
+                if (sockets.includes(selectedCpuSocket.toUpperCase()) || sockets.includes('ALL')) {
+                    row.style.display = '';
+                    compatibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            if (compatibleCount === 0) {
+                noticeElement.innerHTML = `
+                    <strong>No compatible coolers found!</strong>
+                    <p>We couldn't find any coolers compatible with your ${selectedCpuSocket} socket CPU.</p>
+                    <button onclick="document.getElementById('compatibility-toggle').click()" 
+                            style="padding:5px 10px; background:#f44336; color:white; border:none; cursor:pointer;">
+                        Show All Coolers Anyway
+                    </button>
+                `;
+            }
+
+            applyZebraStriping(); // Apply to visible rows
+        } else {
+            noticeElement.style.display = 'none';
+            allRows.forEach(row => row.style.display = '');
+            applyZebraStriping(); // Apply to all
+        }
+    }
+
+    function applyZebraStriping() {
+        const visibleRows = Array.from(document.querySelectorAll('#pcbuild-table tbody tr')).filter(row => row.style.display !== 'none');
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+        });
+    }
+</script>
+
+<script>
         // SORTING LOGIC
         document.addEventListener('DOMContentLoaded', () => {
             const table = document.getElementById("pcbuild-table");
@@ -319,6 +429,7 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
             filterByPrice();
         });
     </script>
+
     <?php
     return ob_get_clean();
 }

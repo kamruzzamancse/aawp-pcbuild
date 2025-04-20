@@ -8,7 +8,18 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
     ];
 
     $category = $category_map[$input_category] ?? 'Motherboard';
-    $products = aawp_pcbuild_get_products($category);
+    $transient_key = 'aawp_pcbuild_' . md5($category);
+
+    if (is_user_logged_in() && current_user_can('manage_options') && isset($_GET['clear_cache'])) {
+        delete_transient($transient_key);
+    }
+    
+    $products = get_transient($transient_key);
+
+    if ($products === false) {
+        $products = aawp_pcbuild_get_products($category);
+        set_transient($transient_key, $products, HOUR_IN_SECONDS);
+    }
 
     if (!is_array($products) || empty($products['SearchResult']['Items'])) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';
@@ -31,10 +42,10 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
         <div style="display:flex; gap:20px; margin-top:20px;">
             <div style="width:250px; background:#f9f9f9; padding:20px; border-radius:8px;">
                 <div style="margin-bottom:20px;"><strong>Part</strong> | <strong>List</strong></div>
-                <div style="margin-bottom:20px;"><label><input type="checkbox" checked disabled /> Compatibility Filter</label></div>
+                <div style="margin-bottom:20px;"><label><input type="checkbox" id="compatibility-filter" checked /> Compatibility Filter</label></div>
                 <div style="margin-bottom:20px;">
-                    <div>PARTS: <strong id="parts_count"></strong></div>
-                    <div>TOTAL: <strong id="parts_total_price"></strong></div>
+                    <div>PARTS: <strong id="parts_count">0</strong></div>
+                    <div>TOTAL: <strong id="parts_total_price">$0</strong></div>
                 </div>
                 <div style="margin-bottom:20px;">
                     <strong>PRICE</strong>
@@ -57,9 +68,9 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
             </div>
 
             <!-- Main Table Section -->
-            <div style="flex:1;">
+            <div id="motherboard-table-container" style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div style="font-weight:bold;"><?php echo $total_items; ?> Products</div>
+                    <div style="font-weight:bold;"><?php echo esc_html($total_items); ?> Products</div>
                     <div><input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc;" /></div>
                 </div>
 
@@ -125,14 +136,12 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
 
-                            // Extract values
                             preg_match('/(LGA\s?\d+|AM\d+)/i', $features_string, $socket_match);
                             preg_match('/(E-?ATX|Extended\s?ATX|XL-?ATX|Micro\s?-?ATX|Mini\s?-?ITX|mATX|ITX|ATX)/i', $features_string . ' ' . $full_title, $form_match);
                             preg_match('/(\d+\s?GB)/i', $features_string, $memory_max_match);
                             preg_match('/(\d+)\s?(x\s?)?(DIMM|DDR)/i', $features_string, $memory_slots_match);
                             preg_match('/(Black|White|Red|Blue|Silver|Gray|RGB)/i', $features_string, $color_match);
 
-                            // Assign values
                             $socket = $socket_match[1] ?? '-';
                             $form_factor = $form_match[1] ?? '-';
                             $memory_max = $memory_max_match[1] ?? '-';
@@ -335,36 +344,6 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
             filterByPrice();
         });
     </script>
-
-<script>
-/*     document.addEventListener("DOMContentLoaded", () => {
-        const selectedCpuSocket = localStorage.getItem('selected_cpu_socket');
-        if (!selectedCpuSocket) return; // No CPU selected yet, show all motherboards
-
-        const rows = document.querySelectorAll("#pcbuild-table tbody tr");
-        let compatibleCount = 0;
-
-        rows.forEach(row => {
-            const socketCell = row.querySelector("td:nth-child(2)"); // Socket column
-            if (socketCell && socketCell.textContent.trim().toUpperCase().includes(selectedCpuSocket.toUpperCase())) {
-                row.style.display = ""; // Show compatible
-                compatibleCount++;
-            } else {
-                row.style.display = "none"; // Hide incompatible
-            }
-        });
-
-        if (compatibleCount === 0) {
-            const table = document.getElementById("pcbuild-table");
-            const noMatchRow = document.createElement("tr");
-            noMatchRow.innerHTML = `<td colspan="9" style="text-align:center; padding:20px; background:#ffecec; color:#cc0000;">
-                No compatible motherboards found for CPU socket: <strong>${selectedCpuSocket}</strong>
-            </td>`;
-            table.querySelector("tbody").appendChild(noMatchRow);
-        }
-    }); */
-</script>
-
 
     <?php
     return ob_get_clean();

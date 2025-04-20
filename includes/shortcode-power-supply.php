@@ -9,7 +9,18 @@ function aawp_pcbuild_display_parts_ps($atts) {
     ];
 
     $category = $category_map[$input_category] ?? 'Power Supply';
-    $products = aawp_pcbuild_get_products($category);
+    $transient_key = 'aawp_pcbuild_' . md5($category);
+
+    if (is_user_logged_in() && current_user_can('manage_options') && isset($_GET['clear_cache'])) {
+        delete_transient($transient_key);
+    }
+    
+    $products = get_transient($transient_key);
+
+    if ($products === false) {
+        $products = aawp_pcbuild_get_products($category);
+        set_transient($transient_key, $products, HOUR_IN_SECONDS);
+    }
 
     if (!is_array($products) || empty($products['SearchResult']['Items'])) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';
