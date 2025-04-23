@@ -63,30 +63,6 @@ document.querySelectorAll(".add-to-builder").forEach(button => {
             case 'cpu cooler':
                 localStorage.setItem('pcbuild_cooler', JSON.stringify(productData.socket));
                 break;
-            case 'motherboard':
-                localStorage.setItem('pcbuild_motherboard', JSON.stringify(productData.socket));
-                break;
-            case 'memory':
-                localStorage.setItem('pcbuild_memory', JSON.stringify(productData.socket));
-                break;
-            case 'storage':
-                localStorage.setItem('pcbuild_storage', JSON.stringify(productData.socket));
-                break;
-            case 'video card':
-                localStorage.setItem('pcbuild_gpu', JSON.stringify(productData.socket));
-                break;
-            case 'case':
-                localStorage.setItem('pcbuild_case', JSON.stringify(productData.socket));
-                break;
-            case 'power supply':
-                localStorage.setItem('pcbuild_psu', JSON.stringify(productData.socket));
-                break;
-            case 'operating system':
-                localStorage.setItem('pcbuild_os', JSON.stringify(productData.socket));
-                break;
-            case 'monitor':
-                localStorage.setItem('pcbuild_monitor', JSON.stringify(productData.socket));
-                break;
             default:
                 break;
         }

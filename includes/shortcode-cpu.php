@@ -159,14 +159,33 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             preg_match('/(\d+(\.\d+)?)[ ]?GHz/i', $features_string, $base_match);
                             preg_match('/(?:Boost Clock|Max Boost|Turbo Clock|Turbo Frequency|up to)[^\d]*([\d\.]+)\s?GHz/i', $features_string, $boost_match);
                             preg_match('/Zen\s?[\d\.]+|Zen\s?[a-zA-Z]+/', $features_string, $arch_match);
-                            // Extract socket
-                            preg_match('/(LGA\s?\d{3,4}|AM\d+)/i', $combined_string, $socket_match);
-                            $socket = $socket_match[1] ?? '';
 
-                            // Extract chipset (if mentioned, usually only applies to motherboards, but some CPUs mention compatibility)
+
+                            // সর্বোত্তম ফলাফলের জন্য সবগুলো সোর্স চেক করা
+$socket = '-';
+$sources = [
+    $item['ItemInfo']['Features']['DisplayValues'] ?? [],
+    $item['ItemInfo']['ProductInfo'] ?? [],
+    $item['ItemInfo']['TechnicalInfo'] ?? []
+];
+
+foreach ($sources as $source) {
+    $text = is_array($source) ? implode(' ', $source) : $source;
+    
+    if (preg_match('/(Socket\s?(AM[0-9]+|LGA\s?[0-9]+)|AM[0-9]+|LGA\s?[0-9]+|sTRX4|TR4)/i', $text, $matches)) {
+        $socket = strtoupper(preg_replace(['/^Socket\s*/i', '/\s+/'], '', $matches[1] ?? $matches[0]));
+        break;
+    }
+}
+
+echo '<pre>';
+print_r($item['ItemInfo']['TechnicalInfo']);
+echo '</pre>';
+
+
+                            // Extract chipset
                             preg_match('/(?:X|B|A|Z|H)[0-9]{3}/i', $features_string, $chipset_match);
                             $chipset = $chipset_match[0] ?? '';
-
 
                             $core_count = $core_match[1] ?? '-';
                             $base_clock = $base_match[1] ?? '-';

@@ -178,33 +178,6 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
         const selectedCpuSocket = localStorage.getItem('selected_cpu_socket');
         console.log(selectedCpuSocket);
 
-        const pcbuild_cooler = localStorage.getItem('pcbuild_cooler');
-        console.log(pcbuild_cooler);
-
-        /* const pcbuild_motherboard = localStorage.getItem('pcbuild_motherboard');
-        console.log(pcbuild_motherboard);
-
-        const pcbuild_memory = localStorage.getItem('pcbuild_memory');
-        console.log(pcbuild_memory);
-
-        const pcbuild_storage = localStorage.getItem('pcbuild_storage');
-        console.log(pcbuild_storage);
-
-        const pcbuild_gpu = localStorage.getItem('pcbuild_gpu');
-        console.log(pcbuild_gpu);
-
-        const pcbuild_case = localStorage.getItem('pcbuild_case');
-        console.log(pcbuild_case);
-
-        const pcbuild_psu = localStorage.getItem('pcbuild_psu');
-        console.log(pcbuild_psu);
-
-        const pcbuild_os = localStorage.getItem('pcbuild_os');
-        console.log(selectedCpuSocket);
-
-        const pcbuild_monitor = localStorage.getItem('pcbuild_monitor');
-        console.log(pcbuild_monitor); */
-
         const compatibilityToggle = document.createElement('div');
         compatibilityToggle.innerHTML = `
             <div style="margin-bottom:20px;">
@@ -286,6 +259,61 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
             applyZebraStriping(); // Apply to all
         }
     }
+
+    /* function filterCompatibleCoolers() {
+        const compatibilityEnabled = localStorage.getItem('cooler_compatibility_filter') !== 'off';
+        const noticeElement = document.getElementById('compatibility-notice');
+        const messageElement = document.getElementById('compatibility-message');
+        document.getElementById('compatibility-toggle').checked = compatibilityEnabled;
+
+        const allRows = document.querySelectorAll('#pcbuild-table tbody tr');
+
+        if (!compatibilityEnabled) {
+            noticeElement.style.display = 'none';
+            allRows.forEach(row => row.style.display = '');
+            applyZebraStriping();
+            return;
+        }
+
+        const selectedCpuSocket = localStorage.getItem('selected_cpu_socket');
+        if (selectedCpuSocket) {
+            noticeElement.style.display = '';
+            messageElement.textContent = `Showing only coolers compatible with ${selectedCpuSocket} socket`;
+
+            const normalizedSelected = selectedCpuSocket.replace(/\s+/g, '').toUpperCase();
+            let compatibleCount = 0;
+
+            allRows.forEach(row => {
+                const socketsRaw = row.dataset.compatibleSockets || '';
+                const normalizedSockets = socketsRaw.split(',').map(s => s.replace(/\s+/g, '').toUpperCase());
+
+                if (normalizedSockets.includes(normalizedSelected) || normalizedSockets.includes('ALL')) {
+                    row.style.display = '';
+                    compatibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            if (compatibleCount === 0) {
+                noticeElement.innerHTML = `
+                    <strong>No compatible coolers found!</strong>
+                    <p>We couldn't find any coolers compatible with your ${selectedCpuSocket} socket CPU.</p>
+                    <button onclick="document.getElementById('compatibility-toggle').click()" 
+                            style="padding:5px 10px; background:#f44336; color:white; border:none; cursor:pointer;">
+                        Show All Coolers Anyway
+                    </button>
+                `;
+            }
+
+            applyZebraStriping();
+        } else {
+            noticeElement.style.display = 'none';
+            allRows.forEach(row => row.style.display = '');
+            applyZebraStriping();
+        }
+    } */
+
 
     function applyZebraStriping() {
         const visibleRows = Array.from(document.querySelectorAll('#pcbuild-table tbody tr')).filter(row => row.style.display !== 'none');
