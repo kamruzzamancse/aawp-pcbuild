@@ -160,28 +160,31 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             preg_match('/(?:Boost Clock|Max Boost|Turbo Clock|Turbo Frequency|up to)[^\d]*([\d\.]+)\s?GHz/i', $features_string, $boost_match);
                             preg_match('/Zen\s?[\d\.]+|Zen\s?[a-zA-Z]+/', $features_string, $arch_match);
 
+                            // Replace your current socket detection with this:
+                            $socket = '-';
 
-                            // সর্বোত্তম ফলাফলের জন্য সবগুলো সোর্স চেক করা
-$socket = '-';
-$sources = [
-    $item['ItemInfo']['Features']['DisplayValues'] ?? [],
-    $item['ItemInfo']['ProductInfo'] ?? [],
-    $item['ItemInfo']['TechnicalInfo'] ?? []
-];
+                            // 1. Check TechnicalInfo first (most reliable)
+                            if (isset($item['ItemInfo']['TechnicalInfo']['DisplayValues'])) {
+                                foreach ($item['ItemInfo']['TechnicalInfo']['DisplayValues'] as $techInfo) {
+                                    if (preg_match('/(AM[0-9]+|LGA\s?[0-9]+|sTRX4|TR4|sWRX8)/i', $techInfo, $matches)) {
+                                        $socket = strtoupper(preg_replace('/^Socket\s*/i', '', $matches[0]));
+                                        break;
+                                    }
+                                }
+                            }
 
-foreach ($sources as $source) {
-    $text = is_array($source) ? implode(' ', $source) : $source;
-    
-    if (preg_match('/(Socket\s?(AM[0-9]+|LGA\s?[0-9]+)|AM[0-9]+|LGA\s?[0-9]+|sTRX4|TR4)/i', $text, $matches)) {
-        $socket = strtoupper(preg_replace(['/^Socket\s*/i', '/\s+/'], '', $matches[1] ?? $matches[0]));
-        break;
-    }
-}
+                            // 2. Fallback to Features
+                            if ($socket === '-' && !empty($features_string)) {
+                                preg_match('/(AM[0-9]+|LGA\s?[0-9]+|sTRX4|TR4|sWRX8)/i', $features_string, $matches);
+                                if (!empty($matches)) {
+                                    $socket = strtoupper(preg_replace('/^Socket\s*/i', '', $matches[0]));
+                                }
+                            }
 
-echo '<pre>';
-print_r($item['ItemInfo']['TechnicalInfo']);
-echo '</pre>';
-
+                            // 3. Final fallback
+                            if ($socket === '-' && !empty($product_url)) {
+                                // Consider parsing from URL if needed
+                            }
 
                             // Extract chipset
                             preg_match('/(?:X|B|A|Z|H)[0-9]{3}/i', $features_string, $chipset_match);
@@ -250,6 +253,38 @@ echo '</pre>';
             </div>
         </div>
     </div>
+
+    <script>
+jQuery(document).ready(function($) {
+    // AJAX দিয়ে সকেট তথ্য পাওয়ার ফাংশন
+    function fetchSocketInfo(asin) {
+        return $.ajax({
+            url: ajaxurl, // WordPress AJAX URL
+            type: 'POST',
+            data: {
+                action: 'get_cpu_socket',
+                asin: asin
+            },
+            dataType: 'json'
+        });
+    }
+
+    // বাটনে ক্লিক হ্যান্ডলার
+    $('.add-to-builder').on('click', function() {
+        var $button = $(this);
+        var asin = $button.data('asin');
+        
+        fetchSocketInfo(asin).done(function(response) {
+            if (response.success && response.socket) {
+                $button.data('socket', response.socket);
+                console.log("Socket info updated:", response.socket);
+                
+                // আপনার বাকি লজিক এখানে...
+            }
+        });
+    });
+});
+</script>
 
     <script>
         // SORTING LOGIC

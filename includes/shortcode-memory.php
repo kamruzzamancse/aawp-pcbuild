@@ -214,6 +214,8 @@ function aawp_pcbuild_display_parts_memory($atts) {
                                     data-category="<?php echo esc_attr($category); ?>"
                                     data-affiliate-url="<?php echo esc_url($product_url); ?>"
                                     data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+                                    data-ram_type="<?php echo esc_attr($ram_type_match[1] ?? ''); ?>"
+                                    data-ram_speed="<?php echo esc_attr($mhz_match[1] ?? ''); ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                     <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
                                 </button>

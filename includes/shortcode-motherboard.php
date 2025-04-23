@@ -141,12 +141,14 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
                             preg_match('/(\d+\s?GB)/i', $features_string, $memory_max_match);
                             preg_match('/(\d+)\s?(x\s?)?(DIMM|DDR)/i', $features_string, $memory_slots_match);
                             preg_match('/(Black|White|Red|Blue|Silver|Gray|RGB)/i', $features_string, $color_match);
+                            preg_match('/(B\d{3}|X\d{3}|Z\d{3}|H\d{3}|A\d{3})/i', $features_string, $chipset_match); // e.g., B550, X670
 
                             $socket = $socket_match[1] ?? '-';
                             $form_factor = $form_match[1] ?? '-';
                             $memory_max = $memory_max_match[1] ?? '-';
                             $memory_slots = $memory_slots_match[1] ?? '-';
                             $color = $color_match[1] ?? '-';
+                            $chipset = $chipset_match[1] ?? '-';
                             $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
                             $rating_count = $item['CustomerReviews']['Count'] ?? null;
                             $rating_display = ($rating !== null && $rating_count !== null) ? number_format($rating, 1) . ' / 5 (' . number_format($rating_count) . ' reviews)' : '-';
@@ -175,6 +177,8 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
                                     data-category="<?php echo esc_attr($category); ?>"
                                     data-affiliate-url="<?php echo esc_url($product_url); ?>"
                                     data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+                                    data-socket="<?php echo esc_attr($socket); ?>"
+                                    data-chipset="<?php echo esc_attr($chipset); ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                     <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
                                 </button>

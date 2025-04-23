@@ -260,61 +260,6 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
         }
     }
 
-    /* function filterCompatibleCoolers() {
-        const compatibilityEnabled = localStorage.getItem('cooler_compatibility_filter') !== 'off';
-        const noticeElement = document.getElementById('compatibility-notice');
-        const messageElement = document.getElementById('compatibility-message');
-        document.getElementById('compatibility-toggle').checked = compatibilityEnabled;
-
-        const allRows = document.querySelectorAll('#pcbuild-table tbody tr');
-
-        if (!compatibilityEnabled) {
-            noticeElement.style.display = 'none';
-            allRows.forEach(row => row.style.display = '');
-            applyZebraStriping();
-            return;
-        }
-
-        const selectedCpuSocket = localStorage.getItem('selected_cpu_socket');
-        if (selectedCpuSocket) {
-            noticeElement.style.display = '';
-            messageElement.textContent = `Showing only coolers compatible with ${selectedCpuSocket} socket`;
-
-            const normalizedSelected = selectedCpuSocket.replace(/\s+/g, '').toUpperCase();
-            let compatibleCount = 0;
-
-            allRows.forEach(row => {
-                const socketsRaw = row.dataset.compatibleSockets || '';
-                const normalizedSockets = socketsRaw.split(',').map(s => s.replace(/\s+/g, '').toUpperCase());
-
-                if (normalizedSockets.includes(normalizedSelected) || normalizedSockets.includes('ALL')) {
-                    row.style.display = '';
-                    compatibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            if (compatibleCount === 0) {
-                noticeElement.innerHTML = `
-                    <strong>No compatible coolers found!</strong>
-                    <p>We couldn't find any coolers compatible with your ${selectedCpuSocket} socket CPU.</p>
-                    <button onclick="document.getElementById('compatibility-toggle').click()" 
-                            style="padding:5px 10px; background:#f44336; color:white; border:none; cursor:pointer;">
-                        Show All Coolers Anyway
-                    </button>
-                `;
-            }
-
-            applyZebraStriping();
-        } else {
-            noticeElement.style.display = 'none';
-            allRows.forEach(row => row.style.display = '');
-            applyZebraStriping();
-        }
-    } */
-
-
     function applyZebraStriping() {
         const visibleRows = Array.from(document.querySelectorAll('#pcbuild-table tbody tr')).filter(row => row.style.display !== 'none');
         visibleRows.forEach((row, index) => {

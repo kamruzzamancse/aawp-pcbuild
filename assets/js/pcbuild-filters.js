@@ -61,7 +61,18 @@ document.querySelectorAll(".add-to-builder").forEach(button => {
                 localStorage.setItem('pcbuild_cpu', JSON.stringify(productData));
                 break;
             case 'cpu cooler':
-                localStorage.setItem('pcbuild_cooler', JSON.stringify(productData.socket));
+                localStorage.setItem('selected_cpu_cooler_socket', JSON.stringify(productData.socket));
+                break;
+            case 'motherboard':
+                localStorage.setItem('selected_motherboard_socket', productData.socket);
+                localStorage.setItem('selected_motherboard_chipset', productData.chipset);
+                localStorage.setItem('pcbuild_motherboard', JSON.stringify(productData));
+                break;
+            case 'memory':
+            case 'ram': // just in case you use either
+                localStorage.setItem('selected_ram_type', productData.ram_type);
+                localStorage.setItem('selected_ram_speed', productData.ram_speed);
+                localStorage.setItem('pcbuild_ram', JSON.stringify(productData));
                 break;
             default:
                 break;
