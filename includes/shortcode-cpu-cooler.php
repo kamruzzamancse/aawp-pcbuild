@@ -3,6 +3,24 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
     $atts = shortcode_atts(array('category' => 'CPU'), $atts);
     $input_category = sanitize_title($atts['category']);
 
+    /* $category_map = [
+        'cpu' => 'CPU',
+        'gpu' => 'Video Card',
+        'video-card' => 'Video Card',
+        'motherboard' => 'Motherboard',
+        'cpu-cooler' => 'CPU Cooler',
+        'power-supply' => 'Power Supply',
+        'ram' => 'Memory',
+        'memory' => 'Memory',
+        'storage' => 'Storage',
+        'case' => 'Case',
+        'pc-case' => 'Case',
+        'monitor' => 'Monitor',
+        'keyboard' => 'Keyboard',
+        'mouse' => 'Mouse',
+        'operating-system' => 'Operating System',
+    ]; */
+
     $category_map = [
         'cpu-cooler' => 'CPU Cooler',
     ];
@@ -49,17 +67,25 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                     <div>PARTS: <strong id="parts_count"></strong></div>
                     <div>TOTAL: <strong id="parts_total_price"></strong></div>
                 </div>
-                <div style="margin-bottom:20px;">
-                    <strong>PRICE</strong>
-                    <div id="price-slider" style="margin-top: 15px;"></div>
-                    <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
-                        <span id="price-min-label">$0</span>
-                        <span id="price-max-label">$0</span>
+                <div class="filter-group">
+                    <div class="filter-header">
+                        <strong>PRICE</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="price-filter" style="display: block;">
+                        <div id="price-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="price-min-label">$0</span>
+                            <span id="price-max-label">$0</span>
+                        </div>
                     </div>
                 </div>
-                <div style="margin-bottom: 20px;">
-                    <strong>RATING</strong>
-                    <div style="margin-top: 10px;" id="rating-filter">
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>RATING</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="rating-filter">
                         <label><input type="checkbox" name="rating" value="all" checked /> All</label><br/>
                         <label><input type="checkbox" name="rating" value="5" /> <span style="color: orange;">★★★★★</span></label><br/>
                         <label><input type="checkbox" name="rating" value="4" /> <span style="color: orange;">★★★★☆</span></label><br/>
@@ -103,6 +129,7 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             $product_url = $item['DetailPageURL'] ?? '#';
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
+                            $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
 
                             // Extract values
                             preg_match('/(\d{3,4})\s?RPM/i', $features_string, $rpm_match);
@@ -145,6 +172,7 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                                     data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
                                     data-rating="<?php echo isset($rating_display) ? esc_attr($rating_display) : ''; ?>"
                                     data-socket="<?php echo isset($socket) ? esc_attr($socket) : ''; ?>"
+                                    data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                     <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
                                 </button>
@@ -364,8 +392,8 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
             maxLabel.textContent = `$${maxPrice}`;
 
             sliderContainer.innerHTML = `
-                <input type="range" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
-                <input type="range" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
+                <input type="range" class="min-range-bg" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
+                <input type="range" class="max-range-bg" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
             `;
 
             const minSlider = document.getElementById("min-price");

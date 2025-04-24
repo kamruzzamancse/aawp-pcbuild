@@ -26,18 +26,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
     ];
 
     $category = $category_map[$input_category] ?? 'CPU';
-    $transient_key = 'aawp_pcbuild_' . md5($category);
-
-    if (is_user_logged_in() && current_user_can('manage_options') && isset($_GET['clear_cache'])) {
-        delete_transient($transient_key);
-    }
-    
-    $products = get_transient($transient_key);
-
-    if ($products === false) {
-        $products = aawp_pcbuild_get_products($category);
-        set_transient($transient_key, $products, HOUR_IN_SECONDS);
-    }
+    $products = aawp_pcbuild_get_products($category);
 
     if (!is_array($products) || empty($products['SearchResult']['Items'])) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';
@@ -68,22 +57,105 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                     <div>TOTAL: <strong id="parts_total_price"></strong></div>
                 </div>
                 <!-- <div style="margin-bottom:20px;">ESTIMATED WATTAGE: <strong style="color:#007bff;">120W</strong></div> -->
-                <div style="margin-bottom:20px;">
-                    <strong>PRICE</strong>
-                    <div id="price-slider" style="margin-top: 15px;"></div>
-                    <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
-                        <span id="price-min-label">$0</span>
-                        <span id="price-max-label">$0</span>
+                <div class="filter-group">
+                    <div class="filter-header">
+                        <strong>PRICE</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="price-filter" style="display: block;">
+                        <div id="price-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="price-min-label">$0</span>
+                            <span id="price-max-label">$0</span>
+                        </div>
                     </div>
                 </div>
-                <div style="margin-bottom: 20px;">
-                    <strong>RATING</strong>
-                    <div style="margin-top: 10px;" id="rating-filter">
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <span class="filter-title">MANUFACTURER</span>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="manufacturer-options">
+                        <label><input type="checkbox" name="manufacturer" value="all" checked> All</label><br>
+                        <label><input type="checkbox" name="manufacturer" value="amd"> AMD</label><br>
+                        <label><input type="checkbox" name="manufacturer" value="intel"> Intel</label>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>RATING</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="rating-filter">
                         <label><input type="checkbox" name="rating" value="all" checked /> All</label><br/>
                         <label><input type="checkbox" name="rating" value="5" /> <span style="color: orange;">★★★★★</span></label><br/>
                         <label><input type="checkbox" name="rating" value="4" /> <span style="color: orange;">★★★★☆</span></label><br/>
                         <label><input type="checkbox" name="rating" value="3" /> <span style="color: orange;">★★★☆☆</span></label><br/>
                         <label><input type="checkbox" name="rating" value="unrated" /> Unrated</label>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>CORE COUNT</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="core-filter" style="display: block;">
+                        <div id="core-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="core-min-label">0</span>
+                            <span id="core-max-label">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>BASE CLOCK</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="base-clock-filter" style="display: block;">
+                        <div id="base-clock-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="base-clock-min-label">0</span>
+                            <span id="base-clock-max-label">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>BOOST CLOCK</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="boost-clock-filter" style="display: block;">
+                        <div id="boost-clock-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="boost-clock-min-label">0</span>
+                            <span id="boost-clock-max-label">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>MICROARCHITECTURE</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="microarchitecture-filter" style="display: block; flex-direction: column; gap: 4px; margin-top: 10px;">
+                        <!-- Dynamically generated checkboxes including "All" -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>SOCKET</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="socket-filter" style="display: block;"></div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top: 20px;">
+                    <div class="filter-header">
+                        <strong>SERIES</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="series-filter" style="display: block;">
+                        <!-- Filter options will be dynamically populated here -->
                     </div>
                 </div>
 
@@ -159,6 +231,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             preg_match('/(\d+(\.\d+)?)[ ]?GHz/i', $features_string, $base_match);
                             preg_match('/(?:Boost Clock|Max Boost|Turbo Clock|Turbo Frequency|up to)[^\d]*([\d\.]+)\s?GHz/i', $features_string, $boost_match);
                             preg_match('/Zen\s?[\d\.]+|Zen\s?[a-zA-Z]+/', $features_string, $arch_match);
+                            preg_match('/(AMD\s+(A6|A8|A10|A12|Athlon(?:\sII)?(?:\sX[2-4])?|E2-Series|EPYC|FX|Opteron|Phenom\sII\sX[2-6]|Ryzen\s[3-9](?:\sPRO)?|Sempron(?:\sX2)?|Threadripper)|Intel\s+(Celeron|Core\s(?:2\s(Duo|Extreme|Quad)|i[3-9]|i7\sExtreme|Core\sUltra\s[5-9])|Pentium(?:\sGold)?|Processor|Xeon\sE3?))/i', $features_string . ' ' . $full_title, $series_match);
 
                             // Replace your current socket detection with this:
                             $socket = '-';
@@ -194,6 +267,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             $base_clock = $base_match[1] ?? '-';
                             $boost_clock = $boost_match[1] ?? '-';
                             $microarch = $arch_match[0] ?? '-';
+                            $series = $series_match[0] ?? '-';
                             $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
                             $rating_count = $item['CustomerReviews']['Count'] ?? null;
                             $rating_display = ($rating !== null && $rating_count !== null) ? number_format($rating, 1) . ' / 5 (' . number_format($rating_count) . ' reviews)' : '-';
@@ -226,6 +300,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                                     data-rating="<?php echo isset($rating_display) ? esc_attr($rating_display) : ''; ?>"
                                     data-socket="<?php echo isset($socket) ? esc_attr($socket) : ''; ?>"
                                     data-chipset="<?php echo isset($chipset) ? esc_attr($chipset) : ''; ?>"
+                                    data-series="<?php echo isset($series) ? esc_attr($series) : ''; ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                     <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
                                 </button>
@@ -255,36 +330,604 @@ function aawp_pcbuild_display_parts_cpu($atts) {
     </div>
 
     <script>
-jQuery(document).ready(function($) {
-    // AJAX দিয়ে সকেট তথ্য পাওয়ার ফাংশন
-    function fetchSocketInfo(asin) {
-        return $.ajax({
-            url: ajaxurl, // WordPress AJAX URL
-            type: 'POST',
-            data: {
-                action: 'get_cpu_socket',
-                asin: asin
-            },
-            dataType: 'json'
+        document.addEventListener("DOMContentLoaded", function () {
+    const seriesFilterContainer = document.getElementById("series-filter");
+
+    // Dynamically generate the series filter checkboxes from buttons
+    const allSeries = [];
+    document.querySelectorAll('.add-to-builder').forEach(button => {
+        const series = button.getAttribute('data-series');
+        if (series && !allSeries.includes(series)) {
+            allSeries.push(series);  // Add unique series to the list
+        }
+    });
+
+    // Create the "All" checkbox first
+    const allCheckboxLabel = document.createElement("label");
+    const allCheckbox = document.createElement("input");
+    allCheckbox.type = "checkbox";
+    allCheckbox.className = "series-filter";
+    allCheckbox.value = "All";
+    allCheckbox.checked = true;  // Set "All" to be checked by default
+
+    allCheckboxLabel.appendChild(allCheckbox);
+    allCheckboxLabel.appendChild(document.createTextNode("All"));
+    allCheckboxLabel.style.display = "block";  // Ensure it appears on a new line
+
+    // Append the "All" checkbox to the container
+    seriesFilterContainer.appendChild(allCheckboxLabel);
+
+    // Create checkboxes for each unique series
+    allSeries.forEach(series => {
+        const label = document.createElement("label");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "series-filter";
+        checkbox.value = series;
+
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(series));
+        label.style.display = "block";  // Ensure each checkbox appears on a new line
+
+        // Append the generated label (with checkbox) to the container
+        seriesFilterContainer.appendChild(label);
+    });
+
+    // Function to filter the series
+    function filterBySeries() {
+        const selectedSeries = Array.from(document.querySelectorAll(".series-filter"))
+            .filter(filter => filter.checked && filter.value !== "All")
+            .map(filter => filter.value.toLowerCase());
+
+        const rows = Array.from(document.querySelectorAll("#pcbuild-table tbody tr"));
+
+        rows.forEach(row => {
+            const series = row.querySelector("button.add-to-builder")?.getAttribute("data-series")?.toLowerCase();
+            if (!selectedSeries.length || selectedSeries.includes(series)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
         });
     }
 
-    // বাটনে ক্লিক হ্যান্ডলার
-    $('.add-to-builder').on('click', function() {
-        var $button = $(this);
-        var asin = $button.data('asin');
-        
-        fetchSocketInfo(asin).done(function(response) {
-            if (response.success && response.socket) {
-                $button.data('socket', response.socket);
-                console.log("Socket info updated:", response.socket);
-                
-                // আপনার বাকি লজিক এখানে...
+    // Function to check/uncheck the "All" checkbox based on the individual checkboxes
+    function updateAllCheckboxState() {
+        const allCheckbox = document.querySelector("input[value='All']");
+        const seriesCheckboxes = document.querySelectorAll(".series-filter[value!='All']");
+        const totalCheckboxes = seriesCheckboxes.length;
+        const checkedCheckboxes = Array.from(seriesCheckboxes).filter(cb => cb.checked).length;
+
+        // If all checkboxes are checked, check "All" checkbox
+        if (checkedCheckboxes === totalCheckboxes) {
+            allCheckbox.checked = true;
+        } else {
+            allCheckbox.checked = false;
+        }
+    }
+
+    // Add event listeners to checkboxes for filtering
+    const seriesFilters = document.querySelectorAll(".series-filter");
+    seriesFilters.forEach(filter => {
+        filter.addEventListener("change", function () {
+            if (this.value === "All") {
+                // If "All" checkbox is checked/unchecked, toggle all other checkboxes
+                const allChecked = this.checked;
+                seriesFilters.forEach(cb => {
+                    if (cb.value !== "All") {
+                        cb.checked = allChecked;
+                    }
+                });
+            } else {
+                // Update the "All" checkbox state based on the selection of individual checkboxes
+                const allCheckbox = document.querySelector("input[value='All']");
+                allCheckbox.checked = false; // Uncheck "All" checkbox if any checkbox is unchecked
             }
+
+            filterBySeries();  // Apply the filter
+            updateAllCheckboxState();  // Update the "All" checkbox state based on individual checkbox status
         });
     });
+
+    // Initial filtering based on default selection
+    filterBySeries();
 });
+
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const table = document.getElementById("pcbuild-table");
+            const filterContainer = document.getElementById("socket-filter");
+
+            if (!table || !filterContainer) return;
+
+            const rows = Array.from(table.querySelectorAll("tbody tr"));
+            const socketSet = new Set();
+
+            // Extract unique socket values from data attributes in the "Add to Builder" buttons
+            rows.forEach(row => {
+                const btn = row.querySelector(".add-to-builder");
+                const socket = btn?.getAttribute("data-socket")?.trim();
+                if (socket) socketSet.add(socket);
+            });
+
+            const socketList = Array.from(socketSet).sort();
+
+            // Add the "All" checkbox
+            const allCheckboxWrapper = document.createElement("label");
+            allCheckboxWrapper.style.display = "block";
+            allCheckboxWrapper.innerHTML = `
+                <input type="checkbox" class="socket-checkbox" value="all" checked>
+                All
+            `;
+            filterContainer.appendChild(allCheckboxWrapper);
+
+            // Add checkboxes for each socket type
+            socketList.forEach(socket => {
+                const label = document.createElement("label");
+                label.style.display = "block";
+                label.innerHTML = `
+                    <input type="checkbox" class="socket-checkbox" value="${socket}">
+                    ${socket}
+                `;
+                filterContainer.appendChild(label);
+            });
+
+            const checkboxes = () => filterContainer.querySelectorAll(".socket-checkbox");
+            const allCheckbox = () => filterContainer.querySelector(".socket-checkbox[value='all']");
+
+            function filterBySocket() {
+                const selected = Array.from(checkboxes())
+                    .filter(cb => cb.checked && cb.value !== "all")
+                    .map(cb => cb.value);
+
+                if (allCheckbox().checked || selected.length === 0) {
+                    rows.forEach(row => row.style.display = "");
+                } else {
+                    rows.forEach(row => {
+                        const btn = row.querySelector(".add-to-builder");
+                        const socket = btn?.getAttribute("data-socket")?.trim();
+                        row.style.display = selected.includes(socket) ? "" : "none";
+                    });
+                }
+            }
+
+            filterContainer.addEventListener("change", function (e) {
+                const target = e.target;
+
+                if (target.value === "all") {
+                    if (target.checked) {
+                        checkboxes().forEach(cb => {
+                            if (cb.value !== "all") cb.checked = false;
+                        });
+                    }
+                } else {
+                    allCheckbox().checked = false;
+                }
+
+                filterBySocket();
+            });
+
+            filterBySocket(); // Apply filtering on load
+        });
+    </script>
+
+    <script>
+        // microarchitecture filtering
+        document.addEventListener("DOMContentLoaded", function () {
+            const table = document.getElementById("pcbuild-table");
+            const filterContainer = document.getElementById("microarchitecture-filter");
+
+            if (!table || !filterContainer) return;
+
+            const rows = Array.from(table.querySelectorAll("tbody tr"));
+            const microSet = new Set();
+
+            // Collect all unique microarchitectures
+            rows.forEach(row => {
+                const microText = row.querySelector("td:nth-child(5)")?.textContent.trim();
+                if (microText) microSet.add(microText);
+            });
+
+            const microList = Array.from(microSet).sort();
+
+            // Create "All" checkbox
+            const allCheckboxWrapper = document.createElement("label");
+            allCheckboxWrapper.style.display = "block";
+            allCheckboxWrapper.innerHTML = `
+                <input type="checkbox" class="micro-checkbox" value="all" checked>
+                All
+            `;
+            filterContainer.appendChild(allCheckboxWrapper);
+
+            // Create individual checkboxes
+            microList.forEach(micro => {
+                const id = `micro-${micro.replace(/\s+/g, '-').toLowerCase()}`;
+                const label = document.createElement("label");
+                label.style.display = "block";
+                label.innerHTML = `
+                    <input type="checkbox" class="micro-checkbox" value="${micro}">
+                    ${micro}
+                `;
+                filterContainer.appendChild(label);
+            });
+
+            const checkboxes = () => filterContainer.querySelectorAll(".micro-checkbox");
+            const allCheckbox = () => filterContainer.querySelector(".micro-checkbox[value='all']");
+
+            function filterByMicro() {
+                const selected = Array.from(checkboxes())
+                    .filter(cb => cb.checked && cb.value !== "all")
+                    .map(cb => cb.value);
+
+                if (allCheckbox().checked || selected.length === 0) {
+                    rows.forEach(row => row.style.display = "");
+                } else {
+                    rows.forEach(row => {
+                        const microText = row.querySelector("td:nth-child(5)")?.textContent.trim();
+                        row.style.display = selected.includes(microText) ? "" : "none";
+                    });
+                }
+            }
+
+            filterContainer.addEventListener("change", function (e) {
+                const target = e.target;
+
+                if (target.value === "all") {
+                    if (target.checked) {
+                        // Uncheck all others
+                        checkboxes().forEach(cb => {
+                            if (cb.value !== "all") cb.checked = false;
+                        });
+                    }
+                } else {
+                    allCheckbox().checked = false;
+                }
+
+                filterByMicro();
+            });
+
+            // Initial filter
+            filterByMicro();
+        });
+    </script>
+
+    <script>
+        // BOOST CLOCK RANGE SLIDER FILTER
+        document.addEventListener("DOMContentLoaded", function () {
+            const table = document.getElementById("pcbuild-table");
+            const sliderContainer = document.getElementById("boost-clock-slider");
+            const minLabel = document.getElementById("boost-clock-min-label");
+            const maxLabel = document.getElementById("boost-clock-max-label");
+
+            if (!table || !sliderContainer) return;
+
+            const rows = Array.from(table.querySelectorAll("tbody tr"));
+            const boostClocks = rows.map(row => {
+                const clockText = row.querySelector("td:nth-child(4)")?.textContent.replace(/[^\d.]/g, '') || "0";
+                return parseFloat(clockText) || 0;
+            });
+
+            const minClock = Math.floor(Math.min(...boostClocks));
+            const maxClock = Math.ceil(Math.max(...boostClocks));
+            let currentMin = minClock;
+            let currentMax = maxClock;
+
+            // Set default labels
+            minLabel.textContent = `${minClock} GHz`;
+            maxLabel.textContent = `${maxClock} GHz`;
+
+            // Create 2 sliders
+            sliderContainer.innerHTML = `
+                <input type="range" class="min-range-bg" id="min-boost-clock" min="${minClock}" max="${maxClock}" value="${minClock}" step="0.1" style="width: 100%;">
+                <input type="range" class="max-range-bg" id="max-boost-clock" min="${minClock}" max="${maxClock}" value="${maxClock}" step="0.1" style="width: 100%; margin-top: 10px;">
+            `;
+
+            const minSlider = document.getElementById("min-boost-clock");
+            const maxSlider = document.getElementById("max-boost-clock");
+
+            function filterByBoostClock() {
+                const minVal = parseFloat(minSlider.value);
+                const maxVal = parseFloat(maxSlider.value);
+                currentMin = minVal;
+                currentMax = maxVal;
+
+                minLabel.textContent = `${minVal} GHz`;
+                maxLabel.textContent = `${maxVal} GHz`;
+
+                rows.forEach(row => {
+                    const clockText = row.querySelector("td:nth-child(4)")?.textContent.replace(/[^\d.]/g, '') || "0";
+                    const boostClock = parseFloat(clockText) || 0;
+
+                    row.style.display = (boostClock >= minVal && boostClock <= maxVal) ? "" : "none";
+                });
+            }
+
+            minSlider.addEventListener("input", () => {
+                if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+                    minSlider.value = maxSlider.value;
+                }
+                filterByBoostClock();
+            });
+
+            maxSlider.addEventListener("input", () => {
+                if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+                    maxSlider.value = minSlider.value;
+                }
+                filterByBoostClock();
+            });
+
+            // Initial filter apply
+            filterByBoostClock();
+        });
+    </script>
+
+    <script>
+    // BASE CLOCK RANGE SLIDER FILTER
+    document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("pcbuild-table");
+        const sliderContainer = document.getElementById("base-clock-slider");
+        const minLabel = document.getElementById("base-clock-min-label");
+        const maxLabel = document.getElementById("base-clock-max-label");
+
+        if (!table || !sliderContainer) return;
+
+        const rows = Array.from(table.querySelectorAll("tbody tr"));
+        const baseClocks = rows.map(row => {
+            const clockText = row.querySelector("td:nth-child(3)")?.textContent.replace(/[^\d.]/g, '') || "0";
+            return parseFloat(clockText) || 0;
+        });
+
+        const minClock = Math.floor(Math.min(...baseClocks));
+        const maxClock = Math.ceil(Math.max(...baseClocks));
+        let currentMin = minClock;
+        let currentMax = maxClock;
+
+        // Set default labels
+        minLabel.textContent = `${minClock} GHz`;
+        maxLabel.textContent = `${maxClock} GHz`;
+
+        // Create 2 sliders
+        sliderContainer.innerHTML = `
+            <input type="range" class="min-range-bg" id="min-base-clock" min="${minClock}" max="${maxClock}" value="${minClock}" step="0.1" style="width: 100%;">
+            <input type="range" class="max-range-bg" id="max-base-clock" min="${minClock}" max="${maxClock}" value="${maxClock}" step="0.1" style="width: 100%; margin-top: 10px;">
+        `;
+
+        const minSlider = document.getElementById("min-base-clock");
+        const maxSlider = document.getElementById("max-base-clock");
+
+        function filterByBaseClock() {
+            const minVal = parseFloat(minSlider.value);
+            const maxVal = parseFloat(maxSlider.value);
+            currentMin = minVal;
+            currentMax = maxVal;
+
+            minLabel.textContent = `${minVal} GHz`;
+            maxLabel.textContent = `${maxVal} GHz`;
+
+            rows.forEach(row => {
+                const clockText = row.querySelector("td:nth-child(3)")?.textContent.replace(/[^\d.]/g, '') || "0";
+                const baseClock = parseFloat(clockText) || 0;
+
+                row.style.display = (baseClock >= minVal && baseClock <= maxVal) ? "" : "none";
+            });
+        }
+
+        minSlider.addEventListener("input", () => {
+            if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+                minSlider.value = maxSlider.value;
+            }
+            filterByBaseClock();
+        });
+
+        maxSlider.addEventListener("input", () => {
+            if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+                maxSlider.value = minSlider.value;
+            }
+            filterByBaseClock();
+        });
+
+        // Initial filter apply
+        filterByBaseClock();
+    });
 </script>
+
+    <script>
+    // CORE COUNT RANGE SLIDER FILTER
+    document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("pcbuild-table");
+        const sliderContainer = document.getElementById("core-slider");
+        const minLabel = document.getElementById("core-min-label");
+        const maxLabel = document.getElementById("core-max-label");
+
+        if (!table || !sliderContainer) return;
+
+        const rows = Array.from(table.querySelectorAll("tbody tr"));
+        const coreCounts = rows.map(row => {
+            const coreText = row.querySelector("td:nth-child(2)")?.textContent.trim() || "0";
+            return parseInt(coreText) || 0;
+        });
+
+        const minCore = Math.min(...coreCounts);
+        const maxCore = Math.max(...coreCounts);
+        let currentMin = minCore;
+        let currentMax = maxCore;
+
+        // Set default labels
+        minLabel.textContent = `${minCore}`;
+        maxLabel.textContent = `${maxCore}`;
+
+        // Create 2 sliders
+        sliderContainer.innerHTML = `
+            <input type="range" class="min-range-bg" id="min-core" min="${minCore}" max="${maxCore}" value="${minCore}" step="1" style="width: 100%;">
+            <input type="range" class="max-range-bg" id="max-core" min="${minCore}" max="${maxCore}" value="${maxCore}" step="1" style="width: 100%; margin-top: 10px;">
+        `;
+
+        const minSlider = document.getElementById("min-core");
+        const maxSlider = document.getElementById("max-core");
+
+        function filterByCore() {
+            const minVal = parseInt(minSlider.value);
+            const maxVal = parseInt(maxSlider.value);
+            currentMin = minVal;
+            currentMax = maxVal;
+
+            minLabel.textContent = `${minVal}`;
+            maxLabel.textContent = `${maxVal}`;
+
+            rows.forEach(row => {
+                const coreText = row.querySelector("td:nth-child(2)")?.textContent.trim() || "0";
+                const coreCount = parseInt(coreText) || 0;
+
+                row.style.display = (coreCount >= minVal && coreCount <= maxVal) ? "" : "none";
+            });
+        }
+
+        minSlider.addEventListener("input", () => {
+            if (parseInt(minSlider.value) > parseInt(maxSlider.value)) {
+                minSlider.value = maxSlider.value;
+            }
+            filterByCore();
+        });
+
+        maxSlider.addEventListener("input", () => {
+            if (parseInt(maxSlider.value) < parseInt(minSlider.value)) {
+                maxSlider.value = minSlider.value;
+            }
+            filterByCore();
+        });
+
+        // Initial filter apply
+        filterByCore();
+    });
+</script>
+
+    <script>
+        //PRICE RANGE SLIDER FILTER
+        document.addEventListener("DOMContentLoaded", function () {
+            const table = document.getElementById("pcbuild-table");
+            const sliderContainer = document.getElementById("price-slider");
+            const minLabel = document.getElementById("price-min-label");
+            const maxLabel = document.getElementById("price-max-label");
+
+            if (!table || !sliderContainer) return;
+
+            const rows = Array.from(table.querySelectorAll("tbody tr"));
+            const prices = rows.map(row => {
+                const priceText = row.querySelector("td:nth-child(7)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+                return parseFloat(priceText) || 0;
+            });
+
+            const minPrice = Math.floor(Math.min(...prices));
+            const maxPrice = Math.ceil(Math.max(...prices));
+            let currentMin = minPrice;
+            let currentMax = maxPrice;
+
+            // Set default labels
+            minLabel.textContent = `$${minPrice}`;
+            maxLabel.textContent = `$${maxPrice}`;
+
+            // Create 2 sliders
+            sliderContainer.innerHTML = `
+                <input type="range" class="min-range-bg" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
+                <input type="range" class="max-range-bg" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
+            `;
+
+            const minSlider = document.getElementById("min-price");
+            const maxSlider = document.getElementById("max-price");
+
+            function filterByPrice() {
+                const minVal = parseFloat(minSlider.value);
+                const maxVal = parseFloat(maxSlider.value);
+                currentMin = minVal;
+                currentMax = maxVal;
+
+                minLabel.textContent = `$${minVal}`;
+                maxLabel.textContent = `$${maxVal}`;
+
+                rows.forEach(row => {
+                    const priceText = row.querySelector("td:nth-child(7)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+                    const price = parseFloat(priceText) || 0;
+
+                    row.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
+                });
+            }
+
+            minSlider.addEventListener("input", () => {
+                if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+                    minSlider.value = maxSlider.value;
+                }
+                filterByPrice();
+            });
+
+            maxSlider.addEventListener("input", () => {
+                if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+                    maxSlider.value = minSlider.value;
+                }
+                filterByPrice();
+            });
+
+            // Initial filter apply
+            filterByPrice();
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const table = document.getElementById('pcbuild-table');
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+            const manufacturerCheckboxes = document.querySelectorAll('#manufacturer-options input[type="checkbox"]');
+
+            function getSelectedManufacturers() {
+                const selected = [];
+                manufacturerCheckboxes.forEach(cb => {
+                    if (cb.checked && cb.value !== 'all') {
+                        selected.push(cb.value.toLowerCase());
+                    }
+                });
+            return selected;
+            }
+
+            function updateManufacturerFilter() {
+                const selected = getSelectedManufacturers();
+
+                rows.forEach(row => {
+                    const nameCell = row.querySelector('td');
+                    const nameText = nameCell ? nameCell.textContent.toLowerCase() : '';
+                    const isVisible = selected.length === 0 || selected.some(m => nameText.includes(m));
+                    row.style.display = isVisible ? '' : 'none';
+                });
+            }
+
+            // When "All" is checked, uncheck others and show all
+            manufacturerCheckboxes.forEach(cb => {
+                cb.addEventListener('change', function () {
+                    if (this.value === 'all') {
+                        if (this.checked) {
+                            manufacturerCheckboxes.forEach(other => {
+                                if (other !== this) other.checked = false;
+                            });
+                        }
+                    } else {
+                        document.querySelector('#manufacturer-options input[value="all"]').checked = false;
+                    }
+
+                    // If no manufacturer selected, default to showing all
+                    const anyChecked = Array.from(manufacturerCheckboxes).some(cb => cb.checked && cb.value !== 'all');
+                    if (!anyChecked) {
+                        document.querySelector('#manufacturer-options input[value="all"]').checked = true;
+                    }
+
+                    updateManufacturerFilter();
+                });
+            });
+
+            // Initial filter application
+            updateManufacturerFilter();
+        });
+    </script>
+
 
     <script>
         // SORTING LOGIC
@@ -354,76 +997,6 @@ jQuery(document).ready(function($) {
             }
         });
         
-    </script>
-
-    <!-- PRICE RANGE SLIDER FILTER -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const table = document.getElementById("pcbuild-table");
-            const sliderContainer = document.getElementById("price-slider");
-            const minLabel = document.getElementById("price-min-label");
-            const maxLabel = document.getElementById("price-max-label");
-
-            if (!table || !sliderContainer) return;
-
-            const rows = Array.from(table.querySelectorAll("tbody tr"));
-            const prices = rows.map(row => {
-                const priceText = row.querySelector("td:nth-child(7)")?.textContent.replace(/[^0-9.]/g, '') || "0";
-                return parseFloat(priceText) || 0;
-            });
-
-            const minPrice = Math.floor(Math.min(...prices));
-            const maxPrice = Math.ceil(Math.max(...prices));
-            let currentMin = minPrice;
-            let currentMax = maxPrice;
-
-            // Set default labels
-            minLabel.textContent = `$${minPrice}`;
-            maxLabel.textContent = `$${maxPrice}`;
-
-            // Create 2 sliders
-            sliderContainer.innerHTML = `
-                <input type="range" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
-                <input type="range" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
-            `;
-
-            const minSlider = document.getElementById("min-price");
-            const maxSlider = document.getElementById("max-price");
-
-            function filterByPrice() {
-                const minVal = parseFloat(minSlider.value);
-                const maxVal = parseFloat(maxSlider.value);
-                currentMin = minVal;
-                currentMax = maxVal;
-
-                minLabel.textContent = `$${minVal}`;
-                maxLabel.textContent = `$${maxVal}`;
-
-                rows.forEach(row => {
-                    const priceText = row.querySelector("td:nth-child(7)")?.textContent.replace(/[^0-9.]/g, '') || "0";
-                    const price = parseFloat(priceText) || 0;
-
-                    row.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
-                });
-            }
-
-            minSlider.addEventListener("input", () => {
-                if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
-                    minSlider.value = maxSlider.value;
-                }
-                filterByPrice();
-            });
-
-            maxSlider.addEventListener("input", () => {
-                if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
-                    maxSlider.value = minSlider.value;
-                }
-                filterByPrice();
-            });
-
-            // Initial filter apply
-            filterByPrice();
-        });
     </script>
     
     <?php

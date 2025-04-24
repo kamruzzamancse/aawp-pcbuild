@@ -1366,8 +1366,7 @@ button{
   padding: 10px !important;
 }
 
-#min-price,
-#max-price {
+.min-range-bg, .max-range-bg {
   background-color: #CCC;
 }
 
@@ -1380,4 +1379,41 @@ button{
 
 #rating-filter input[type="checkbox"] {
   transform: scale(1.1);
+}
+
+.filter-group {
+    background-color: #f9f9f9;
+    border-top: 1px solid #e5e7eb;
+    font-family: sans-serif;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 13px;
+    color: #111827;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.filter-toggle {
+    background: none;
+    border: none;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    color: #111827;
+}
+
+.filter-options label {
+    font-size: 14px;
+    color: #111827;
+    cursor: pointer;
+}
+
+.filter-options input[type="checkbox"] {
+    margin-right: 6px;
+    accent-color: #2563eb; /* Blue check */
 }

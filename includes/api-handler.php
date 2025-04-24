@@ -39,17 +39,6 @@ function aawp_pcbuild_get_products($category) {
             'Keywords'     => $search_data['keywords'],
             'SearchIndex'  => $search_data['search_index'],
             'ItemPage'     => $page,
-            /* 'Resources'    => [
-                'Images.Primary.Large',
-                'ItemInfo.Title',
-                'Offers.Listings.Price',
-                'Offers.Listings.DeliveryInfo.IsFreeShippingEligible',
-                'Offers.Listings.Promotions',
-                'Offers.Listings.Availability.Message',
-                'CustomerReviews.Count',
-                'CustomerReviews.StarRating',
-                'ItemInfo.Features',
-            ], */
             'Resources' => [
                 'Images.Primary.Large',
                 'ItemInfo.Title',

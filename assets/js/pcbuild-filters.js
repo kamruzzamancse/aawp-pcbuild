@@ -130,3 +130,23 @@ if (ratingFilter) {
         });
     });
 }
+
+//MANUFATURER FILTER CHECKBOX
+document.addEventListener('DOMContentLoaded', function () {
+    const toggles = document.querySelectorAll('.filter-toggle');
+
+    toggles.forEach(toggle => {
+        toggle.addEventListener('click', function () {
+            const filterGroup = this.closest('.filter-group');
+            const options = filterGroup.querySelector('.filter-options');
+
+            if (options.style.display === 'none') {
+                options.style.display = 'block';
+                this.textContent = '−'; // minus sign
+            } else {
+                options.style.display = 'none';
+                this.textContent = '+'; // plus sign
+            }
+        });
+    });
+});

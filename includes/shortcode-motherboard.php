@@ -25,6 +25,7 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';
     }
 
+    // Pagination
     $all_items = $products['SearchResult']['Items'];
     $total_items = count($all_items);
     $items_per_page = 25;
@@ -305,8 +306,8 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
 
             // Create 2 sliders
             sliderContainer.innerHTML = `
-                <input type="range" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
-                <input type="range" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
+                <input type="range" class="min-range-bg" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
+                <input type="range" class="max-range-bg" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
             `;
 
             const minSlider = document.getElementById("min-price");
