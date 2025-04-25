@@ -67,6 +67,16 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                 </div>
                 <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
                     <div class="filter-header">
+                        <strong>MANUFACTURER</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="manufacturer-filter">
+                        <label><input type="checkbox" id="manufacturer-all" checked> All</label><br/>
+                        <!-- Checkboxes will be inserted here by JS -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
                         <strong>RATING</strong>
                         <button class="filter-toggle">−</button>
                     </div>
@@ -78,6 +88,31 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                         <label><input type="checkbox" name="rating" value="unrated" /> Unrated</label>
                     </div>
                 </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>COLOR</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="color-filter">
+                        <label><input type="checkbox" id="color-all" checked> All</label><br/>
+                        <!-- Checkboxes for colors will be inserted here by JS -->
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-header">
+                        <strong>HEIGHT</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="height-filter" style="display: block;">
+                        <div id="height-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="height-min-label">0 mm</span>
+                            <span id="height-max-label">0 mm</span>
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
 
             <!-- Main Section -->
@@ -115,6 +150,17 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
+                            $color = $item['ItemInfo']['ProductInfo']['Color']['DisplayValue'] ?? '';
+                            // Get height and convert to mm (assuming it's in inches by default)
+                            $height_in = $item['ItemInfo']['ProductInfo']['ItemDimensions']['Height']['DisplayValue'] ?? '';
+                            $height_unit = $item['ItemInfo']['ProductInfo']['ItemDimensions']['Height']['Unit'] ?? '';
+                            $height_mm = '';
+
+                            if ($height_in !== '' && strtolower($height_unit) === 'inches') {
+                                $height_mm = round(floatval($height_in) * 25.4, 1); // Convert inches to mm
+                            } elseif ($height_in !== '' && strtolower($height_unit) === 'millimeters') {
+                                $height_mm = floatval($height_in);
+                            }
 
                             // Extract values
                             preg_match('/(\d{3,4})\s?RPM/i', $features_string, $rpm_match);
@@ -158,6 +204,8 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                                     data-rating="<?php echo isset($rating_display) ? esc_attr($rating_display) : ''; ?>"
                                     data-socket="<?php echo isset($socket) ? esc_attr($socket) : ''; ?>"
                                     data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
+                                    data-color="<?php echo esc_attr($color); ?>"
+                                    data-height="<?php echo esc_attr($height_mm); ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                     <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
                                 </button>
@@ -184,6 +232,372 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
             </div>
         </div>
     </div>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Get the table and the slider container
+    const table = document.getElementById("pcbuild-table");
+    const sliderContainer = document.getElementById("height-slider");
+    const minLabel = document.getElementById("height-min-label");
+    const maxLabel = document.getElementById("height-max-label");
+
+    if (!table || !sliderContainer) return;
+
+    // Get the rows and extract the height values from the data-height attribute
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+    const heights = rows.map(row => parseFloat(row.dataset.height) || 0);
+
+    // Get the minimum and maximum height values
+    const minHeight = Math.floor(Math.min(...heights));
+    const maxHeight = Math.ceil(Math.max(...heights));
+
+    let currentMin = minHeight;
+    let currentMax = maxHeight;
+
+    // Update the labels with the minimum and maximum heights
+    minLabel.textContent = `${minHeight} mm`;
+    maxLabel.textContent = `${maxHeight} mm`;
+
+    // Create the height sliders dynamically
+    sliderContainer.innerHTML = `
+        <input type="range" class="min-range-bg" id="min-height" min="${minHeight}" max="${maxHeight}" value="${minHeight}" step="1" style="width: 100%;">
+        <input type="range" class="max-range-bg" id="max-height" min="${minHeight}" max="${maxHeight}" value="${maxHeight}" step="1" style="width: 100%; margin-top: 10px;">
+    `;
+
+    // Get the slider elements
+    const minSlider = document.getElementById("min-height");
+    const maxSlider = document.getElementById("max-height");
+
+    // Function to filter rows based on height range
+    function filterByHeight() {
+        const minVal = parseFloat(minSlider.value);
+        const maxVal = parseFloat(maxSlider.value);
+
+        // Update the labels with the current slider values
+        minLabel.textContent = `${minVal} mm`;
+        maxLabel.textContent = `${maxVal} mm`;
+
+        // Filter the rows based on height
+        rows.forEach(row => {
+            const height = parseFloat(row.dataset.height) || 0;
+            const show = height >= minVal && height <= maxVal;
+
+            // Show or hide the row based on the height range
+            if (row.style.display !== "none") {
+                row.style.display = show ? "" : "none";
+            }
+        });
+    }
+
+    // Event listeners for when the slider values change
+    minSlider.addEventListener("input", () => {
+        if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+            minSlider.value = maxSlider.value; // Ensure min value doesn't exceed max
+        }
+        filterByHeight();
+    });
+
+    maxSlider.addEventListener("input", () => {
+        if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+            maxSlider.value = minSlider.value; // Ensure max value doesn't go below min
+        }
+        filterByHeight();
+    });
+
+    // Initialize the filter
+    filterByHeight();
+});
+
+</script>
+
+
+<!-- PRICE RANGE SLIDER FILTER -->
+<script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const table = document.getElementById("pcbuild-table");
+            const sliderContainer = document.getElementById("price-slider");
+            const minLabel = document.getElementById("price-min-label");
+            const maxLabel = document.getElementById("price-max-label");
+
+            if (!table || !sliderContainer) return;
+
+            const rows = Array.from(table.querySelectorAll("tbody tr"));
+            const prices = rows.map(row => {
+                const priceText = row.querySelector("td:nth-child(6)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+                return parseFloat(priceText) || 0;
+            });
+
+            const minPrice = Math.floor(Math.min(...prices));
+            const maxPrice = Math.ceil(Math.max(...prices));
+            let currentMin = minPrice;
+            let currentMax = maxPrice;
+
+            minLabel.textContent = `$${minPrice}`;
+            maxLabel.textContent = `$${maxPrice}`;
+
+            sliderContainer.innerHTML = `
+                <input type="range" class="min-range-bg" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
+                <input type="range" class="max-range-bg" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
+            `;
+
+            const minSlider = document.getElementById("min-price");
+            const maxSlider = document.getElementById("max-price");
+
+            function filterByPrice() {
+                const minVal = parseFloat(minSlider.value);
+                const maxVal = parseFloat(maxSlider.value);
+
+                minLabel.textContent = `$${minVal}`;
+                maxLabel.textContent = `$${maxVal}`;
+
+                rows.forEach(row => {
+                    const priceText = row.querySelector("td:nth-child(6)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+                    const price = parseFloat(priceText) || 0;
+                    row.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
+                });
+            }
+
+            minSlider.addEventListener("input", () => {
+                if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+                    minSlider.value = maxSlider.value;
+                }
+                filterByPrice();
+            });
+
+            maxSlider.addEventListener("input", () => {
+                if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+                    maxSlider.value = minSlider.value;
+                }
+                filterByPrice();
+            });
+
+            filterByPrice();
+        });
+    </script>
+
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const colorFilterContainer = document.getElementById("color-filter");
+    const colorSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Normalize function (e.g., "BLACK", "black" -> "Black")
+    function normalizeColor(color) {
+        return color.charAt(0).toUpperCase() + color.slice(1).toLowerCase();
+    }
+
+    // Collect unique normalized colors
+    tableRows.forEach(row => {
+        let rawColor = row.querySelector("button.add-to-builder")?.dataset.color || "Unknown";
+        let normalizedColor = normalizeColor(rawColor);
+        row.querySelector("button.add-to-builder").dataset.colorNormalized = normalizedColor;
+        colorSet.add(normalizedColor);
+    });
+
+    // Prepare color checkboxes
+    const colors = Array.from(colorSet).sort();
+    const colorCheckboxElements = [];
+    colors.forEach(color => {
+        const label = document.createElement("label");
+        label.innerHTML = `<input type="checkbox" name="color" value="${color}" checked> ${color}`;
+        label.style.display = 'block';
+        colorCheckboxElements.push(label);
+    });
+
+    // Append color checkboxes to container
+    colorCheckboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) {
+            el.style.display = 'none';
+        }
+        colorFilterContainer.appendChild(el);
+    });
+
+    // Add Show more / Show less link
+    const colorToggleLink = document.createElement("a");
+    colorToggleLink.href = "#";
+    colorToggleLink.textContent = "Show more";
+    colorToggleLink.style.display = (colorCheckboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
+    colorToggleLink.style.marginTop = "5px";
+    colorToggleLink.style.fontSize = "14px";
+    colorToggleLink.style.color = "#0066cc";
+    colorFilterContainer.appendChild(colorToggleLink);
+
+    // Zebra stripe function
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    const allColorCheckbox = document.getElementById("color-all");
+
+    function updateAllColorCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='color']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allColorCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyColorFilter() {
+        const selectedColors = Array.from(document.querySelectorAll("input[name='color']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const color = row.querySelector("button.add-to-builder")?.dataset.colorNormalized;
+            const show = selectedColors.includes(color);
+            row.style.display = show ? "" : "none";
+        });
+
+        updateAllColorCheckboxState();
+        applyZebraStriping();
+    }
+
+    // Toggle "All"
+    allColorCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='color']");
+        allBoxes.forEach(cb => cb.checked = allColorCheckbox.checked);
+        applyColorFilter();
+    });
+
+    // Individual checkbox change
+    colorFilterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "color") {
+            applyColorFilter();
+        }
+    });
+
+    // Show more/less logic
+    colorToggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+
+        colorCheckboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) {
+                el.style.display = expanded ? "block" : "none";
+            }
+        });
+
+        colorToggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial apply
+    applyColorFilter();
+});
+</script>
+
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("manufacturer-filter");
+    const manufacturerSet = new Set();
+
+    const VISIBLE_COUNT = 4; // How many manufacturers to show initially
+    let expanded = false;
+
+    // Collect unique manufacturers
+    tableRows.forEach(row => {
+        const manufacturer = row.querySelector("button.add-to-builder")?.dataset.manufacturer || "Unknown";
+        manufacturerSet.add(manufacturer);
+    });
+
+    // Prepare checkboxes
+    const manufacturers = Array.from(manufacturerSet).sort(); // Sort alphabetically
+    const checkboxElements = [];
+
+    manufacturers.forEach(manufacturer => {
+        const label = document.createElement("label");
+        label.innerHTML = `<input type="checkbox" name="manufacturer" value="${manufacturer}" checked> ${manufacturer}`;
+        label.style.display = 'block'; // Ensure each on its own line
+        checkboxElements.push(label);
+    });
+
+    // Append checkboxes to container
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) {
+            el.style.display = 'none';
+        }
+        filterContainer.appendChild(el);
+    });
+
+    // Add Show more / Show less link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Zebra stripe function
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    const allCheckbox = document.getElementById("manufacturer-all");
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='manufacturer']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyManufacturerFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='manufacturer']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const manufacturer = row.querySelector("button.add-to-builder")?.dataset.manufacturer;
+            const show = selected.includes(manufacturer);
+            row.style.display = show ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // Toggle "All"
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='manufacturer']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyManufacturerFilter();
+    });
+
+    // Individual checkbox change
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "manufacturer") {
+            applyManufacturerFilter();
+        }
+    });
+
+    // Show more/less logic
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) {
+                el.style.display = expanded ? "block" : "none";
+            }
+        });
+
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial apply
+    applyManufacturerFilter();
+});
+</script>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -349,70 +763,6 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                 };
                 return mapping[key];
             }
-        });
-    </script>
-
-    <!-- PRICE RANGE SLIDER FILTER -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const table = document.getElementById("pcbuild-table");
-            const sliderContainer = document.getElementById("price-slider");
-            const minLabel = document.getElementById("price-min-label");
-            const maxLabel = document.getElementById("price-max-label");
-
-            if (!table || !sliderContainer) return;
-
-            const rows = Array.from(table.querySelectorAll("tbody tr"));
-            const prices = rows.map(row => {
-                const priceText = row.querySelector("td:nth-child(6)")?.textContent.replace(/[^0-9.]/g, '') || "0";
-                return parseFloat(priceText) || 0;
-            });
-
-            const minPrice = Math.floor(Math.min(...prices));
-            const maxPrice = Math.ceil(Math.max(...prices));
-            let currentMin = minPrice;
-            let currentMax = maxPrice;
-
-            minLabel.textContent = `$${minPrice}`;
-            maxLabel.textContent = `$${maxPrice}`;
-
-            sliderContainer.innerHTML = `
-                <input type="range" class="min-range-bg" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
-                <input type="range" class="max-range-bg" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
-            `;
-
-            const minSlider = document.getElementById("min-price");
-            const maxSlider = document.getElementById("max-price");
-
-            function filterByPrice() {
-                const minVal = parseFloat(minSlider.value);
-                const maxVal = parseFloat(maxSlider.value);
-
-                minLabel.textContent = `$${minVal}`;
-                maxLabel.textContent = `$${maxVal}`;
-
-                rows.forEach(row => {
-                    const priceText = row.querySelector("td:nth-child(6)")?.textContent.replace(/[^0-9.]/g, '') || "0";
-                    const price = parseFloat(priceText) || 0;
-                    row.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
-                });
-            }
-
-            minSlider.addEventListener("input", () => {
-                if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
-                    minSlider.value = maxSlider.value;
-                }
-                filterByPrice();
-            });
-
-            maxSlider.addEventListener("input", () => {
-                if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
-                    maxSlider.value = minSlider.value;
-                }
-                filterByPrice();
-            });
-
-            filterByPrice();
         });
     </script>
 

@@ -32,6 +32,12 @@ function aawp_pcbuild_display_parts_cpu($atts) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';
     }
 
+    add_action('init', function() {
+        global $wpdb;
+        $wpdb->query("DELETE FROM $wpdb->options WHERE option_name LIKE '_transient_aawp_pcbuild_%' OR option_name LIKE '_transient_timeout_aawp_pcbuild_%'");
+    });
+    
+
     // Pagination setup
     $all_items = $products['SearchResult']['Items'];
     $total_items = count($all_items);
@@ -43,6 +49,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
 
     ob_start();
     ?>
+
     <div style="background-color:#41466c; padding:20px; color:#fff; font-size:24px; font-weight:bold; text-align:center; margin-bottom:40px">
         Choose A <?php echo esc_html($category); ?>
     </div>
