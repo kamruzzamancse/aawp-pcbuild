@@ -3,30 +3,13 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
     $atts = shortcode_atts(array('category' => 'CPU'), $atts);
     $input_category = sanitize_title($atts['category']);
 
-    /* $category_map = [
-        'cpu' => 'CPU',
-        'gpu' => 'Video Card',
-        'video-card' => 'Video Card',
-        'motherboard' => 'Motherboard',
-        'cpu-cooler' => 'CPU Cooler',
-        'power-supply' => 'Power Supply',
-        'ram' => 'Memory',
-        'memory' => 'Memory',
-        'storage' => 'Storage',
-        'case' => 'Case',
-        'pc-case' => 'Case',
-        'monitor' => 'Monitor',
-        'keyboard' => 'Keyboard',
-        'mouse' => 'Mouse',
-        'operating-system' => 'Operating System',
-    ]; */
-
     $category_map = [
         'cpu-cooler' => 'CPU Cooler',
     ];
 
     $category = $category_map[$input_category] ?? 'CPU';
-    $transient_key = 'aawp_pcbuild_' . md5($category);
+    
+    /* $transient_key = 'aawp_pcbuild_' . md5($category);
 
     if (is_user_logged_in() && current_user_can('manage_options') && isset($_GET['clear_cache'])) {
         delete_transient($transient_key);
@@ -37,7 +20,9 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
     if ($products === false) {
         $products = aawp_pcbuild_get_products($category);
         set_transient($transient_key, $products, HOUR_IN_SECONDS);
-    }
+    } */
+
+    $products = aawp_pcbuild_get_products($category);
 
     if (!is_array($products) || empty($products['SearchResult']['Items'])) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';

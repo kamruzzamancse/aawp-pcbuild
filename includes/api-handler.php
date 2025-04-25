@@ -45,6 +45,7 @@ function aawp_pcbuild_get_products($category) {
                 'ItemInfo.Features',
                 'ItemInfo.ProductInfo',
                 'ItemInfo.TechnicalInfo',
+                "ItemInfo.ByLineInfo",
                 'Offers.Listings.Price',
                 'Offers.Listings.DeliveryInfo.IsFreeShippingEligible',
                 'Offers.Listings.Promotions',
