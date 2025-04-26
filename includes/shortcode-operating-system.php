@@ -9,23 +9,25 @@ function aawp_pcbuild_display_parts_os($atts) {
     ];
 
     $category = $category_map[$input_category] ?? 'Operating System';
-    
-    //for caching
-   /*  $transient_key = 'aawp_pcbuild_' . md5($category);
 
+    // Create transient key
+    $transient_key = 'aawp_pcbuild_cache_' . md5($category);
+
+    // Clear cache if admin and ?clear_cache=1 in URL
     if (is_user_logged_in() && current_user_can('manage_options') && isset($_GET['clear_cache'])) {
         delete_transient($transient_key);
     }
-    
+
+    // Try to get products from cache
     $products = get_transient($transient_key);
 
+    // If no cached products, fetch and cache them
     if ($products === false) {
         $products = aawp_pcbuild_get_products($category);
         set_transient($transient_key, $products, HOUR_IN_SECONDS);
-    } */
+    }
 
-    $products = aawp_pcbuild_get_products($category);
-
+    // If still no products, show error
     if (!is_array($products) || empty($products['SearchResult']['Items'])) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';
     }

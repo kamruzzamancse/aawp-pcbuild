@@ -121,7 +121,7 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
             <!-- Main Section -->
             <div style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div style="font-weight:bold;"><?php echo $total_items; ?> Products</div>
+                    <div id="total_products" style="font-weight:bold;"><?php echo $total_items; ?> Products</div>
                     <div><input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc;" /></div>
                 </div>
 
@@ -179,13 +179,15 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             preg_match('/(\d{3,4})\s?RPM/i', $features_string, $rpm_match);
                             preg_match('/(\d+(\.\d+)?\s?dB)/i', $features_string, $noise_match);
                             preg_match('/(120|240|280|360)\s?mm/i', $features_string, $rad_match);
-                            preg_match_all('/(AM4|AM5|LGA ?1200|LGA ?1700|LGA ?1151|LGA ?2066|TR4|sTRX4|FM2\+?)/i', $features_string . ' ' . $full_title, $socket_matches);
+                            //preg_match_all('/(AM4|AM5|LGA ?1200|LGA ?1700|LGA ?1151|LGA ?2066|TR4|sTRX4|FM2\+?)/i', $features_string . ' ' . $full_title, $socket_matches);
+                            preg_match_all('/(AM4|AM5|FM2\+?|TR4|sTRX4|LGA ?(1150|1151|1155|1200|1700|1851|2066))/i', $features_string . ' ' . $full_title, $socket_matches);
 
                             $fan_rpm = $rpm_match[1] ?? '-';
                             $noise_level = $noise_match[1] ?? '-';
                             $radiator = $rad_match[1] ?? '-';
                             $compatible_sockets = array_map('trim', array_unique($socket_matches[1]));
                             if (empty($compatible_sockets)) $compatible_sockets[] = 'all';
+                            $socket = implode(',', $compatible_sockets);
 
                         ?>
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 16px"
@@ -255,6 +257,105 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
     </div>
 
     <script>
+        // Compatibility Checking
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const selectedCpuSocket = localStorage.getItem('selected_cpu_socket');
+            console.log(selectedCpuSocket);
+
+            const compatibilityToggle = document.createElement('div');
+            compatibilityToggle.innerHTML = `
+                <div style="margin-bottom:20px;">
+                    <label>
+                        <input type="checkbox" id="compatibility-toggle" checked /> 
+                        Compatibility Filter
+                    </label>
+                </div>
+            `;
+            document.querySelector('.pcbuild-sidebar > div:first-child').after(compatibilityToggle);
+
+            const noticeElement = document.createElement('div');
+            noticeElement.id = 'compatibility-notice';
+            noticeElement.style.display = 'none';
+            noticeElement.style.marginBottom = '20px';
+            noticeElement.style.padding = '10px';
+            noticeElement.style.background = '#fff8e1';
+            noticeElement.style.borderLeft = '4px solid #ffc107';
+            noticeElement.innerHTML = '<strong>Compatibility Filter Active:</strong> <span id="compatibility-message"></span>';
+            compatibilityToggle.after(noticeElement);
+
+            filterCompatibleCoolers();
+
+            document.getElementById('compatibility-toggle').addEventListener('change', function () {
+                localStorage.setItem('cooler_compatibility_filter', this.checked ? 'on' : 'off');
+                filterCompatibleCoolers();
+            });
+
+            // Delay to allow content to fully load before striping
+            setTimeout(() => applyZebraStriping(), 50);
+        });
+
+        function filterCompatibleCoolers() {
+            const compatibilityEnabled = localStorage.getItem('cooler_compatibility_filter') !== 'off';
+            const noticeElement = document.getElementById('compatibility-notice');
+            const messageElement = document.getElementById('compatibility-message');
+            document.getElementById('compatibility-toggle').checked = compatibilityEnabled;
+
+            const allRows = document.querySelectorAll('#pcbuild-table tbody tr');
+
+            if (!compatibilityEnabled) {
+                noticeElement.style.display = 'none';
+                allRows.forEach(row => row.style.display = '');
+                applyZebraStriping(); // Apply to all visible rows
+                return;
+            }
+
+            const selectedCpuSocket = localStorage.getItem('selected_cpu_socket');
+            if (selectedCpuSocket) {
+                noticeElement.style.display = '';
+                messageElement.textContent = `Showing only coolers compatible with ${selectedCpuSocket} socket`;
+
+                let compatibleCount = 0;
+                allRows.forEach(row => {
+                    const sockets = row.dataset.compatibleSockets?.toUpperCase().split(',') || [];
+                    if (sockets.includes(selectedCpuSocket.toUpperCase()) || sockets.includes('ALL')) {
+                        row.style.display = '';
+                        compatibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                if (compatibleCount === 0) {
+                    noticeElement.innerHTML = `
+                        <strong>No compatible coolers found!</strong>
+                        <p>We couldn't find any coolers compatible with your ${selectedCpuSocket} socket CPU.</p>
+                        <button onclick="document.getElementById('compatibility-toggle').click()" 
+                                style="padding:5px 10px; background:#f44336; color:white; border:none; cursor:pointer;">
+                            Show All Coolers Anyway
+                        </button>
+                    `;
+                }
+
+                applyZebraStriping(); // Apply to visible rows
+            } else {
+                noticeElement.style.display = 'none';
+                allRows.forEach(row => row.style.display = '');
+                applyZebraStriping(); // Apply to all
+            }
+        }
+
+        function applyZebraStriping() {
+            const visibleRows = Array.from(document.querySelectorAll('#pcbuild-table tbody tr')).filter(row => row.style.display !== 'none');
+            visibleRows.forEach((row, index) => {
+                row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+            });
+        }
+
+    </script>
+
+    <script>
+    // Height filtering
 document.addEventListener("DOMContentLoaded", function () {
     const table = document.getElementById("pcbuild-table");
     const sliderContainer = document.getElementById("height-slider");
@@ -343,18 +444,8 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-<style>
-.zebra-even {
-    background-color: #f9f9f9; /* Light gray background for even rows */
-}
-
-.zebra-odd {
-    background-color: #ffffff; /* White background for odd rows */
-}
-</style>
-
-<!-- PRICE RANGE SLIDER FILTER -->
 <script>
+    // Price filtering
         document.addEventListener("DOMContentLoaded", function () {
             const table = document.getElementById("pcbuild-table");
             const sliderContainer = document.getElementById("price-slider");
@@ -419,6 +510,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     <script>
+    // Color filtering
 document.addEventListener("DOMContentLoaded", function () {
     const table = document.getElementById("pcbuild-table");
     const tableRows = table.querySelectorAll("tbody tr");
@@ -533,6 +625,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     <script>
+    // Manufacturer filtering
 document.addEventListener("DOMContentLoaded", function () {
     const table = document.getElementById("pcbuild-table");
     const tableRows = table.querySelectorAll("tbody tr");
@@ -638,103 +731,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initial apply
     applyManufacturerFilter();
 });
-</script>
-
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-
-        const selectedCpuSocket = localStorage.getItem('selected_cpu_socket');
-        console.log(selectedCpuSocket);
-
-        const compatibilityToggle = document.createElement('div');
-        compatibilityToggle.innerHTML = `
-            <div style="margin-bottom:20px;">
-                <label>
-                    <input type="checkbox" id="compatibility-toggle" checked /> 
-                    Compatibility Filter
-                </label>
-            </div>
-        `;
-        document.querySelector('.pcbuild-sidebar > div:first-child').after(compatibilityToggle);
-
-        const noticeElement = document.createElement('div');
-        noticeElement.id = 'compatibility-notice';
-        noticeElement.style.display = 'none';
-        noticeElement.style.marginBottom = '20px';
-        noticeElement.style.padding = '10px';
-        noticeElement.style.background = '#fff8e1';
-        noticeElement.style.borderLeft = '4px solid #ffc107';
-        noticeElement.innerHTML = '<strong>Compatibility Filter Active:</strong> <span id="compatibility-message"></span>';
-        compatibilityToggle.after(noticeElement);
-
-        filterCompatibleCoolers();
-
-        document.getElementById('compatibility-toggle').addEventListener('change', function () {
-            localStorage.setItem('cooler_compatibility_filter', this.checked ? 'on' : 'off');
-            filterCompatibleCoolers();
-        });
-
-        // Delay to allow content to fully load before striping
-        setTimeout(() => applyZebraStriping(), 50);
-    });
-
-    function filterCompatibleCoolers() {
-        const compatibilityEnabled = localStorage.getItem('cooler_compatibility_filter') !== 'off';
-        const noticeElement = document.getElementById('compatibility-notice');
-        const messageElement = document.getElementById('compatibility-message');
-        document.getElementById('compatibility-toggle').checked = compatibilityEnabled;
-
-        const allRows = document.querySelectorAll('#pcbuild-table tbody tr');
-
-        if (!compatibilityEnabled) {
-            noticeElement.style.display = 'none';
-            allRows.forEach(row => row.style.display = '');
-            applyZebraStriping(); // Apply to all visible rows
-            return;
-        }
-
-        const selectedCpuSocket = localStorage.getItem('selected_cpu_socket');
-        if (selectedCpuSocket) {
-            noticeElement.style.display = '';
-            messageElement.textContent = `Showing only coolers compatible with ${selectedCpuSocket} socket`;
-
-            let compatibleCount = 0;
-            allRows.forEach(row => {
-                const sockets = row.dataset.compatibleSockets?.toUpperCase().split(',') || [];
-                if (sockets.includes(selectedCpuSocket.toUpperCase()) || sockets.includes('ALL')) {
-                    row.style.display = '';
-                    compatibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            if (compatibleCount === 0) {
-                noticeElement.innerHTML = `
-                    <strong>No compatible coolers found!</strong>
-                    <p>We couldn't find any coolers compatible with your ${selectedCpuSocket} socket CPU.</p>
-                    <button onclick="document.getElementById('compatibility-toggle').click()" 
-                            style="padding:5px 10px; background:#f44336; color:white; border:none; cursor:pointer;">
-                        Show All Coolers Anyway
-                    </button>
-                `;
-            }
-
-            applyZebraStriping(); // Apply to visible rows
-        } else {
-            noticeElement.style.display = 'none';
-            allRows.forEach(row => row.style.display = '');
-            applyZebraStriping(); // Apply to all
-        }
-    }
-
-    function applyZebraStriping() {
-        const visibleRows = Array.from(document.querySelectorAll('#pcbuild-table tbody tr')).filter(row => row.style.display !== 'none');
-        visibleRows.forEach((row, index) => {
-            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
-        });
-    }
 </script>
 
 <script>
