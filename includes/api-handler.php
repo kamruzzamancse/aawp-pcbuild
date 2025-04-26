@@ -52,7 +52,6 @@ function aawp_pcbuild_get_products($category) {
                 'Offers.Listings.Availability.Message',
                 'CustomerReviews.Count',
                 'CustomerReviews.StarRating',
-                'CustomerReviews.IFrameURL',
             ],
             'PartnerTag'   => $associate_tag,
             'PartnerType'  => 'Associates',

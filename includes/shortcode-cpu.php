@@ -1,42 +1,36 @@
 <?php
 function aawp_pcbuild_display_parts_cpu($atts) {
-    $atts = shortcode_atts(array('category' => 'CPU'), $atts);
+    $atts = shortcode_atts(array('category' => 'cpu'), $atts);
     $input_category = sanitize_title($atts['category']);
-
-    /* $category_map = [
-        'cpu' => 'CPU',
-        'gpu' => 'Video Card',
-        'video-card' => 'Video Card',
-        'motherboard' => 'Motherboard',
-        'cpu-cooler' => 'CPU Cooler',
-        'power-supply' => 'Power Supply',
-        'ram' => 'Memory',
-        'memory' => 'Memory',
-        'storage' => 'Storage',
-        'case' => 'Case',
-        'pc-case' => 'Case',
-        'monitor' => 'Monitor',
-        'keyboard' => 'Keyboard',
-        'mouse' => 'Mouse',
-        'operating-system' => 'Operating System',
-    ]; */
-
+    
+    // Category map (you can uncomment and expand this later if needed)
     $category_map = [
         'cpu' => 'CPU',
     ];
-
+    
     $category = $category_map[$input_category] ?? 'CPU';
-    $products = aawp_pcbuild_get_products($category);
-
+    
+    // Create transient key (same pattern as get_products uses)
+    $transient_key = 'aawp_pcbuild_cache_' . md5($category);
+    
+    // Clear cache if admin and ?clear_cache=1 in URL
+    if (is_user_logged_in() && current_user_can('manage_options') && isset($_GET['clear_cache'])) {
+        delete_transient($transient_key);
+    }
+    
+    // Try to get products from cache
+    $products = get_transient($transient_key);
+    
+    // If no cached products, fetch and cache them
+    if ($products === false) {
+        $products = aawp_pcbuild_get_products($category);
+        set_transient($transient_key, $products, HOUR_IN_SECONDS);
+    }
+    
+    // If still no products, show error
     if (!is_array($products) || empty($products['SearchResult']['Items'])) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';
-    }
-
-    add_action('init', function() {
-        global $wpdb;
-        $wpdb->query("DELETE FROM $wpdb->options WHERE option_name LIKE '_transient_aawp_pcbuild_%' OR option_name LIKE '_transient_timeout_aawp_pcbuild_%'");
-    });
-    
+    }    
 
     // Pagination setup
     $all_items = $products['SearchResult']['Items'];

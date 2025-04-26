@@ -1,29 +1,32 @@
 <?php
 function aawp_pcbuild_display_parts_cpu_cooler($atts) {
-    $atts = shortcode_atts(array('category' => 'CPU'), $atts);
+    $atts = shortcode_atts(array('category' => 'cpu-cooler'), $atts);
     $input_category = sanitize_title($atts['category']);
 
     $category_map = [
         'cpu-cooler' => 'CPU Cooler',
     ];
 
-    $category = $category_map[$input_category] ?? 'CPU';
-    
-    $transient_key = 'aawp_pcbuild_' . md5($category);
+    $category = $category_map[$input_category] ?? 'CPU Cooler';
 
+    // Create transient key (MATCH naming)
+    $transient_key = 'aawp_pcbuild_cache_' . md5($category);
+
+    // Clear cache if admin and ?clear_cache=1 in URL
     if (is_user_logged_in() && current_user_can('manage_options') && isset($_GET['clear_cache'])) {
         delete_transient($transient_key);
     }
-    
+
+    // Try to get products from cache
     $products = get_transient($transient_key);
 
+    // If no cached products, fetch and cache them
     if ($products === false) {
         $products = aawp_pcbuild_get_products($category);
         set_transient($transient_key, $products, HOUR_IN_SECONDS);
     }
 
-    //$products = aawp_pcbuild_get_products($category);
-
+    // If still no products, show error
     if (!is_array($products) || empty($products['SearchResult']['Items'])) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';
     }
@@ -155,7 +158,11 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             // Get customer review
                             $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
                             $rating_count = $item['CustomerReviews']['Count'] ?? null;
-                            $review_link = $item['CustomerReviews']['IFrameURL'] ?? '';
+
+                            // Format the rating display
+                            $rating_display = ($rating !== null && $rating_count !== null) 
+                                ? number_format($rating, 1) . ' / 5 (' . number_format($rating_count) . ' reviews)' 
+                                : '-';
                              
                             // Get height and convert to mm (assuming it's in inches by default)
                             $height_in = $item['ItemInfo']['ProductInfo']['ItemDimensions']['Height']['DisplayValue'] ?? '';
@@ -180,9 +187,6 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             $compatible_sockets = array_map('trim', array_unique($socket_matches[1]));
                             if (empty($compatible_sockets)) $compatible_sockets[] = 'all';
 
-                            $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
-                            $rating_count = $item['CustomerReviews']['Count'] ?? null;
-                            $rating_display = ($rating !== null && $rating_count !== null) ? number_format($rating, 1) . ' / 5 (' . number_format($rating_count) . ' reviews)' : '-';
                         ?>
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 16px"
                             data-compatible-sockets="<?php echo esc_attr(implode(',', $compatible_sockets)); ?>">
@@ -196,8 +200,8 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             
                             <!-- <td style="padding:10px;"><?php //echo esc_html($rating_display); ?></td> -->
                             <td style="padding:10px;">
-                                <?php if (!empty($review_link)): ?>
-                                    <a href="<?php echo esc_url($review_link); ?>" target="_blank" style="color: #0073aa; text-decoration: underline;">
+                                <?php if (!empty($product_url) && $rating_display !== '-'): ?>
+                                    <a href="<?php echo esc_url($product_url); ?>" target="_blank" style="color: #0073aa; text-decoration: underline;">
                                         <?php echo esc_html($rating_display); ?>
                                     </a>
                                 <?php else: ?>
@@ -252,7 +256,6 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
 
     <script>
 document.addEventListener("DOMContentLoaded", function () {
-    // Get the table and the slider container
     const table = document.getElementById("pcbuild-table");
     const sliderContainer = document.getElementById("height-slider");
     const minLabel = document.getElementById("height-min-label");
@@ -260,63 +263,77 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!table || !sliderContainer) return;
 
-    // Get the rows and extract the height values from the data-height attribute
     const rows = Array.from(table.querySelectorAll("tbody tr"));
-    const heights = rows.map(row => parseFloat(row.dataset.height) || 0);
 
-    // Get the minimum and maximum height values
+    // Extract height values from the "Add to Builder" button data-height attribute
+    const heights = rows.map(row => {
+        const button = row.querySelector(".add-to-builder");
+        return button ? parseFloat(button.dataset.height) || 0 : 0;
+    });
+
     const minHeight = Math.floor(Math.min(...heights));
     const maxHeight = Math.ceil(Math.max(...heights));
 
-    let currentMin = minHeight;
-    let currentMax = maxHeight;
-
-    // Update the labels with the minimum and maximum heights
+    // Set initial min and max height labels
     minLabel.textContent = `${minHeight} mm`;
     maxLabel.textContent = `${maxHeight} mm`;
 
-    // Create the height sliders dynamically
+    // Create the slider elements for height filtering
     sliderContainer.innerHTML = `
         <input type="range" class="min-range-bg" id="min-height" min="${minHeight}" max="${maxHeight}" value="${minHeight}" step="1" style="width: 100%;">
         <input type="range" class="max-range-bg" id="max-height" min="${minHeight}" max="${maxHeight}" value="${maxHeight}" step="1" style="width: 100%; margin-top: 10px;">
     `;
 
-    // Get the slider elements
     const minSlider = document.getElementById("min-height");
     const maxSlider = document.getElementById("max-height");
 
-    // Function to filter rows based on height range
-    function filterByHeight() {
-        const minVal = parseFloat(minSlider.value);
-        const maxVal = parseFloat(maxSlider.value);
-
-        // Update the labels with the current slider values
-        minLabel.textContent = `${minVal} mm`;
-        maxLabel.textContent = `${maxVal} mm`;
-
-        // Filter the rows based on height
+    // Function to apply zebra striping to visible rows
+    function applyZebraStripes() {
+        let visibleIndex = 0;
         rows.forEach(row => {
-            const height = parseFloat(row.dataset.height) || 0;
-            const show = height >= minVal && height <= maxVal;
+            row.classList.remove("zebra-even", "zebra-odd");
 
-            // Show or hide the row based on the height range
-            if (row.style.display !== "none") {
-                row.style.display = show ? "" : "none";
+            if (row.offsetParent !== null) { // row is visible
+                if (visibleIndex % 2 === 0) {
+                    row.classList.add("zebra-even");
+                } else {
+                    row.classList.add("zebra-odd");
+                }
+                visibleIndex++;
             }
         });
     }
 
-    // Event listeners for when the slider values change
+    // Function to filter rows by height range
+    function filterByHeight() {
+        const minVal = parseFloat(minSlider.value);
+        const maxVal = parseFloat(maxSlider.value);
+
+        // Update min and max height labels based on slider values
+        minLabel.textContent = `${minVal} mm`;
+        maxLabel.textContent = `${maxVal} mm`;
+
+        // Filter rows based on the height range
+        rows.forEach(row => {
+            const button = row.querySelector(".add-to-builder");
+            const height = button ? parseFloat(button.dataset.height) || 0 : 0;
+            row.style.display = (height >= minVal && height <= maxVal) ? "" : "none";
+        });
+
+        applyZebraStripes(); // Re-apply zebra striping after filtering
+    }
+
+    // Event listeners for the height sliders
     minSlider.addEventListener("input", () => {
         if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
-            minSlider.value = maxSlider.value; // Ensure min value doesn't exceed max
+            minSlider.value = maxSlider.value;
         }
         filterByHeight();
     });
 
     maxSlider.addEventListener("input", () => {
         if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
-            maxSlider.value = minSlider.value; // Ensure max value doesn't go below min
+            maxSlider.value = minSlider.value;
         }
         filterByHeight();
     });
@@ -324,9 +341,17 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initialize the filter
     filterByHeight();
 });
-
 </script>
 
+<style>
+.zebra-even {
+    background-color: #f9f9f9; /* Light gray background for even rows */
+}
+
+.zebra-odd {
+    background-color: #ffffff; /* White background for odd rows */
+}
+</style>
 
 <!-- PRICE RANGE SLIDER FILTER -->
 <script>
@@ -781,7 +806,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return mapping[key];
             }
         });
-    </script>
+    </script> 
 
     <?php
     return ob_get_clean();

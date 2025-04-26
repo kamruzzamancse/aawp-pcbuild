@@ -1,34 +1,37 @@
 <?php
 function aawp_pcbuild_display_parts_case($atts) {
-    $atts = shortcode_atts(array('category' => 'Case'), $atts);
+    $atts = shortcode_atts(array('category' => 'case'), $atts);
     $input_category = sanitize_title($atts['category']);
-
+    
+    // Define the category mapping
     $category_map = [
         'case' => 'Case',
         'pc-case' => 'Case',
     ];
-
+    
     $category = $category_map[$input_category] ?? 'Case';
     
-    //for caching
-    /* $transient_key = 'aawp_pcbuild_' . md5($category);
-
+    // Create the transient cache key
+    $transient_key = 'aawp_pcbuild_cache_' . md5($category);
+    
+    // Clear cache if admin and ?clear_cache=1 in URL
     if (is_user_logged_in() && current_user_can('manage_options') && isset($_GET['clear_cache'])) {
         delete_transient($transient_key);
     }
     
+    // Try to get products from cache
     $products = get_transient($transient_key);
-
+    
+    // If not cached, fetch and cache the products
     if ($products === false) {
         $products = aawp_pcbuild_get_products($category);
         set_transient($transient_key, $products, HOUR_IN_SECONDS);
-    } */
-
-    $products = aawp_pcbuild_get_products($category);
+    }
     
+    // If still no products, show error
     if (!is_array($products) || empty($products['SearchResult']['Items'])) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';
-    }
+    }    
 
     $all_items = $products['SearchResult']['Items'];
     $total_items = count($all_items);
