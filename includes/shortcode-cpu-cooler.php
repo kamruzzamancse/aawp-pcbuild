@@ -9,7 +9,7 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
 
     $category = $category_map[$input_category] ?? 'CPU';
     
-    /* $transient_key = 'aawp_pcbuild_' . md5($category);
+    $transient_key = 'aawp_pcbuild_' . md5($category);
 
     if (is_user_logged_in() && current_user_can('manage_options') && isset($_GET['clear_cache'])) {
         delete_transient($transient_key);
@@ -20,9 +20,9 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
     if ($products === false) {
         $products = aawp_pcbuild_get_products($category);
         set_transient($transient_key, $products, HOUR_IN_SECONDS);
-    } */
+    }
 
-    $products = aawp_pcbuild_get_products($category);
+    //$products = aawp_pcbuild_get_products($category);
 
     if (!is_array($products) || empty($products['SearchResult']['Items'])) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';
@@ -151,6 +151,12 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             $features_string = implode(' ', $features);
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
                             $color = $item['ItemInfo']['ProductInfo']['Color']['DisplayValue'] ?? '';
+                            
+                            // Get customer review
+                            $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
+                            $rating_count = $item['CustomerReviews']['Count'] ?? null;
+                            $review_link = $item['CustomerReviews']['IFrameURL'] ?? '';
+                             
                             // Get height and convert to mm (assuming it's in inches by default)
                             $height_in = $item['ItemInfo']['ProductInfo']['ItemDimensions']['Height']['DisplayValue'] ?? '';
                             $height_unit = $item['ItemInfo']['ProductInfo']['ItemDimensions']['Height']['Unit'] ?? '';
@@ -187,7 +193,18 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             <td style="padding:10px;"><?php echo esc_html($fan_rpm); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($noise_level); ?></td>
                             <td style="padding:10px;"><?php echo ($radiator !== '-') ? esc_html($radiator) . ' mm' : '-'; ?></td>
-                            <td style="padding:10px;"><?php echo esc_html($rating_display); ?></td>
+                            
+                            <!-- <td style="padding:10px;"><?php //echo esc_html($rating_display); ?></td> -->
+                            <td style="padding:10px;">
+                                <?php if (!empty($review_link)): ?>
+                                    <a href="<?php echo esc_url($review_link); ?>" target="_blank" style="color: #0073aa; text-decoration: underline;">
+                                        <?php echo esc_html($rating_display); ?>
+                                    </a>
+                                <?php else: ?>
+                                    <?php echo esc_html($rating_display); ?>
+                                <?php endif; ?>
+                            </td>
+
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
                                 <button class="add-to-builder"
