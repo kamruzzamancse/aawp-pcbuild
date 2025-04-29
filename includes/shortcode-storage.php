@@ -5,6 +5,9 @@ function aawp_pcbuild_display_parts_storage($atts) {
     
     $category_map = [
         'storage' => 'Storage',
+        'hdd' => 'Storage',
+        'ssd' => 'Storage',
+        'internal-storage' => 'Storage',
     ];
     
     $category = $category_map[$input_category] ?? 'Storage';
@@ -53,17 +56,35 @@ function aawp_pcbuild_display_parts_storage($atts) {
                     <div>PARTS: <strong id="parts_count"></strong></div>
                     <div>TOTAL: <strong id="parts_total_price"></strong></div>
                 </div>
-                <div style="margin-bottom:20px;">
-                    <strong>PRICE</strong>
-                    <div id="price-slider" style="margin-top: 15px;"></div>
-                    <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
-                        <span id="price-min-label">$0</span>
-                        <span id="price-max-label">$0</span>
+                <div class="filter-group">
+                    <div class="filter-header">
+                        <strong>PRICE</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="price-filter" style="display: block;">
+                        <div id="price-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="price-min-label">$0</span>
+                            <span id="price-max-label">$0</span>
+                        </div>
                     </div>
                 </div>
-                <div style="margin-bottom: 20px;">
-                    <strong>RATING</strong>
-                    <div style="margin-top: 10px;" id="rating-filter">
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>MANUFACTURER</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="manufacturer-filter">
+                        <label><input type="checkbox" id="manufacturer-all" checked> All</label><br/>
+                        <!-- Checkboxes will be inserted here by JS -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>RATING</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="rating-filter">
                         <label><input type="checkbox" name="rating" value="all" checked /> All</label><br/>
                         <label><input type="checkbox" name="rating" value="5" /> <span style="color: orange;">★★★★★</span></label><br/>
                         <label><input type="checkbox" name="rating" value="4" /> <span style="color: orange;">★★★★☆</span></label><br/>
@@ -145,6 +166,7 @@ function aawp_pcbuild_display_parts_storage($atts) {
                             $product_url = $item['DetailPageURL'] ?? '#';
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
+                            $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
 
                             // Parse storage details
                             preg_match('/(\d+\.?\d*)\s?(TB|GB)/i', $features_string . ' ' . $full_title, $capacity_match);
@@ -206,6 +228,7 @@ function aawp_pcbuild_display_parts_storage($atts) {
                                     data-category="<?php echo esc_attr($category); ?>"
                                     data-affiliate-url="<?php echo esc_url($product_url); ?>"
                                     data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+                                    data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                     <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
                                 </button>
@@ -233,82 +256,85 @@ function aawp_pcbuild_display_parts_storage($atts) {
         </div>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const table = document.getElementById("pcbuild-table");
-            const sliderContainer = document.getElementById("price-slider");
-            const minLabel = document.getElementById("price-min-label");
-            const maxLabel = document.getElementById("price-max-label");
+    <!-- PRICE RANGE SLIDER FILTER -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const sliderContainer = document.getElementById("price-slider");
+    const minLabel = document.getElementById("price-min-label");
+    const maxLabel = document.getElementById("price-max-label");
 
-            if (!table || !sliderContainer || !minLabel || !maxLabel) {
-                console.warn("Table, slider container, or labels not found.");
-                return;
-            }
+    if (!table || !sliderContainer) return;
 
-            const rows = Array.from(table.querySelectorAll("tbody tr"));
-            if (!rows.length) {
-                console.warn("No rows found in table.");
-                return;
-            }
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+    const prices = rows.map(row => {
+        // Assuming price is in the 8th column (index 8)
+        const priceText = row.querySelector("td:nth-child(9)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+        return parseFloat(priceText) || 0;
+    });
 
-            // Extract prices from the 9th column (Price)
-            const prices = rows.map(row => {
-                const cell = row.querySelector("td:nth-child(9)");
-                if (!cell) return 0;
+    const minPrice = Math.floor(Math.min(...prices));
+    const maxPrice = Math.ceil(Math.max(...prices));
+    let currentMin = minPrice;
+    let currentMax = maxPrice;
 
-                const priceText = cell.textContent || "";
-                const cleaned = priceText.replace(/[^0-9.]/g, "");
-                const price = parseFloat(cleaned) || 0;
-                return price;
-            });
+    // Set default labels
+    minLabel.textContent = `$${minPrice}`;
+    maxLabel.textContent = `$${maxPrice}`;
 
-            const minPrice = Math.floor(Math.min(...prices));
-            const maxPrice = Math.ceil(Math.max(...prices));
+    // Create 2 sliders
+    sliderContainer.innerHTML = `
+        <input type="range" class="min-range-bg" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
+        <input type="range" class="max-range-bg" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
+    `;
 
-            // Set initial labels
-            minLabel.textContent = `$${minPrice}`;
-            maxLabel.textContent = `$${maxPrice}`;
+    const minSlider = document.getElementById("min-price");
+    const maxSlider = document.getElementById("max-price");
 
-            // Create sliders
-            sliderContainer.innerHTML = `
-                <input type="range" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
-                <input type="range" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
-            `;
-
-            const minSlider = document.getElementById("min-price");
-            const maxSlider = document.getElementById("max-price");
-
-            function filterByPrice() {
-                const minVal = parseFloat(minSlider.value);
-                const maxVal = parseFloat(maxSlider.value);
-
-                minLabel.textContent = `$${minVal}`;
-                maxLabel.textContent = `$${maxVal}`;
-
-                rows.forEach(row => {
-                    const priceCell = row.querySelector("td:nth-child(9)");
-                    const price = priceCell ? parseFloat(priceCell.textContent.replace(/[^0-9.]/g, "")) || 0 : 0;
-                    row.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
-                });
-            }
-
-            minSlider.addEventListener("input", () => {
-                if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
-                    minSlider.value = maxSlider.value;
-                }
-                filterByPrice();
-            });
-
-            maxSlider.addEventListener("input", () => {
-                if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
-                    maxSlider.value = minSlider.value;
-                }
-                filterByPrice();
-            });
-
-            filterByPrice(); // Apply initial filtering
+    function applyZebraStripes() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
         });
-    </script>
+    }
+
+    function filterByPrice() {
+        const minVal = parseFloat(minSlider.value);
+        const maxVal = parseFloat(maxSlider.value);
+        currentMin = minVal;
+        currentMax = maxVal;
+
+        minLabel.textContent = `$${minVal}`;
+        maxLabel.textContent = `$${maxVal}`;
+
+        rows.forEach(row => {
+            const priceText = row.querySelector("td:nth-child(9)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+            const price = parseFloat(priceText) || 0;
+
+            row.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
+        });
+
+        applyZebraStripes();
+    }
+
+    minSlider.addEventListener("input", () => {
+        if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+            minSlider.value = maxSlider.value;
+        }
+        filterByPrice();
+    });
+
+    maxSlider.addEventListener("input", () => {
+        if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+            maxSlider.value = minSlider.value;
+        }
+        filterByPrice();
+    });
+
+    // Initial filter apply
+    filterByPrice();
+});
+</script>
 
     <script>
         // SORTING LOGIC for MEMORY TABLE

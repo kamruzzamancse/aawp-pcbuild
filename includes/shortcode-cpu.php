@@ -77,9 +77,8 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                         <button class="filter-toggle">−</button>
                     </div>
                     <div class="filter-options" id="manufacturer-options">
-                        <label><input type="checkbox" name="manufacturer" value="all" checked> All</label><br>
-                        <label><input type="checkbox" name="manufacturer" value="amd"> AMD</label><br>
-                        <label><input type="checkbox" name="manufacturer" value="intel"> Intel</label>
+                        <label><input type="checkbox" id="manufacturer-all" checked> All</label><br/>
+                        <!-- Dynamic checkboxes will be injected here -->
                     </div>
                 </div>
                 <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
@@ -225,6 +224,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             $product_url = $item['DetailPageURL'] ?? '#';
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
+                            $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
                             $combined_string = $features_string . ' ' . $full_title;
 
                             // Extract new data points
@@ -300,6 +300,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                                     data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
                                     data-rating="<?php echo isset($rating_display) ? esc_attr($rating_display) : ''; ?>"
                                     data-socket="<?php echo isset($socket) ? esc_attr($socket) : ''; ?>"
+                                    data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
                                     data-chipset="<?php echo isset($chipset) ? esc_attr($chipset) : ''; ?>"
                                     data-series="<?php echo isset($series) ? esc_attr($series) : ''; ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
@@ -331,341 +332,507 @@ function aawp_pcbuild_display_parts_cpu($atts) {
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+    // Manufacturer filtering
+    document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("pcbuild-table");
+        const tableRows = table.querySelectorAll("tbody tr");
+        const filterContainer = document.getElementById("manufacturer-options");
+        const manufacturerSet = new Set();
+
+        const VISIBLE_COUNT = 4; // How many manufacturers to show initially
+        let expanded = false;
+
+        // Normalize manufacturer values (group Intel variants under "Intel")
+        function normalizeManufacturer(manufacturer) {
+            const lowerCaseManufacturer = manufacturer.toLowerCase();
+            if (lowerCaseManufacturer.includes("intel")) {
+                return "Intel"; // All Intel-related values grouped under "Intel"
+            }
+            return manufacturer;
+        }
+
+        // Collect unique manufacturers
+        tableRows.forEach(row => {
+            const manufacturer = row.querySelector("button.add-to-builder")?.dataset.manufacturer || "Unknown";
+            manufacturerSet.add(normalizeManufacturer(manufacturer));
+        });
+
+        // Prepare checkboxes
+        const manufacturers = Array.from(manufacturerSet).sort(); // Sort alphabetically
+        const checkboxElements = [];
+
+        manufacturers.forEach(manufacturer => {
+            const label = document.createElement("label");
+            label.innerHTML = `<input type="checkbox" name="manufacturer" value="${manufacturer}" checked> ${manufacturer}`;
+            label.style.display = 'block'; // Ensure each on its own line
+            checkboxElements.push(label);
+        });
+
+        // Append checkboxes to container
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) {
+                el.style.display = 'none';
+            }
+            filterContainer.appendChild(el);
+        });
+
+        // Add Show more / Show less link
+        const toggleLink = document.createElement("a");
+        toggleLink.href = "#";
+        toggleLink.textContent = "Show more";
+        toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
+        toggleLink.style.marginTop = "5px";
+        toggleLink.style.fontSize = "14px";
+        toggleLink.style.color = "#0066cc";
+        filterContainer.appendChild(toggleLink);
+
+        // Zebra stripe function
+        function applyZebraStriping() {
+            const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+            visibleRows.forEach((row, index) => {
+                row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+            });
+        }
+
+        const allCheckbox = document.getElementById("manufacturer-all");
+
+        function updateAllCheckboxState() {
+            const allBoxes = Array.from(document.querySelectorAll("input[name='manufacturer']"));
+            const checkedBoxes = allBoxes.filter(cb => cb.checked);
+            allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+        }
+
+        function applyManufacturerFilter() {
+            const selected = Array.from(document.querySelectorAll("input[name='manufacturer']:checked"))
+                .map(cb => cb.value);
+
+            tableRows.forEach(row => {
+                const manufacturer = row.querySelector("button.add-to-builder")?.dataset.manufacturer;
+                const normalizedManufacturer = normalizeManufacturer(manufacturer);
+                const show = selected.includes(normalizedManufacturer);
+                row.style.display = show ? "" : "none";
+            });
+
+            updateAllCheckboxState();
+            applyZebraStriping();
+        }
+
+        // Toggle "All"
+        allCheckbox.addEventListener("change", function () {
+            const allBoxes = document.querySelectorAll("input[name='manufacturer']");
+            allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+            applyManufacturerFilter();
+        });
+
+        // Individual checkbox change
+        filterContainer.addEventListener("change", function (e) {
+            if (e.target.name === "manufacturer") {
+                applyManufacturerFilter();
+            }
+        });
+
+        // Show more/less logic
+        toggleLink.addEventListener("click", function (e) {
+            e.preventDefault();
+            expanded = !expanded;
+
+            checkboxElements.forEach((el, index) => {
+                if (index >= VISIBLE_COUNT) {
+                    el.style.display = expanded ? "block" : "none";
+                }
+            });
+
+            toggleLink.textContent = expanded ? "Show less" : "Show more";
+        });
+
+        // Initial apply
+        applyManufacturerFilter();
+    });
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
     const seriesFilterContainer = document.getElementById("series-filter");
 
-    // Dynamically generate the series filter checkboxes from buttons
-    const allSeries = [];
-    document.querySelectorAll('.add-to-builder').forEach(button => {
-        const series = button.getAttribute('data-series');
-        if (series && !allSeries.includes(series)) {
-            allSeries.push(series);  // Add unique series to the list
-        }
+    if (!table || !seriesFilterContainer) return;
+
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+    const seriesSet = new Set();
+
+    // Extract unique series values from data attributes in the "Add to Builder" buttons
+    rows.forEach(row => {
+        const btn = row.querySelector(".add-to-builder");
+        const series = btn?.getAttribute("data-series")?.trim();
+        if (series) seriesSet.add(series);
     });
 
-    // Create the "All" checkbox first
-    const allCheckboxLabel = document.createElement("label");
-    const allCheckbox = document.createElement("input");
-    allCheckbox.type = "checkbox";
-    allCheckbox.className = "series-filter";
-    allCheckbox.value = "All";
-    allCheckbox.checked = true;  // Set "All" to be checked by default
+    const seriesList = Array.from(seriesSet).sort();
 
-    allCheckboxLabel.appendChild(allCheckbox);
-    allCheckboxLabel.appendChild(document.createTextNode("All"));
-    allCheckboxLabel.style.display = "block";  // Ensure it appears on a new line
+    // Create "All" checkbox for Series Filter
+    const allSeriesCheckboxWrapper = document.createElement("label");
+    allSeriesCheckboxWrapper.style.display = "block";
+    allSeriesCheckboxWrapper.innerHTML = `
+        <input type="checkbox" class="series-checkbox" value="all" checked>
+        All Series
+    `;
+    seriesFilterContainer.appendChild(allSeriesCheckboxWrapper);
 
-    // Append the "All" checkbox to the container
-    seriesFilterContainer.appendChild(allCheckboxLabel);
-
-    // Create checkboxes for each unique series
-    allSeries.forEach(series => {
+    // Create individual checkboxes for Series Filter
+    seriesList.forEach(series => {
         const label = document.createElement("label");
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.className = "series-filter";
-        checkbox.value = series;
-
-        label.appendChild(checkbox);
-        label.appendChild(document.createTextNode(series));
-        label.style.display = "block";  // Ensure each checkbox appears on a new line
-
-        // Append the generated label (with checkbox) to the container
+        label.style.display = "block";
+        label.innerHTML = `
+            <input type="checkbox" class="series-checkbox" value="${series}" checked>
+            ${series}
+        `;
         seriesFilterContainer.appendChild(label);
     });
 
-    // Function to filter the series
-    function filterBySeries() {
-        const selectedSeries = Array.from(document.querySelectorAll(".series-filter"))
-            .filter(filter => filter.checked && filter.value !== "All")
-            .map(filter => filter.value.toLowerCase());
+    const zebraStriping = () => {
+        let visibleRows = rows.filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = index % 2 === 0 ? "#d4d4d4" : "#ebebeb";
+        });
+    }
 
-        const rows = Array.from(document.querySelectorAll("#pcbuild-table tbody tr"));
+    const checkboxes = () => seriesFilterContainer.querySelectorAll(".series-checkbox");
 
+    const allCheckbox = () => seriesFilterContainer.querySelector(".series-checkbox[value='all']");
+
+    function filterRows() {
+        const selectedSeries = Array.from(checkboxes())
+            .filter(cb => cb.checked && cb.value !== "all")
+            .map(cb => cb.value);
+
+        // Filter rows by series selections
         rows.forEach(row => {
-            const series = row.querySelector("button.add-to-builder")?.getAttribute("data-series")?.toLowerCase();
-            if (!selectedSeries.length || selectedSeries.includes(series)) {
+            const btn = row.querySelector(".add-to-builder");
+            const series = btn?.getAttribute("data-series")?.trim();
+
+            // Apply the filter logic: show rows matching selected series
+            if (selectedSeries.length === 0 || selectedSeries.includes(series)) {
                 row.style.display = "";
             } else {
                 row.style.display = "none";
             }
         });
+
+        zebraStriping(); // Apply zebra striping after filtering
     }
 
-    // Function to check/uncheck the "All" checkbox based on the individual checkboxes
-    function updateAllCheckboxState() {
-        const allCheckbox = document.querySelector("input[value='All']");
-        const seriesCheckboxes = document.querySelectorAll(".series-filter[value!='All']");
-        const totalCheckboxes = seriesCheckboxes.length;
-        const checkedCheckboxes = Array.from(seriesCheckboxes).filter(cb => cb.checked).length;
+    // Handle changes for series filter
+    seriesFilterContainer.addEventListener("change", function (e) {
+        const target = e.target;
 
-        // If all checkboxes are checked, check "All" checkbox
-        if (checkedCheckboxes === totalCheckboxes) {
-            allCheckbox.checked = true;
-        } else {
-            allCheckbox.checked = false;
-        }
-    }
-
-    // Add event listeners to checkboxes for filtering
-    const seriesFilters = document.querySelectorAll(".series-filter");
-    seriesFilters.forEach(filter => {
-        filter.addEventListener("change", function () {
-            if (this.value === "All") {
-                // If "All" checkbox is checked/unchecked, toggle all other checkboxes
-                const allChecked = this.checked;
-                seriesFilters.forEach(cb => {
-                    if (cb.value !== "All") {
-                        cb.checked = allChecked;
-                    }
-                });
+        if (target.value === "all") {
+            if (target.checked) {
+                checkboxes().forEach(cb => cb.checked = true);
+                table.style.display = ""; // Show table when "All" is checked
             } else {
-                // Update the "All" checkbox state based on the selection of individual checkboxes
-                const allCheckbox = document.querySelector("input[value='All']");
-                allCheckbox.checked = false; // Uncheck "All" checkbox if any checkbox is unchecked
+                checkboxes().forEach(cb => cb.checked = false);
+                rows.forEach(row => row.style.display = "none"); // Hide all rows when "All" is unchecked
+                table.style.display = "none"; // Hide the table when "All" is unchecked
             }
+        } else {
+            allCheckbox().checked = false;
+            table.style.display = ""; // Ensure the table is shown if any individual checkbox is selected
+        }
 
-            filterBySeries();  // Apply the filter
-            updateAllCheckboxState();  // Update the "All" checkbox state based on individual checkbox status
-        });
+        filterRows();
     });
 
-    // Initial filtering based on default selection
-    filterBySeries();
+    // Initial filter and zebra striping on page load
+    filterRows();
 });
+</script>
 
-    </script>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const table = document.getElementById("pcbuild-table");
-            const filterContainer = document.getElementById("socket-filter");
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const filterContainer = document.getElementById("socket-filter");
 
-            if (!table || !filterContainer) return;
+    if (!table || !filterContainer) return;
 
-            const rows = Array.from(table.querySelectorAll("tbody tr"));
-            const socketSet = new Set();
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+    const socketSet = new Set();
 
-            // Extract unique socket values from data attributes in the "Add to Builder" buttons
+    // Extract unique socket values from data attributes in the "Add to Builder" buttons
+    rows.forEach(row => {
+        const btn = row.querySelector(".add-to-builder");
+        const socket = btn?.getAttribute("data-socket")?.trim();
+        if (socket) socketSet.add(socket);
+    });
+
+    const socketList = Array.from(socketSet).sort();
+
+    // Add the "All" checkbox
+    const allCheckboxWrapper = document.createElement("label");
+    allCheckboxWrapper.style.display = "block";
+    allCheckboxWrapper.innerHTML = `
+        <input type="checkbox" class="socket-checkbox" value="all" checked>
+        All
+    `;
+    filterContainer.appendChild(allCheckboxWrapper);
+
+    // Add checkboxes for each socket type
+    socketList.forEach(socket => {
+        const label = document.createElement("label");
+        label.style.display = "block";
+        label.innerHTML = `
+            <input type="checkbox" class="socket-checkbox" value="${socket}" checked>
+            ${socket}
+        `;
+        filterContainer.appendChild(label);
+    });
+
+    const checkboxes = () => filterContainer.querySelectorAll(".socket-checkbox");
+    const allCheckbox = () => filterContainer.querySelector(".socket-checkbox[value='all']");
+
+    function zebraStriping() {
+        let visibleRows = rows.filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = index % 2 === 0 ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function filterBySocket() {
+        const selected = Array.from(checkboxes())
+            .filter(cb => cb.checked && cb.value !== "all")
+            .map(cb => cb.value);
+
+        if (allCheckbox().checked) {
+            // "All" is checked, show all rows
+            rows.forEach(row => row.style.display = "");
+        } else if (selected.length === 0) {
+            // If no specific checkboxes are selected, hide all rows
+            rows.forEach(row => row.style.display = "none");
+        } else {
+            // Filter rows based on selected socket checkboxes
             rows.forEach(row => {
                 const btn = row.querySelector(".add-to-builder");
                 const socket = btn?.getAttribute("data-socket")?.trim();
-                if (socket) socketSet.add(socket);
+                row.style.display = selected.includes(socket) ? "" : "none";
             });
+        }
 
-            const socketList = Array.from(socketSet).sort();
+        zebraStriping(); // Apply zebra striping after filtering
+    }
 
-            // Add the "All" checkbox
-            const allCheckboxWrapper = document.createElement("label");
-            allCheckboxWrapper.style.display = "block";
-            allCheckboxWrapper.innerHTML = `
-                <input type="checkbox" class="socket-checkbox" value="all" checked>
-                All
-            `;
-            filterContainer.appendChild(allCheckboxWrapper);
+    filterContainer.addEventListener("change", function (e) {
+        const target = e.target;
 
-            // Add checkboxes for each socket type
-            socketList.forEach(socket => {
-                const label = document.createElement("label");
-                label.style.display = "block";
-                label.innerHTML = `
-                    <input type="checkbox" class="socket-checkbox" value="${socket}">
-                    ${socket}
-                `;
-                filterContainer.appendChild(label);
-            });
-
-            const checkboxes = () => filterContainer.querySelectorAll(".socket-checkbox");
-            const allCheckbox = () => filterContainer.querySelector(".socket-checkbox[value='all']");
-
-            function filterBySocket() {
-                const selected = Array.from(checkboxes())
-                    .filter(cb => cb.checked && cb.value !== "all")
-                    .map(cb => cb.value);
-
-                if (allCheckbox().checked || selected.length === 0) {
-                    rows.forEach(row => row.style.display = "");
-                } else {
-                    rows.forEach(row => {
-                        const btn = row.querySelector(".add-to-builder");
-                        const socket = btn?.getAttribute("data-socket")?.trim();
-                        row.style.display = selected.includes(socket) ? "" : "none";
-                    });
-                }
+        if (target.value === "all") {
+            // If "All" is checked, check all individual checkboxes and uncheck them when "All" is unchecked
+            if (target.checked) {
+                checkboxes().forEach(cb => {
+                    if (cb.value !== "all") cb.checked = true;
+                });
+            } else {
+                checkboxes().forEach(cb => {
+                    if (cb.value !== "all") cb.checked = false;
+                });
             }
+        } else {
+            // If any other checkbox is selected/deselected, uncheck the "All" checkbox
+            allCheckbox().checked = false;
+        }
 
-            filterContainer.addEventListener("change", function (e) {
-                const target = e.target;
+        filterBySocket();
+    });
 
-                if (target.value === "all") {
-                    if (target.checked) {
-                        checkboxes().forEach(cb => {
-                            if (cb.value !== "all") cb.checked = false;
-                        });
-                    }
-                } else {
-                    allCheckbox().checked = false;
-                }
+    // Initial filter and zebra striping on page load
+    filterBySocket();
+});
 
-                filterBySocket();
-            });
+</script>
 
-            filterBySocket(); // Apply filtering on load
+
+<script>
+    // microarchitecture filtering with zebra striping and "All" checkbox functionality
+    document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("pcbuild-table");
+        const filterContainer = document.getElementById("microarchitecture-filter");
+
+        if (!table || !filterContainer) return;
+
+        const rows = Array.from(table.querySelectorAll("tbody tr"));
+        const microSet = new Set();
+
+        // Collect all unique microarchitectures
+        rows.forEach(row => {
+            const microText = row.querySelector("td:nth-child(5)")?.textContent.trim();
+            if (microText) microSet.add(microText);
         });
-    </script>
 
-    <script>
-        // microarchitecture filtering
-        document.addEventListener("DOMContentLoaded", function () {
-            const table = document.getElementById("pcbuild-table");
-            const filterContainer = document.getElementById("microarchitecture-filter");
+        const microList = Array.from(microSet).sort();
 
-            if (!table || !filterContainer) return;
+        // Create "All" checkbox
+        const allCheckboxWrapper = document.createElement("label");
+        allCheckboxWrapper.style.display = "block";
+        allCheckboxWrapper.innerHTML = `
+            <input type="checkbox" class="micro-checkbox" value="all" checked>
+            All
+        `;
+        filterContainer.appendChild(allCheckboxWrapper);
 
-            const rows = Array.from(table.querySelectorAll("tbody tr"));
-            const microSet = new Set();
-
-            // Collect all unique microarchitectures
-            rows.forEach(row => {
-                const microText = row.querySelector("td:nth-child(5)")?.textContent.trim();
-                if (microText) microSet.add(microText);
-            });
-
-            const microList = Array.from(microSet).sort();
-
-            // Create "All" checkbox
-            const allCheckboxWrapper = document.createElement("label");
-            allCheckboxWrapper.style.display = "block";
-            allCheckboxWrapper.innerHTML = `
-                <input type="checkbox" class="micro-checkbox" value="all" checked>
-                All
+        // Create individual checkboxes
+        microList.forEach(micro => {
+            const id = `micro-${micro.replace(/\s+/g, '-').toLowerCase()}`;
+            const label = document.createElement("label");
+            label.style.display = "block";
+            label.innerHTML = `
+                <input type="checkbox" class="micro-checkbox" value="${micro}" checked>
+                ${micro}
             `;
-            filterContainer.appendChild(allCheckboxWrapper);
-
-            // Create individual checkboxes
-            microList.forEach(micro => {
-                const id = `micro-${micro.replace(/\s+/g, '-').toLowerCase()}`;
-                const label = document.createElement("label");
-                label.style.display = "block";
-                label.innerHTML = `
-                    <input type="checkbox" class="micro-checkbox" value="${micro}">
-                    ${micro}
-                `;
-                filterContainer.appendChild(label);
-            });
-
-            const checkboxes = () => filterContainer.querySelectorAll(".micro-checkbox");
-            const allCheckbox = () => filterContainer.querySelector(".micro-checkbox[value='all']");
-
-            function filterByMicro() {
-                const selected = Array.from(checkboxes())
-                    .filter(cb => cb.checked && cb.value !== "all")
-                    .map(cb => cb.value);
-
-                if (allCheckbox().checked || selected.length === 0) {
-                    rows.forEach(row => row.style.display = "");
-                } else {
-                    rows.forEach(row => {
-                        const microText = row.querySelector("td:nth-child(5)")?.textContent.trim();
-                        row.style.display = selected.includes(microText) ? "" : "none";
-                    });
-                }
-            }
-
-            filterContainer.addEventListener("change", function (e) {
-                const target = e.target;
-
-                if (target.value === "all") {
-                    if (target.checked) {
-                        // Uncheck all others
-                        checkboxes().forEach(cb => {
-                            if (cb.value !== "all") cb.checked = false;
-                        });
-                    }
-                } else {
-                    allCheckbox().checked = false;
-                }
-
-                filterByMicro();
-            });
-
-            // Initial filter
-            filterByMicro();
+            filterContainer.appendChild(label);
         });
-    </script>
 
-    <script>
-        // BOOST CLOCK RANGE SLIDER FILTER
-        document.addEventListener("DOMContentLoaded", function () {
-            const table = document.getElementById("pcbuild-table");
-            const sliderContainer = document.getElementById("boost-clock-slider");
-            const minLabel = document.getElementById("boost-clock-min-label");
-            const maxLabel = document.getElementById("boost-clock-max-label");
+        const checkboxes = () => filterContainer.querySelectorAll(".micro-checkbox");
+        const allCheckbox = () => filterContainer.querySelector(".micro-checkbox[value='all']");
 
-            if (!table || !sliderContainer) return;
-
-            const rows = Array.from(table.querySelectorAll("tbody tr"));
-            const boostClocks = rows.map(row => {
-                const clockText = row.querySelector("td:nth-child(4)")?.textContent.replace(/[^\d.]/g, '') || "0";
-                return parseFloat(clockText) || 0;
+        function zebraStripe() {
+            rows.forEach((row, index) => {
+                row.style.backgroundColor = index % 2 === 0 ? '#d4d4d4' : '#ebebeb';
             });
+        }
 
-            const minClock = Math.floor(Math.min(...boostClocks));
-            const maxClock = Math.ceil(Math.max(...boostClocks));
-            let currentMin = minClock;
-            let currentMax = maxClock;
+        function filterByMicro() {
+            const selected = Array.from(checkboxes())
+                .filter(cb => cb.checked && cb.value !== "all")
+                .map(cb => cb.value);
 
-            // Set default labels
-            minLabel.textContent = `${minClock} GHz`;
-            maxLabel.textContent = `${maxClock} GHz`;
-
-            // Create 2 sliders
-            sliderContainer.innerHTML = `
-                <input type="range" class="min-range-bg" id="min-boost-clock" min="${minClock}" max="${maxClock}" value="${minClock}" step="0.1" style="width: 100%;">
-                <input type="range" class="max-range-bg" id="max-boost-clock" min="${minClock}" max="${maxClock}" value="${maxClock}" step="0.1" style="width: 100%; margin-top: 10px;">
-            `;
-
-            const minSlider = document.getElementById("min-boost-clock");
-            const maxSlider = document.getElementById("max-boost-clock");
-
-            function filterByBoostClock() {
-                const minVal = parseFloat(minSlider.value);
-                const maxVal = parseFloat(maxSlider.value);
-                currentMin = minVal;
-                currentMax = maxVal;
-
-                minLabel.textContent = `${minVal} GHz`;
-                maxLabel.textContent = `${maxVal} GHz`;
-
+            if (allCheckbox().checked || selected.length === 0) {
+                rows.forEach(row => row.style.display = "");
+            } else {
                 rows.forEach(row => {
-                    const clockText = row.querySelector("td:nth-child(4)")?.textContent.replace(/[^\d.]/g, '') || "0";
-                    const boostClock = parseFloat(clockText) || 0;
-
-                    row.style.display = (boostClock >= minVal && boostClock <= maxVal) ? "" : "none";
+                    const microText = row.querySelector("td:nth-child(5)")?.textContent.trim();
+                    row.style.display = selected.includes(microText) ? "" : "none";
                 });
             }
 
-            minSlider.addEventListener("input", () => {
-                if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
-                    minSlider.value = maxSlider.value;
+            // Apply zebra striping after filtering
+            zebraStripe();
+        }
+
+        filterContainer.addEventListener("change", function (e) {
+            const target = e.target;
+
+            if (target.value === "all") {
+                // If "All" checkbox is clicked, select/deselect all checkboxes
+                if (target.checked) {
+                    // If "All" is selected, check all individual checkboxes
+                    checkboxes().forEach(cb => {
+                        cb.checked = true;
+                    });
+                } else {
+                    // If "All" is deselected, uncheck all individual checkboxes
+                    checkboxes().forEach(cb => {
+                        cb.checked = false;
+                    });
                 }
-                filterByBoostClock();
+            } else {
+                // If any other checkbox is clicked, uncheck the "All" checkbox
+                allCheckbox().checked = false;
+            }
+
+            filterByMicro();
+        });
+
+        // Initial filter and zebra striping on page load
+        filterByMicro();
+        zebraStripe();
+    });
+</script>
+
+
+<script>
+    // BOOST CLOCK RANGE SLIDER FILTER with Zebra Striping
+    document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("pcbuild-table");
+        const sliderContainer = document.getElementById("boost-clock-slider");
+        const minLabel = document.getElementById("boost-clock-min-label");
+        const maxLabel = document.getElementById("boost-clock-max-label");
+
+        if (!table || !sliderContainer) return;
+
+        const rows = Array.from(table.querySelectorAll("tbody tr"));
+        const boostClocks = rows.map(row => {
+            const clockText = row.querySelector("td:nth-child(4)")?.textContent.replace(/[^\d.]/g, '') || "0";
+            return parseFloat(clockText) || 0;
+        });
+
+        const minClock = Math.floor(Math.min(...boostClocks));
+        const maxClock = Math.ceil(Math.max(...boostClocks));
+        let currentMin = minClock;
+        let currentMax = maxClock;
+
+        // Set default labels
+        minLabel.textContent = `${minClock} GHz`;
+        maxLabel.textContent = `${maxClock} GHz`;
+
+        // Create 2 sliders
+        sliderContainer.innerHTML = `
+            <input type="range" class="min-range-bg" id="min-boost-clock" min="${minClock}" max="${maxClock}" value="${minClock}" step="0.1" style="width: 100%;">
+            <input type="range" class="max-range-bg" id="max-boost-clock" min="${minClock}" max="${maxClock}" value="${maxClock}" step="0.1" style="width: 100%; margin-top: 10px;">
+        `;
+
+        const minSlider = document.getElementById("min-boost-clock");
+        const maxSlider = document.getElementById("max-boost-clock");
+
+        // Apply zebra striping to visible rows
+        function applyZebraStriping() {
+            const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+            visibleRows.forEach((row, index) => {
+                row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+            });
+        }
+
+        function filterByBoostClock() {
+            const minVal = parseFloat(minSlider.value);
+            const maxVal = parseFloat(maxSlider.value);
+            currentMin = minVal;
+            currentMax = maxVal;
+
+            minLabel.textContent = `${minVal} GHz`;
+            maxLabel.textContent = `${maxVal} GHz`;
+
+            rows.forEach(row => {
+                const clockText = row.querySelector("td:nth-child(4)")?.textContent.replace(/[^\d.]/g, '') || "0";
+                const boostClock = parseFloat(clockText) || 0;
+
+                // Show or hide the row based on boost clock filter
+                row.style.display = (boostClock >= minVal && boostClock <= maxVal) ? "" : "none";
             });
 
-            maxSlider.addEventListener("input", () => {
-                if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
-                    maxSlider.value = minSlider.value;
-                }
-                filterByBoostClock();
-            });
+            // Apply zebra striping to the visible rows
+            applyZebraStriping();
+        }
 
-            // Initial filter apply
+        // Event listeners for sliders
+        minSlider.addEventListener("input", () => {
+            if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+                minSlider.value = maxSlider.value;
+            }
             filterByBoostClock();
         });
-    </script>
 
-    <script>
-    // BASE CLOCK RANGE SLIDER FILTER
+        maxSlider.addEventListener("input", () => {
+            if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+                maxSlider.value = minSlider.value;
+            }
+            filterByBoostClock();
+        });
+
+        // Initial filter and zebra striping apply
+        filterByBoostClock();
+    });
+</script>
+
+
+<script>
+    // BASE CLOCK RANGE SLIDER FILTER with Zebra Striping
     document.addEventListener("DOMContentLoaded", function () {
         const table = document.getElementById("pcbuild-table");
         const sliderContainer = document.getElementById("base-clock-slider");
@@ -698,6 +865,14 @@ function aawp_pcbuild_display_parts_cpu($atts) {
         const minSlider = document.getElementById("min-base-clock");
         const maxSlider = document.getElementById("max-base-clock");
 
+        // Apply zebra striping to visible rows
+        function applyZebraStriping() {
+            const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+            visibleRows.forEach((row, index) => {
+                row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+            });
+        }
+
         function filterByBaseClock() {
             const minVal = parseFloat(minSlider.value);
             const maxVal = parseFloat(maxSlider.value);
@@ -711,10 +886,15 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                 const clockText = row.querySelector("td:nth-child(3)")?.textContent.replace(/[^\d.]/g, '') || "0";
                 const baseClock = parseFloat(clockText) || 0;
 
+                // Show or hide the row based on base clock filter
                 row.style.display = (baseClock >= minVal && baseClock <= maxVal) ? "" : "none";
             });
+
+            // Apply zebra striping to the visible rows
+            applyZebraStriping();
         }
 
+        // Event listeners for sliders
         minSlider.addEventListener("input", () => {
             if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
                 minSlider.value = maxSlider.value;
@@ -729,13 +909,14 @@ function aawp_pcbuild_display_parts_cpu($atts) {
             filterByBaseClock();
         });
 
-        // Initial filter apply
+        // Initial filter and zebra striping apply
         filterByBaseClock();
     });
 </script>
 
-    <script>
-    // CORE COUNT RANGE SLIDER FILTER
+
+<script>
+    // CORE COUNT RANGE SLIDER FILTER with Zebra Striping
     document.addEventListener("DOMContentLoaded", function () {
         const table = document.getElementById("pcbuild-table");
         const sliderContainer = document.getElementById("core-slider");
@@ -760,13 +941,21 @@ function aawp_pcbuild_display_parts_cpu($atts) {
         maxLabel.textContent = `${maxCore}`;
 
         // Create 2 sliders
-        sliderContainer.innerHTML = `
-            <input type="range" class="min-range-bg" id="min-core" min="${minCore}" max="${maxCore}" value="${minCore}" step="1" style="width: 100%;">
-            <input type="range" class="max-range-bg" id="max-core" min="${minCore}" max="${maxCore}" value="${maxCore}" step="1" style="width: 100%; margin-top: 10px;">
+        sliderContainer.innerHTML = ` 
+            <input type="range" class="min-range-bg" id="min-core" min="${minCore}" max="${maxCore}" value="${minCore}" step="1" style="width: 100%;"> 
+            <input type="range" class="max-range-bg" id="max-core" min="${minCore}" max="${maxCore}" value="${maxCore}" step="1" style="width: 100%; margin-top: 10px;"> 
         `;
 
         const minSlider = document.getElementById("min-core");
         const maxSlider = document.getElementById("max-core");
+
+        // Apply zebra striping to visible rows
+        function applyZebraStriping() {
+            const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+            visibleRows.forEach((row, index) => {
+                row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+            });
+        }
 
         function filterByCore() {
             const minVal = parseInt(minSlider.value);
@@ -781,10 +970,15 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                 const coreText = row.querySelector("td:nth-child(2)")?.textContent.trim() || "0";
                 const coreCount = parseInt(coreText) || 0;
 
+                // Show or hide the row based on core count filter
                 row.style.display = (coreCount >= minVal && coreCount <= maxVal) ? "" : "none";
             });
+
+            // Apply zebra striping to the visible rows
+            applyZebraStriping();
         }
 
+        // Event listeners for sliders
         minSlider.addEventListener("input", () => {
             if (parseInt(minSlider.value) > parseInt(maxSlider.value)) {
                 minSlider.value = maxSlider.value;
@@ -799,136 +993,91 @@ function aawp_pcbuild_display_parts_cpu($atts) {
             filterByCore();
         });
 
-        // Initial filter apply
+        // Initial filter and zebra striping apply
         filterByCore();
     });
 </script>
 
-    <script>
-        //PRICE RANGE SLIDER FILTER
-        document.addEventListener("DOMContentLoaded", function () {
-            const table = document.getElementById("pcbuild-table");
-            const sliderContainer = document.getElementById("price-slider");
-            const minLabel = document.getElementById("price-min-label");
-            const maxLabel = document.getElementById("price-max-label");
 
-            if (!table || !sliderContainer) return;
+<script>
+    //PRICE RANGE SLIDER FILTER
+    document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("pcbuild-table");
+        const sliderContainer = document.getElementById("price-slider");
+        const minLabel = document.getElementById("price-min-label");
+        const maxLabel = document.getElementById("price-max-label");
 
-            const rows = Array.from(table.querySelectorAll("tbody tr"));
-            const prices = rows.map(row => {
+        if (!table || !sliderContainer) return;
+
+        const rows = Array.from(table.querySelectorAll("tbody tr"));
+        const prices = rows.map(row => {
+            const priceText = row.querySelector("td:nth-child(7)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+            return parseFloat(priceText) || 0;
+        });
+
+        const minPrice = Math.floor(Math.min(...prices));
+        const maxPrice = Math.ceil(Math.max(...prices));
+        let currentMin = minPrice;
+        let currentMax = maxPrice;
+
+        // Set default labels
+        minLabel.textContent = `$${minPrice}`;
+        maxLabel.textContent = `$${maxPrice}`;
+
+        // Create 2 sliders
+        sliderContainer.innerHTML = `
+            <input type="range" class="min-range-bg" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
+            <input type="range" class="max-range-bg" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
+        `;
+
+        const minSlider = document.getElementById("min-price");
+        const maxSlider = document.getElementById("max-price");
+
+        function applyZebraStriping() {
+            const visibleRows = rows.filter(row => row.style.display !== "none");
+            visibleRows.forEach((row, index) => {
+                row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+            });
+        }
+
+        function filterByPrice() {
+            const minVal = parseFloat(minSlider.value);
+            const maxVal = parseFloat(maxSlider.value);
+            currentMin = minVal;
+            currentMax = maxVal;
+
+            minLabel.textContent = `$${minVal}`;
+            maxLabel.textContent = `$${maxVal}`;
+
+            rows.forEach(row => {
                 const priceText = row.querySelector("td:nth-child(7)")?.textContent.replace(/[^0-9.]/g, '') || "0";
-                return parseFloat(priceText) || 0;
+                const price = parseFloat(priceText) || 0;
+
+                row.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
             });
 
-            const minPrice = Math.floor(Math.min(...prices));
-            const maxPrice = Math.ceil(Math.max(...prices));
-            let currentMin = minPrice;
-            let currentMax = maxPrice;
+            // Apply zebra striping after filtering
+            applyZebraStriping();
+        }
 
-            // Set default labels
-            minLabel.textContent = `$${minPrice}`;
-            maxLabel.textContent = `$${maxPrice}`;
-
-            // Create 2 sliders
-            sliderContainer.innerHTML = `
-                <input type="range" class="min-range-bg" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
-                <input type="range" class="max-range-bg" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
-            `;
-
-            const minSlider = document.getElementById("min-price");
-            const maxSlider = document.getElementById("max-price");
-
-            function filterByPrice() {
-                const minVal = parseFloat(minSlider.value);
-                const maxVal = parseFloat(maxSlider.value);
-                currentMin = minVal;
-                currentMax = maxVal;
-
-                minLabel.textContent = `$${minVal}`;
-                maxLabel.textContent = `$${maxVal}`;
-
-                rows.forEach(row => {
-                    const priceText = row.querySelector("td:nth-child(7)")?.textContent.replace(/[^0-9.]/g, '') || "0";
-                    const price = parseFloat(priceText) || 0;
-
-                    row.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
-                });
+        minSlider.addEventListener("input", () => {
+            if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+                minSlider.value = maxSlider.value;
             }
-
-            minSlider.addEventListener("input", () => {
-                if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
-                    minSlider.value = maxSlider.value;
-                }
-                filterByPrice();
-            });
-
-            maxSlider.addEventListener("input", () => {
-                if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
-                    maxSlider.value = minSlider.value;
-                }
-                filterByPrice();
-            });
-
-            // Initial filter apply
             filterByPrice();
         });
-    </script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const table = document.getElementById('pcbuild-table');
-            const rows = Array.from(table.querySelectorAll('tbody tr'));
-            const manufacturerCheckboxes = document.querySelectorAll('#manufacturer-options input[type="checkbox"]');
-
-            function getSelectedManufacturers() {
-                const selected = [];
-                manufacturerCheckboxes.forEach(cb => {
-                    if (cb.checked && cb.value !== 'all') {
-                        selected.push(cb.value.toLowerCase());
-                    }
-                });
-            return selected;
+        maxSlider.addEventListener("input", () => {
+            if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+                maxSlider.value = minSlider.value;
             }
-
-            function updateManufacturerFilter() {
-                const selected = getSelectedManufacturers();
-
-                rows.forEach(row => {
-                    const nameCell = row.querySelector('td');
-                    const nameText = nameCell ? nameCell.textContent.toLowerCase() : '';
-                    const isVisible = selected.length === 0 || selected.some(m => nameText.includes(m));
-                    row.style.display = isVisible ? '' : 'none';
-                });
-            }
-
-            // When "All" is checked, uncheck others and show all
-            manufacturerCheckboxes.forEach(cb => {
-                cb.addEventListener('change', function () {
-                    if (this.value === 'all') {
-                        if (this.checked) {
-                            manufacturerCheckboxes.forEach(other => {
-                                if (other !== this) other.checked = false;
-                            });
-                        }
-                    } else {
-                        document.querySelector('#manufacturer-options input[value="all"]').checked = false;
-                    }
-
-                    // If no manufacturer selected, default to showing all
-                    const anyChecked = Array.from(manufacturerCheckboxes).some(cb => cb.checked && cb.value !== 'all');
-                    if (!anyChecked) {
-                        document.querySelector('#manufacturer-options input[value="all"]').checked = true;
-                    }
-
-                    updateManufacturerFilter();
-                });
-            });
-
-            // Initial filter application
-            updateManufacturerFilter();
+            filterByPrice();
         });
-    </script>
 
+        // Initial filter apply
+        filterByPrice();
+    });
+</script>
 
     <script>
         // SORTING LOGIC

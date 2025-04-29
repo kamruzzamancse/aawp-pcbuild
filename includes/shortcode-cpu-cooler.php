@@ -114,7 +114,16 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                         </div>
                     </div>
                 </div>
-
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>CPU SOCKET</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="socket-filter">
+                        <label><input type="checkbox" id="socket-all" checked> All</label><br/>
+                        <!-- Checkboxes for sockets will be dynamically inserted by JS -->
+                    </div>
+                </div>
 
             </div>
 
@@ -179,8 +188,7 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             preg_match('/(\d{3,4})\s?RPM/i', $features_string, $rpm_match);
                             preg_match('/(\d+(\.\d+)?\s?dB)/i', $features_string, $noise_match);
                             preg_match('/(120|240|280|360)\s?mm/i', $features_string, $rad_match);
-                            //preg_match_all('/(AM4|AM5|LGA ?1200|LGA ?1700|LGA ?1151|LGA ?2066|TR4|sTRX4|FM2\+?)/i', $features_string . ' ' . $full_title, $socket_matches);
-                            preg_match_all('/(AM4|AM5|FM2\+?|TR4|sTRX4|LGA ?(1150|1151|1155|1200|1700|1851|2066))/i', $features_string . ' ' . $full_title, $socket_matches);
+                            preg_match_all('/(AM4|AM5|FM2\+|TR4|sTRX4|LGA[\s-]?(1150|1151|1155|1156|1200|1700|1851|2066))/i', $features_string . ' ' . $full_title, $socket_matches);
 
                             $fan_rpm = $rpm_match[1] ?? '-';
                             $noise_level = $noise_match[1] ?? '-';
@@ -188,6 +196,7 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             $compatible_sockets = array_map('trim', array_unique($socket_matches[1]));
                             if (empty($compatible_sockets)) $compatible_sockets[] = 'all';
                             $socket = implode(',', $compatible_sockets);
+                            //echo $socket1 = implode(',', $compatible_sockets).'<br>';
 
                         ?>
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 16px"
@@ -202,15 +211,8 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             
                             <!-- <td style="padding:10px;"><?php //echo esc_html($rating_display); ?></td> -->
                             <td style="padding:10px;">
-                                <?php if (!empty($product_url) && $rating_display !== '-'): ?>
-                                    <a href="<?php echo esc_url($product_url); ?>" target="_blank" style="color: #0073aa; text-decoration: underline;">
-                                        <?php echo esc_html($rating_display); ?>
-                                    </a>
-                                <?php else: ?>
-                                    <?php echo esc_html($rating_display); ?>
-                                <?php endif; ?>
+                                <?php echo esc_html($rating_display); ?>
                             </td>
-
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
                                 <button class="add-to-builder"
@@ -255,6 +257,202 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
             </div>
         </div>
     </div>
+
+    <script>
+    // Socket filtering
+    document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const socketFilterContainer = document.getElementById("socket-filter");
+    const socketMap = new Map(); // Using Map to store normalized sockets
+    const VISIBLE_COUNT = 4; // Number of sockets to show initially
+    let expanded = false;
+
+    // Function to normalize socket names
+    function normalizeSocketName(socket) {
+        if (!socket) return '';
+        // Convert to uppercase and remove all spaces
+        return socket.toUpperCase().replace(/\s+/g, '');
+    }
+
+    // Clear existing checkboxes (except the "All" checkbox)
+    const existingCheckboxes = socketFilterContainer.querySelectorAll('input[name="socket"]');
+    existingCheckboxes.forEach(checkbox => {
+        if (checkbox.id !== 'socket-all') {
+            checkbox.parentElement.remove();
+        }
+    });
+
+    // Remove the existing "Show more/less" link if it exists
+    const existingToggleLink = socketFilterContainer.querySelector('a[href="#"]');
+    if (existingToggleLink) {
+        existingToggleLink.remove();
+    }
+
+    // Collect unique socket values from all rows and normalize them
+    tableRows.forEach(row => {
+        const compatibleSockets = row.dataset.compatibleSockets.split(',');
+        compatibleSockets.forEach(socket => {
+            const trimmedSocket = socket.trim();
+            if (trimmedSocket && trimmedSocket.toLowerCase() !== 'all') {
+                const normalized = normalizeSocketName(trimmedSocket);
+                // Store the original display name with the first occurrence
+                if (!socketMap.has(normalized)) {
+                    socketMap.set(normalized, trimmedSocket);
+                }
+            }
+        });
+    });
+
+    // Sort sockets logically (Intel LGA first, then AMD, then others)
+    const sortedSockets = Array.from(socketMap.entries()).sort(([aKey, aVal], [bKey, bVal]) => {
+        const isIntelA = aKey.startsWith('LGA');
+        const isIntelB = bKey.startsWith('LGA');
+        const isAmdA = aKey.startsWith('AM');
+        const isAmdB = bKey.startsWith('AM');
+        
+        if (isIntelA && !isIntelB) return -1;
+        if (!isIntelA && isIntelB) return 1;
+        if (isAmdA && !isAmdB) return -1;
+        if (!isAmdA && isAmdB) return 1;
+        
+        // For same type, sort by number
+        const numA = parseInt(aKey.replace(/\D/g, '')) || 0;
+        const numB = parseInt(bKey.replace(/\D/g, '')) || 0;
+        return numA - numB;
+    });
+
+    // Create checkbox elements
+    const socketCheckboxElements = [];
+
+    // Create individual socket checkboxes
+    sortedSockets.forEach(([normalized, displayName]) => {
+        const label = document.createElement("label");
+        label.style.display = 'block';
+        label.style.margin = '2px 0';
+        label.innerHTML = `<input type="checkbox" name="socket" value="${normalized}" checked> ${displayName}`;
+        socketCheckboxElements.push(label);
+    });
+
+    // Append socket checkboxes to container (after the "All" checkbox)
+    const allCheckbox = socketFilterContainer.querySelector('#socket-all');
+    const allLabel = allCheckbox.parentElement;
+    
+    // Insert checkboxes after the "All" checkbox
+    let insertAfter = allLabel;
+    
+    socketCheckboxElements.forEach((el, index) => {
+        insertAfter.after(el);
+        insertAfter = el;
+        
+        // Hide sockets beyond the initial visible count
+        if (index >= VISIBLE_COUNT) {
+            el.style.display = 'none';
+        }
+    });
+
+    // Add Show more / Show less link if there are more than VISIBLE_COUNT sockets
+    if (sortedSockets.length > VISIBLE_COUNT) {
+        const socketToggleLink = document.createElement("a");
+        socketToggleLink.href = "#";
+        socketToggleLink.textContent = "Show more";
+        socketToggleLink.style.marginTop = "5px";
+        socketToggleLink.style.fontSize = "14px";
+        socketToggleLink.style.color = "#0066cc";
+        socketToggleLink.style.display = "inline-block";
+        socketFilterContainer.appendChild(socketToggleLink);
+
+        // Toggle visibility of additional sockets
+        socketToggleLink.addEventListener("click", function (e) {
+            e.preventDefault();
+            expanded = !expanded;
+
+            socketCheckboxElements.forEach((el, index) => {
+                if (index >= VISIBLE_COUNT) {
+                    el.style.display = expanded ? 'block' : 'none';
+                }
+            });
+
+            socketToggleLink.textContent = expanded ? "Show less" : "Show more";
+        });
+
+        // Remove any <br> tags inside the container
+        const brTags = socketFilterContainer.getElementsByTagName('br');
+        while(brTags[0]) {
+            brTags[0].parentNode.removeChild(brTags[0]);
+        }
+    }
+
+    // Handle "All" checkbox change
+    allCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+        socketFilterContainer.querySelectorAll('input[name="socket"]').forEach(checkbox => {
+            if (checkbox !== this) {
+                checkbox.checked = isChecked;
+            }
+        });
+        filterBySockets();
+    });
+
+    // Handle individual socket checkbox changes
+    socketFilterContainer.addEventListener("change", function (e) {
+        if (e.target.name === 'socket' && e.target.id !== 'socket-all') {
+            // If unchecking a socket, uncheck "All"
+            if (!e.target.checked) {
+                allCheckbox.checked = false;
+            }
+            // If all sockets are checked, check "All"
+            const allSocketsChecked = Array.from(socketFilterContainer.querySelectorAll('input[name="socket"]:not(#socket-all)'))
+                .every(checkbox => checkbox.checked);
+            if (allSocketsChecked) {
+                allCheckbox.checked = true;
+            }
+        }
+        filterBySockets();
+    });
+
+    // Socket filtering function
+    function filterBySockets() {
+        const selectedSockets = Array.from(socketFilterContainer.querySelectorAll("input[name='socket']:checked"))
+            .map(input => input.value);
+
+        const showAll = selectedSockets.includes('all');
+        
+        tableRows.forEach(row => {
+            const rowSockets = row.dataset.compatibleSockets.split(',')
+                .map(s => normalizeSocketName(s.trim()));
+            
+            if (showAll) {
+                row.style.display = '';
+            } else {
+                const matchesSocket = selectedSockets.some(selectedSocket => 
+                    rowSockets.includes(selectedSocket)
+                );
+                row.style.display = matchesSocket ? '' : 'none';
+            }
+        });
+
+        updateProductCount();
+        applyZebraStriping();
+    }
+
+    function updateProductCount() {
+        const visibleCount = table.querySelectorAll("tbody tr:not([style*='display: none'])").length;
+        document.getElementById("total_products").textContent = `${visibleCount} Products`;
+    }
+
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    // Initial setup
+    applyZebraStriping();
+});
+
+</script>
 
     <script>
         // Compatibility Checking
@@ -354,160 +552,160 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
 
     </script>
 
-    <script>
-    // Height filtering
-document.addEventListener("DOMContentLoaded", function () {
-    const table = document.getElementById("pcbuild-table");
-    const sliderContainer = document.getElementById("height-slider");
-    const minLabel = document.getElementById("height-min-label");
-    const maxLabel = document.getElementById("height-max-label");
+<script>
+    // Height filtering with Zebra Striping
+    document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("pcbuild-table");
+        const sliderContainer = document.getElementById("height-slider");
+        const minLabel = document.getElementById("height-min-label");
+        const maxLabel = document.getElementById("height-max-label");
 
-    if (!table || !sliderContainer) return;
+        if (!table || !sliderContainer) return;
 
-    const rows = Array.from(table.querySelectorAll("tbody tr"));
+        const rows = Array.from(table.querySelectorAll("tbody tr"));
 
-    // Extract height values from the "Add to Builder" button data-height attribute
-    const heights = rows.map(row => {
-        const button = row.querySelector(".add-to-builder");
-        return button ? parseFloat(button.dataset.height) || 0 : 0;
-    });
-
-    const minHeight = Math.floor(Math.min(...heights));
-    const maxHeight = Math.ceil(Math.max(...heights));
-
-    // Set initial min and max height labels
-    minLabel.textContent = `${minHeight} mm`;
-    maxLabel.textContent = `${maxHeight} mm`;
-
-    // Create the slider elements for height filtering
-    sliderContainer.innerHTML = `
-        <input type="range" class="min-range-bg" id="min-height" min="${minHeight}" max="${maxHeight}" value="${minHeight}" step="1" style="width: 100%;">
-        <input type="range" class="max-range-bg" id="max-height" min="${minHeight}" max="${maxHeight}" value="${maxHeight}" step="1" style="width: 100%; margin-top: 10px;">
-    `;
-
-    const minSlider = document.getElementById("min-height");
-    const maxSlider = document.getElementById("max-height");
-
-    // Function to apply zebra striping to visible rows
-    function applyZebraStripes() {
-        let visibleIndex = 0;
-        rows.forEach(row => {
-            row.classList.remove("zebra-even", "zebra-odd");
-
-            if (row.offsetParent !== null) { // row is visible
-                if (visibleIndex % 2 === 0) {
-                    row.classList.add("zebra-even");
-                } else {
-                    row.classList.add("zebra-odd");
-                }
-                visibleIndex++;
-            }
-        });
-    }
-
-    // Function to filter rows by height range
-    function filterByHeight() {
-        const minVal = parseFloat(minSlider.value);
-        const maxVal = parseFloat(maxSlider.value);
-
-        // Update min and max height labels based on slider values
-        minLabel.textContent = `${minVal} mm`;
-        maxLabel.textContent = `${maxVal} mm`;
-
-        // Filter rows based on the height range
-        rows.forEach(row => {
+        // Extract height values from the "Add to Builder" button data-height attribute
+        const heights = rows.map(row => {
             const button = row.querySelector(".add-to-builder");
-            const height = button ? parseFloat(button.dataset.height) || 0 : 0;
-            row.style.display = (height >= minVal && height <= maxVal) ? "" : "none";
+            return button ? parseFloat(button.dataset.height) || 0 : 0;
         });
 
-        applyZebraStripes(); // Re-apply zebra striping after filtering
-    }
+        const minHeight = Math.floor(Math.min(...heights));
+        const maxHeight = Math.ceil(Math.max(...heights));
 
-    // Event listeners for the height sliders
-    minSlider.addEventListener("input", () => {
-        if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
-            minSlider.value = maxSlider.value;
+        // Set initial min and max height labels
+        minLabel.textContent = `${minHeight} mm`;
+        maxLabel.textContent = `${maxHeight} mm`;
+
+        // Create the slider elements for height filtering
+        sliderContainer.innerHTML = `
+            <input type="range" class="min-range-bg" id="min-height" min="${minHeight}" max="${maxHeight}" value="${minHeight}" step="1" style="width: 100%;">
+            <input type="range" class="max-range-bg" id="max-height" min="${minHeight}" max="${maxHeight}" value="${maxHeight}" step="1" style="width: 100%; margin-top: 10px;">
+        `;
+
+        const minSlider = document.getElementById("min-height");
+        const maxSlider = document.getElementById("max-height");
+
+        // Function to apply zebra striping to visible rows
+        function applyZebraStripes() {
+            const visibleRows = rows.filter(row => row.style.display !== "none");
+            visibleRows.forEach((row, index) => {
+                row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+            });
         }
+
+        // Function to filter rows by height range
+        function filterByHeight() {
+            const minVal = parseFloat(minSlider.value);
+            const maxVal = parseFloat(maxSlider.value);
+
+            // Update min and max height labels
+            minLabel.textContent = `${minVal} mm`;
+            maxLabel.textContent = `${maxVal} mm`;
+
+            // Show/hide rows based on the height range
+            rows.forEach(row => {
+                const button = row.querySelector(".add-to-builder");
+                const height = button ? parseFloat(button.dataset.height) || 0 : 0;
+                row.style.display = (height >= minVal && height <= maxVal) ? "" : "none";
+            });
+
+            applyZebraStripes(); // 🦓 Apply zebra stripes after filtering
+        }
+
+        // Event listeners for sliders
+        minSlider.addEventListener("input", () => {
+            if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+                minSlider.value = maxSlider.value;
+            }
+            filterByHeight();
+        });
+
+        maxSlider.addEventListener("input", () => {
+            if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+                maxSlider.value = minSlider.value;
+            }
+            filterByHeight();
+        });
+
+        // Initialize the filter
         filterByHeight();
     });
-
-    maxSlider.addEventListener("input", () => {
-        if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
-            maxSlider.value = minSlider.value;
-        }
-        filterByHeight();
-    });
-
-    // Initialize the filter
-    filterByHeight();
-});
 </script>
 
+
 <script>
-    // Price filtering
-        document.addEventListener("DOMContentLoaded", function () {
-            const table = document.getElementById("pcbuild-table");
-            const sliderContainer = document.getElementById("price-slider");
-            const minLabel = document.getElementById("price-min-label");
-            const maxLabel = document.getElementById("price-max-label");
+    // Price filtering with Zebra striping
+    document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("pcbuild-table");
+        const sliderContainer = document.getElementById("price-slider");
+        const minLabel = document.getElementById("price-min-label");
+        const maxLabel = document.getElementById("price-max-label");
 
-            if (!table || !sliderContainer) return;
+        if (!table || !sliderContainer) return;
 
-            const rows = Array.from(table.querySelectorAll("tbody tr"));
-            const prices = rows.map(row => {
+        const rows = Array.from(table.querySelectorAll("tbody tr"));
+        const prices = rows.map(row => {
+            const priceText = row.querySelector("td:nth-child(6)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+            return parseFloat(priceText) || 0;
+        });
+
+        const minPrice = Math.floor(Math.min(...prices));
+        const maxPrice = Math.ceil(Math.max(...prices));
+        let currentMin = minPrice;
+        let currentMax = maxPrice;
+
+        minLabel.textContent = `$${minPrice}`;
+        maxLabel.textContent = `$${maxPrice}`;
+
+        sliderContainer.innerHTML = `
+            <input type="range" class="min-range-bg" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
+            <input type="range" class="max-range-bg" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
+        `;
+
+        const minSlider = document.getElementById("min-price");
+        const maxSlider = document.getElementById("max-price");
+
+        function applyZebraStripes() {
+            const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+            visibleRows.forEach((row, index) => {
+                row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+            });
+        }
+
+        function filterByPrice() {
+            const minVal = parseFloat(minSlider.value);
+            const maxVal = parseFloat(maxSlider.value);
+
+            minLabel.textContent = `$${minVal}`;
+            maxLabel.textContent = `$${maxVal}`;
+
+            rows.forEach(row => {
                 const priceText = row.querySelector("td:nth-child(6)")?.textContent.replace(/[^0-9.]/g, '') || "0";
-                return parseFloat(priceText) || 0;
+                const price = parseFloat(priceText) || 0;
+                row.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
             });
 
-            const minPrice = Math.floor(Math.min(...prices));
-            const maxPrice = Math.ceil(Math.max(...prices));
-            let currentMin = minPrice;
-            let currentMax = maxPrice;
+            applyZebraStripes();
+        }
 
-            minLabel.textContent = `$${minPrice}`;
-            maxLabel.textContent = `$${maxPrice}`;
-
-            sliderContainer.innerHTML = `
-                <input type="range" class="min-range-bg" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
-                <input type="range" class="max-range-bg" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
-            `;
-
-            const minSlider = document.getElementById("min-price");
-            const maxSlider = document.getElementById("max-price");
-
-            function filterByPrice() {
-                const minVal = parseFloat(minSlider.value);
-                const maxVal = parseFloat(maxSlider.value);
-
-                minLabel.textContent = `$${minVal}`;
-                maxLabel.textContent = `$${maxVal}`;
-
-                rows.forEach(row => {
-                    const priceText = row.querySelector("td:nth-child(6)")?.textContent.replace(/[^0-9.]/g, '') || "0";
-                    const price = parseFloat(priceText) || 0;
-                    row.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
-                });
+        minSlider.addEventListener("input", () => {
+            if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+                minSlider.value = maxSlider.value;
             }
-
-            minSlider.addEventListener("input", () => {
-                if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
-                    minSlider.value = maxSlider.value;
-                }
-                filterByPrice();
-            });
-
-            maxSlider.addEventListener("input", () => {
-                if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
-                    maxSlider.value = minSlider.value;
-                }
-                filterByPrice();
-            });
-
             filterByPrice();
         });
-    </script>
 
+        maxSlider.addEventListener("input", () => {
+            if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+                maxSlider.value = minSlider.value;
+            }
+            filterByPrice();
+        });
+
+        filterByPrice();
+    });
+</script>
 
     <script>
     // Color filtering

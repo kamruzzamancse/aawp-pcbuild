@@ -139,7 +139,7 @@ function aawp_pcbuild_get_search_index($category) {
             $keywords = 'desktop computer case ATX RGB tower';
             break;
         case 'storage':
-            $keywords = 'SSD NVMe or HDD SATA';
+            $keywords = '"Internal SSD" OR "M.2 NVMe" OR "Internal HDD 7200RPM" -enclosure -adapter -USB -external';
             break;
         case 'memory':
         case 'ram':
