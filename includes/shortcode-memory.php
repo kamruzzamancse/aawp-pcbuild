@@ -299,7 +299,6 @@ function aawp_pcbuild_display_parts_memory($atts) {
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
-
                 </table>
 
                 <!-- Pagination UI -->

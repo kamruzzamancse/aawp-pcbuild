@@ -92,6 +92,54 @@ function aawp_pcbuild_display_parts_storage($atts) {
                         <label><input type="checkbox" name="rating" value="unrated" /> Unrated</label>
                     </div>
                 </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Capacity</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="capacity-filter" style="display: block;">
+                        <div id="capacity-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="capacity-min-label">0 GB</span>
+                            <span id="capacity-max-label">0 GB</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>TYPE</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="type-filter">
+                        <label><input type="checkbox" id="type-all" checked> All</label><br/>
+                        <!-- Type checkboxes will be injected here -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top: 20px;">
+                    <div class="filter-header">
+                        <strong>Cache</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="cache-filter" style="display: block;">
+                        <div id="cache-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="cache-min-label">0 MB</span>
+                            <span id="cache-max-label">0 MB</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>FORM FACTOR</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="form-factor-filter">
+                        <label><input type="checkbox" id="form-factor-all" checked> All</label><br/>
+                        <!-- Form Factor checkboxes will be injected here -->
+                    </div>
+                </div>
+
+
             </div>
 
             <div style="flex:1;">
@@ -169,27 +217,32 @@ function aawp_pcbuild_display_parts_storage($atts) {
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
 
                             // Parse storage details
-                            preg_match('/(\d+\.?\d*)\s?(TB|GB)/i', $features_string . ' ' . $full_title, $capacity_match);
+                            
                             preg_match('/(SSD|HDD|NVMe|M\.2|SATA|Solid State|Hard Drive)/i', $features_string . ' ' . $full_title, $type_match);
                             preg_match('/(\d+)\s?(MB|GB)/i', $features_string, $cache_match);
                             
-
                             preg_match('/(2\.5\"|3\.5\"|M\.2|PCIe|U\.2)/i', $features_string . ' ' . $full_title, $form_factor_match);
                             preg_match('/(SATA\s?III?|PCIe\s?(Gen)?\d+)/i', $features_string . ' ' . $full_title, $interface_match);
 
-                            $capacity = isset($capacity_match[0]) ? strtoupper($capacity_match[0]) : '-';
-                            $type = $type_match[1] ?? '-';
-                            $cache = isset($cache_match[1], $cache_match[2]) ? $cache_match[1] . ' ' . strtoupper($cache_match[2]) : '-';
-                            $form_factor = $form_factor_match[1] ?? '-';
-                            $interface = $interface_match[1] ?? '-';
-
-                            // Convert capacity to GB for price/GB calculation
+                            //preg_match('/(\d+\.?\d*)\s?(TB|GB)/i', $features_string . ' ' . $full_title, $capacity_match);
+                            preg_match('/(\d+\.?\d*)\s?(TB|GB)/i', $full_title, $capacity_match);
+                            $capacity = '-';
                             $capacity_gb = 0;
                             if (isset($capacity_match[1], $capacity_match[2])) {
                                 $val = floatval($capacity_match[1]);
                                 $unit = strtoupper($capacity_match[2]);
+
+                                // Format like "10 GB" or "2 TB"
+                                $capacity = $val . ' ' . $unit;
+
+                                // Convert capacity to GB for price/GB calculation
                                 $capacity_gb = ($unit === 'TB') ? $val * 1000 : $val;
                             }
+
+                            $type = $type_match[1] ?? '-';
+                            $cache = isset($cache_match[1], $cache_match[2]) ? $cache_match[1] . ' ' . strtoupper($cache_match[2]) : '-';
+                            $form_factor = $form_factor_match[1] ?? '-';
+                            $interface = $interface_match[1] ?? '-';
 
                             $price_value = floatval(preg_replace('/[^\d.]/', '', $base_price));
                             $price_per_gb = ($capacity_gb && $price_value > 0)
@@ -229,6 +282,10 @@ function aawp_pcbuild_display_parts_storage($atts) {
                                     data-affiliate-url="<?php echo esc_url($product_url); ?>"
                                     data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
                                     data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
+                                    data-capacity="<?php echo esc_attr($capacity); ?>"
+                                    data-type="<?php echo esc_attr($type); ?>"
+                                    data-cache="<?php echo esc_attr($cache); ?>"
+                                    data-form_factor="<?php echo esc_attr($form_factor); ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                     <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
                                 </button>
@@ -256,8 +313,466 @@ function aawp_pcbuild_display_parts_storage($atts) {
         </div>
     </div>
 
-    <!-- PRICE RANGE SLIDER FILTER -->
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("form-factor-filter");
+    const allCheckbox = document.getElementById("form-factor-all");
+    const formFactorSet = new Set();
+    const FORM_FACTOR_VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Extract unique form factors from data-form_factor attributes
+    tableRows.forEach(row => {
+        const formFactor = row.querySelector('button.add-to-builder')?.getAttribute('data-form_factor')?.trim().toLowerCase() || "unknown";
+        formFactorSet.add(formFactor);
+    });
+
+    const formFactors = Array.from(formFactorSet).sort();
+    const checkboxElements = [];
+
+    // Create checkboxes for each form factor
+    formFactors.forEach(formFactor => {
+        const label = document.createElement("label");
+        const displayName = formFactor.toUpperCase();
+        label.innerHTML = `<input type="checkbox" name="form-factor" value="${formFactor}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    // Insert new checkboxes after the "All" checkbox
+    const allLabel = filterContainer.querySelector('label');
+    checkboxElements.forEach((el, index) => {
+        if (index >= FORM_FACTOR_VISIBLE_COUNT) el.style.display = 'none';
+        allLabel.insertAdjacentElement('afterend', el);
+    });
+
+    // Add toggle for Show more / Show less
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > FORM_FACTOR_VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    toggleLink.addEventListener("click", function(e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            el.style.display = expanded || index < FORM_FACTOR_VISIBLE_COUNT ? 'block' : 'none';
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+        });
+    }
+
+    function filterTableByFormFactor() {
+        const checked = filterContainer.querySelectorAll('input[name="form-factor"]:checked');
+        const selectedValues = Array.from(checked).map(cb => cb.value.toLowerCase());
+
+        tableRows.forEach(row => {
+            const ff = row.querySelector('button.add-to-builder')?.getAttribute('data-form_factor')?.toLowerCase();
+            row.style.display = selectedValues.includes(ff) || allCheckbox.checked ? '' : 'none';
+        });
+
+        applyZebraStriping();
+    }
+
+    // Handle individual checkbox change
+    filterContainer.addEventListener("change", function (e) {
+        const isAllCheckbox = e.target.id === "form-factor-all";
+
+        if (!isAllCheckbox && !e.target.checked) {
+            allCheckbox.checked = false;
+        }
+
+        if (!isAllCheckbox && e.target.checked) {
+            const allOther = filterContainer.querySelectorAll('input[name="form-factor"]');
+            const allChecked = Array.from(allOther).every(cb => cb.checked);
+            allCheckbox.checked = allChecked;
+        }
+
+        if (isAllCheckbox) {
+            const allChecked = allCheckbox.checked;
+            filterContainer.querySelectorAll('input[name="form-factor"]').forEach(cb => {
+                cb.checked = allChecked;
+            });
+        }
+
+        filterTableByFormFactor();
+    });
+
+    filterTableByFormFactor();
+});
+</script>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const sliderContainer = document.getElementById("cache-slider");
+    const minLabel = document.getElementById("cache-min-label");
+    const maxLabel = document.getElementById("cache-max-label");
+
+    if (!table || !sliderContainer) return;
+
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+    // Extract cache values from data-cache attribute
+    const cacheValues = rows.map(row => {
+        const cacheAttr = row.querySelector(".add-to-builder")?.dataset.cache || "0 MB";
+        const match = cacheAttr.match(/([\d.]+)/);
+        return match ? parseFloat(match[1]) : 0;
+    });
+
+    const minCache = Math.floor(Math.min(...cacheValues));
+    const maxCache = Math.ceil(Math.max(...cacheValues));
+    let currentMin = minCache;
+    let currentMax = maxCache;
+
+    minLabel.textContent = `${minCache} MB`;
+    maxLabel.textContent = `${maxCache} MB`;
+
+    sliderContainer.innerHTML = `
+        <input type="range" class="min-range-bg" id="min-cache" min="${minCache}" max="${maxCache}" value="${minCache}" step="1" style="width: 100%;">
+        <input type="range" class="max-range-bg" id="max-cache" min="${minCache}" max="${maxCache}" value="${maxCache}" step="1" style="width: 100%; margin-top: 10px;">
+    `;
+
+    const minSlider = document.getElementById("min-cache");
+    const maxSlider = document.getElementById("max-cache");
+
+    function applyCacheFilter() {
+        const minVal = parseInt(minSlider.value, 10);
+        const maxVal = parseInt(maxSlider.value, 10);
+        currentMin = minVal;
+        currentMax = maxVal;
+
+        minLabel.textContent = `${minVal} MB`;
+        maxLabel.textContent = `${maxVal} MB`;
+
+        rows.forEach(row => {
+            const cacheAttr = row.querySelector(".add-to-builder")?.dataset.cache || "0 MB";
+            const match = cacheAttr.match(/([\d.]+)/);
+            const cache = match ? parseFloat(match[1]) : 0;
+
+            row.style.display = (cache >= minVal && cache <= maxVal) ? "" : "none";
+        });
+
+        // Zebra striping for visible rows
+        const visibleRows = rows.filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    minSlider.addEventListener("input", () => {
+        if (parseInt(minSlider.value) > parseInt(maxSlider.value)) {
+            minSlider.value = maxSlider.value;
+        }
+        applyCacheFilter();
+    });
+
+    maxSlider.addEventListener("input", () => {
+        if (parseInt(maxSlider.value) < parseInt(minSlider.value)) {
+            maxSlider.value = minSlider.value;
+        }
+        applyCacheFilter();
+    });
+
+    applyCacheFilter();
+});
+</script>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("type-filter");
+    const allCheckbox = document.getElementById("type-all");
+    const typeSet = new Set();
+    const TYPE_VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Collect unique types (case-insensitive) from the rows' data-type attribute
+    tableRows.forEach(row => {
+        const type = row.querySelector('button.add-to-builder')?.getAttribute('data-type')?.trim().toLowerCase() || "unknown"; // Default to "unknown" if no data-type is available
+        typeSet.add(type);
+    });
+
+    const types = Array.from(typeSet).sort();
+    const checkboxElements = [];
+
+    // Create and append checkboxes for types
+    types.forEach(type => {
+        const label = document.createElement("label");
+        //const displayName = type.charAt(0).toUpperCase() + type.slice(1);
+        const displayName = type.toUpperCase();
+        label.innerHTML = `<input type="checkbox" name="type" value="${type}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    checkboxElements.forEach((el, index) => {
+        if (index >= TYPE_VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Toggle link for "Show more" or "Show less"
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > TYPE_VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Event listener for "Show more" toggle
+    toggleLink.addEventListener("click", function(e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            el.style.display = expanded || index < TYPE_VISIBLE_COUNT ? 'block' : 'none';
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Apply zebra striping for visible rows
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+        });
+    }
+
+    // Filter by selected types
+    filterContainer.addEventListener("change", function() {
+        const checkedTypes = Array.from(filterContainer.querySelectorAll('input[type="checkbox"]:checked'))
+            .map(checkbox => checkbox.value);
+        
+        // Show/hide rows based on type selection
+        tableRows.forEach(row => {
+            const type = row.querySelector('button.add-to-builder')?.getAttribute('data-type')?.toLowerCase();
+            const isTypeSelected = checkedTypes.includes(type) || checkedTypes.includes('all');
+            row.style.display = isTypeSelected ? '' : 'none';
+        });
+        
+        applyZebraStriping();
+    });
+
+    // Handle "All" checkbox toggling
+    allCheckbox.addEventListener("change", function() {
+        const isChecked = allCheckbox.checked;
+        filterContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = isChecked;
+        });
+
+        tableRows.forEach(row => {
+            row.style.display = isChecked ? '' : 'none';
+        });
+
+        applyZebraStriping();
+    });
+});
+
+
+</script>
+
+
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const sliderContainer = document.getElementById("capacity-slider");
+    const minLabel = document.getElementById("capacity-min-label");
+    const maxLabel = document.getElementById("capacity-max-label");
+
+    if (!table || !sliderContainer) return;
+
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+    // Extract capacity from 2nd column (adjusted for your table structure)
+    const capacityValues = rows.map(row => {
+        const capacityText = row.querySelector("td:nth-child(2)")?.textContent.toUpperCase().trim() || "0 GB";
+        const match = capacityText.match(/([\d.]+)\s?(TB|GB)/);
+        if (!match) return 0;
+        let value = parseFloat(match[1]);
+        const unit = match[2];
+        return (unit === "TB") ? value * 1000 : value;
+    });
+
+    const minCapacity = Math.floor(Math.min(...capacityValues));
+    const maxCapacity = Math.ceil(Math.max(...capacityValues));
+    let currentMin = minCapacity;
+    let currentMax = maxCapacity;
+
+    minLabel.textContent = `${minCapacity} GB`;
+    maxLabel.textContent = `${maxCapacity} GB`;
+
+    sliderContainer.innerHTML = `
+        <input type="range" class="min-range-bg" id="min-capacity" min="${minCapacity}" max="${maxCapacity}" value="${minCapacity}" step="1" style="width: 100%;">
+        <input type="range" class="max-range-bg" id="max-capacity" min="${minCapacity}" max="${maxCapacity}" value="${maxCapacity}" step="1" style="width: 100%; margin-top: 10px;">
+    `;
+
+    const minSlider = document.getElementById("min-capacity");
+    const maxSlider = document.getElementById("max-capacity");
+
+    function applyCapacityFilter() {
+        const minVal = parseInt(minSlider.value, 10);
+        const maxVal = parseInt(maxSlider.value, 10);
+        currentMin = minVal;
+        currentMax = maxVal;
+
+        minLabel.textContent = `${minVal} GB`;
+        maxLabel.textContent = `${maxVal} GB`;
+
+        rows.forEach(row => {
+            const capacityText = row.querySelector("td:nth-child(2)")?.textContent.toUpperCase().trim() || "0 GB";
+            const match = capacityText.match(/([\d.]+)\s?(TB|GB)/);
+            if (!match) {
+                row.style.display = "none";
+                return;
+            }
+            let value = parseFloat(match[1]);
+            const unit = match[2];
+            const capacity = (unit === "TB") ? value * 1000 : value;
+
+            row.style.display = (capacity >= minVal && capacity <= maxVal) ? "" : "none";
+        });
+
+        // Zebra striping for visible rows
+        const visibleRows = rows.filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    minSlider.addEventListener("input", () => {
+        if (parseInt(minSlider.value) > parseInt(maxSlider.value)) {
+            minSlider.value = maxSlider.value;
+        }
+        applyCapacityFilter();
+    });
+
+    maxSlider.addEventListener("input", () => {
+        if (parseInt(maxSlider.value) < parseInt(minSlider.value)) {
+            maxSlider.value = minSlider.value;
+        }
+        applyCapacityFilter();
+    });
+
+    applyCapacityFilter();
+});
+</script>
+
 <script>
+// Manufacturer Filtering for Storage Page
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("manufacturer-filter");
+    const allCheckbox = document.getElementById("manufacturer-all");
+    const manufacturerSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Collect unique manufacturers (case-insensitive)
+    tableRows.forEach(row => {
+        const manufacturer = row.querySelector("button.add-to-builder")?.dataset.manufacturer || "Unknown";
+        manufacturerSet.add(manufacturer.trim().toLowerCase());
+    });
+
+    const manufacturers = Array.from(manufacturerSet).sort();
+    const checkboxElements = [];
+
+    // Create and append checkboxes
+    manufacturers.forEach(manufacturer => {
+        const label = document.createElement("label");
+        const displayName = manufacturer.charAt(0).toUpperCase() + manufacturer.slice(1);
+        label.innerHTML = `<input type="checkbox" name="manufacturer" value="${manufacturer}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Toggle link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='manufacturer']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyManufacturerFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='manufacturer']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const manufacturer = row.querySelector("button.add-to-builder")?.dataset.manufacturer.trim().toLowerCase();
+            row.style.display = selected.includes(manufacturer) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // All checkbox logic
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='manufacturer']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyManufacturerFilter();
+    });
+
+    // Individual checkbox logic
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "manufacturer") {
+            applyManufacturerFilter();
+        }
+    });
+
+    // Show more/less toggle
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filter application
+    applyManufacturerFilter();
+});
+</script>
+
+<script>
+// Price Filtering
 document.addEventListener("DOMContentLoaded", function () {
     const table = document.getElementById("pcbuild-table");
     const sliderContainer = document.getElementById("price-slider");
