@@ -55,17 +55,35 @@ function aawp_pcbuild_display_parts_case($atts) {
                     <div>PARTS: <strong id="parts_count"></strong></div>
                     <div>TOTAL: <strong id="parts_total_price"></strong></div>
                 </div>
-                <div style="margin-bottom:20px;">
-                    <strong>PRICE</strong>
-                    <div id="price-slider" style="margin-top: 15px;"></div>
-                    <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
-                        <span id="price-min-label">$0</span>
-                        <span id="price-max-label">$0</span>
+                <div class="filter-group">
+                    <div class="filter-header">
+                        <strong>PRICE</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="price-filter" style="display: block;">
+                        <div id="price-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="price-min-label">$0</span>
+                            <span id="price-max-label">$0</span>
+                        </div>
                     </div>
                 </div>
-                <div style="margin-bottom: 20px;">
-                    <strong>RATING</strong>
-                    <div style="margin-top: 10px;" id="rating-filter">
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>MANUFACTURER</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="manufacturer-filter">
+                        <label><input type="checkbox" id="manufacturer-all" checked> All</label><br/>
+                        <!-- Checkboxes will be inserted here by JS -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>RATING</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="rating-filter">
                         <label><input type="checkbox" name="rating" value="all" checked /> All</label><br/>
                         <label><input type="checkbox" name="rating" value="5" /> <span style="color: orange;">★★★★★</span></label><br/>
                         <label><input type="checkbox" name="rating" value="4" /> <span style="color: orange;">★★★★☆</span></label><br/>
@@ -73,6 +91,47 @@ function aawp_pcbuild_display_parts_case($atts) {
                         <label><input type="checkbox" name="rating" value="unrated" /> Unrated</label>
                     </div>
                 </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>TYPE</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="type-filter">
+                        <label><input type="checkbox" id="type-all" checked> All</label><br/>
+                        <!-- Checkboxes for different types will be inserted here by JS -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Color</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="color-filter">
+                        <label><input type="checkbox" id="color-all" checked> All</label><br/>
+                        <!-- Checkboxes for different colors will be inserted here by JS -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Power Supply</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="powersupply-filter">
+                        <label><input type="checkbox" id="powersupply-all" checked> All</label><br/>
+                        <!-- Checkboxes for different power supplies will be inserted here by JS -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Side Panel</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="sidepanel-filter">
+                        <label><input type="checkbox" id="sidepanel-all" checked> All</label><br/>
+                        <!-- Checkboxes for different side panels will be inserted here by JS -->
+                    </div>
+                </div>
+
             </div>
 
             <div style="flex:1;">
@@ -110,6 +169,7 @@ function aawp_pcbuild_display_parts_case($atts) {
                             $product_url = $item['DetailPageURL'] ?? '#';
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
+                            $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
 
                             preg_match('/(ATX\s?Mid\s?Tower|Full\s?Tower|Mini\s?ITX|Micro\s?ATX|Small\s?Form\s?Factor|ITX|E-ATX|Cube|Tower)/i', $full_title . ' ' . $features_string, $type_match);
                             preg_match('/(Black|White|Red|Blue|Gray|Silver|ARGB|RGB)/i', $features_string, $color_match);
@@ -165,6 +225,11 @@ function aawp_pcbuild_display_parts_case($atts) {
                                     data-category="<?php echo esc_attr($category); ?>"
                                     data-affiliate-url="<?php echo esc_url($product_url); ?>"
                                     data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+                                    data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
+                                    data-type="<?php echo esc_attr($type); ?>"
+                                    data-color="<?php echo esc_attr($color); ?>"
+                                    data-power-supply="<?php echo esc_attr($power_supply); ?>"
+                                    data-side-panel="<?php echo esc_attr($side_panel); ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                     <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
                                 </button>
@@ -193,159 +258,675 @@ function aawp_pcbuild_display_parts_case($atts) {
         </div>
     </div>
 
+<script>
+// Side Panel Filtering for Storage Page
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("sidepanel-filter");
+    const allCheckbox = document.getElementById("sidepanel-all");
+    const sidePanelSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
 
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                const table = document.getElementById("pcbuild-table");
-                const sliderContainer = document.getElementById("price-slider");
-                const minLabel = document.getElementById("price-min-label");
-                const maxLabel = document.getElementById("price-max-label");
+    // Collect unique side panels (case-insensitive) from data-side-panel attribute
+    tableRows.forEach(row => {
+        const sidePanel = row.querySelector("button.add-to-builder")?.dataset.sidePanel || "Unknown";
+        sidePanelSet.add(sidePanel.trim().toLowerCase());
+    });
 
-                if (!table || !sliderContainer) return;
+    const sidePanels = Array.from(sidePanelSet).sort();
+    const checkboxElements = [];
 
-                const rows = Array.from(table.querySelectorAll("tbody tr"));
-                const prices = rows.map(row => {
-                    const priceText = row.querySelector("td:nth-child(7)")?.textContent.replace(/[^0-9.]/g, '') || "0";
-                    return parseFloat(priceText) || 0;
+    // Create and append checkboxes
+    sidePanels.forEach(sidePanel => {
+        const label = document.createElement("label");
+        const displayName = sidePanel.charAt(0).toUpperCase() + sidePanel.slice(1);
+        label.innerHTML = `<input type="checkbox" name="sidepanel" value="${sidePanel}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Toggle link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='sidepanel']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applySidePanelFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='sidepanel']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const sidePanel = row.querySelector("button.add-to-builder")?.dataset.sidePanel.trim().toLowerCase();
+            row.style.display = selected.includes(sidePanel) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // All checkbox logic
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='sidepanel']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applySidePanelFilter();
+    });
+
+    // Individual checkbox logic
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "sidepanel") {
+            applySidePanelFilter();
+        }
+    });
+
+    // Show more/less toggle
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filter application
+    applySidePanelFilter();
+});
+</script>
+
+<script>
+// Power Supply Filtering for Storage Page
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("powersupply-filter");
+    const allCheckbox = document.getElementById("powersupply-all");
+    const powersupplySet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Collect unique power supplies (case-insensitive) from data-power-supply attribute
+    tableRows.forEach(row => {
+        const powerSupply = row.querySelector("button.add-to-builder")?.dataset.powerSupply || "Unknown";
+        powersupplySet.add(powerSupply.trim().toLowerCase());
+    });
+
+    const powerSupplies = Array.from(powersupplySet).sort();
+    const checkboxElements = [];
+
+    // Create and append checkboxes
+    powerSupplies.forEach(powerSupply => {
+        const label = document.createElement("label");
+        const displayName = powerSupply.charAt(0).toUpperCase() + powerSupply.slice(1);
+        label.innerHTML = `<input type="checkbox" name="powersupply" value="${powerSupply}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Toggle link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='powersupply']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyPowerSupplyFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='powersupply']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const powerSupply = row.querySelector("button.add-to-builder")?.dataset.powerSupply.trim().toLowerCase();
+            row.style.display = selected.includes(powerSupply) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // All checkbox logic
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='powersupply']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyPowerSupplyFilter();
+    });
+
+    // Individual checkbox logic
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "powersupply") {
+            applyPowerSupplyFilter();
+        }
+    });
+
+    // Show more/less toggle
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filter application
+    applyPowerSupplyFilter();
+});
+</script>
+
+<script>
+// Color Filtering for Storage Page
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("color-filter");
+    const allCheckbox = document.getElementById("color-all");
+    const colorSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Collect unique colors (case-insensitive)
+    tableRows.forEach(row => {
+        const color = row.querySelector("button.add-to-builder")?.dataset.color || "Unknown";
+        colorSet.add(color.trim().toLowerCase());
+    });
+
+    const colors = Array.from(colorSet).sort();
+    const checkboxElements = [];
+
+    // Create and append checkboxes
+    colors.forEach(color => {
+        const label = document.createElement("label");
+        const displayName = color.charAt(0).toUpperCase() + color.slice(1);
+        label.innerHTML = `<input type="checkbox" name="color" value="${color}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Toggle link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='color']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyColorFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='color']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const color = row.querySelector("button.add-to-builder")?.dataset.color.trim().toLowerCase();
+            row.style.display = selected.includes(color) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // All checkbox logic
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='color']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyColorFilter();
+    });
+
+    // Individual checkbox logic
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "color") {
+            applyColorFilter();
+        }
+    });
+
+    // Show more/less toggle
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filter application
+    applyColorFilter();
+});
+</script>
+
+
+<script>
+// Type Filtering for Storage Page
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("type-filter");
+    const allCheckbox = document.getElementById("type-all");
+    const typeSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Collect unique types (case-insensitive)
+    tableRows.forEach(row => {
+        const type = row.querySelector("button.add-to-builder")?.dataset.type || "Unknown";
+        typeSet.add(type.trim().toLowerCase());
+    });
+
+    const types = Array.from(typeSet).sort();
+    const checkboxElements = [];
+
+    // Create and append checkboxes
+    types.forEach(type => {
+        const label = document.createElement("label");
+        const displayName = type.charAt(0).toUpperCase() + type.slice(1);
+        label.innerHTML = `<input type="checkbox" name="type" value="${type}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Toggle link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='type']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyTypeFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='type']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const type = row.querySelector("button.add-to-builder")?.dataset.type.trim().toLowerCase();
+            row.style.display = selected.includes(type) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // All checkbox logic
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='type']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyTypeFilter();
+    });
+
+    // Individual checkbox logic
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "type") {
+            applyTypeFilter();
+        }
+    });
+
+    // Show more/less toggle
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filter application
+    applyTypeFilter();
+});
+</script>
+
+
+<script>
+// Manufacturer Filtering for Storage Page
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("manufacturer-filter");
+    const allCheckbox = document.getElementById("manufacturer-all");
+    const manufacturerSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Collect unique manufacturers (case-insensitive)
+    tableRows.forEach(row => {
+        const manufacturer = row.querySelector("button.add-to-builder")?.dataset.manufacturer || "Unknown";
+        manufacturerSet.add(manufacturer.trim().toLowerCase());
+    });
+
+    const manufacturers = Array.from(manufacturerSet).sort();
+    const checkboxElements = [];
+
+    // Create and append checkboxes
+    manufacturers.forEach(manufacturer => {
+        const label = document.createElement("label");
+        const displayName = manufacturer.charAt(0).toUpperCase() + manufacturer.slice(1);
+        label.innerHTML = `<input type="checkbox" name="manufacturer" value="${manufacturer}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Toggle link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='manufacturer']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyManufacturerFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='manufacturer']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const manufacturer = row.querySelector("button.add-to-builder")?.dataset.manufacturer.trim().toLowerCase();
+            row.style.display = selected.includes(manufacturer) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // All checkbox logic
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='manufacturer']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyManufacturerFilter();
+    });
+
+    // Individual checkbox logic
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "manufacturer") {
+            applyManufacturerFilter();
+        }
+    });
+
+    // Show more/less toggle
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filter application
+    applyManufacturerFilter();
+});
+</script>
+
+<script>
+// Price Filtering
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const sliderContainer = document.getElementById("price-slider");
+    const minLabel = document.getElementById("price-min-label");
+    const maxLabel = document.getElementById("price-max-label");
+
+    if (!table || !sliderContainer) return;
+
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+    const prices = rows.map(row => {
+        // Assuming price is in the 6th column (index 7)
+        const priceText = row.querySelector("td:nth-child(7)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+        return parseFloat(priceText) || 0;
+    });
+
+    const minPrice = Math.floor(Math.min(...prices));
+    const maxPrice = Math.ceil(Math.max(...prices));
+    let currentMin = minPrice;
+    let currentMax = maxPrice;
+
+    // Set default labels
+    minLabel.textContent = `$${minPrice}`;
+    maxLabel.textContent = `$${maxPrice}`;
+
+    // Create 2 sliders
+    sliderContainer.innerHTML = `
+        <input type="range" class="min-range-bg" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
+        <input type="range" class="max-range-bg" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
+    `;
+
+    const minSlider = document.getElementById("min-price");
+    const maxSlider = document.getElementById("max-price");
+
+    function applyZebraStripes() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function filterByPrice() {
+        const minVal = parseFloat(minSlider.value);
+        const maxVal = parseFloat(maxSlider.value);
+        currentMin = minVal;
+        currentMax = maxVal;
+
+        minLabel.textContent = `$${minVal}`;
+        maxLabel.textContent = `$${maxVal}`;
+
+        rows.forEach(row => {
+            const priceText = row.querySelector("td:nth-child(7)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+            const price = parseFloat(priceText) || 0;
+
+            row.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
+        });
+
+        applyZebraStripes();
+    }
+
+    minSlider.addEventListener("input", () => {
+        if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+            minSlider.value = maxSlider.value;
+        }
+        filterByPrice();
+    });
+
+    maxSlider.addEventListener("input", () => {
+        if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+            maxSlider.value = minSlider.value;
+        }
+        filterByPrice();
+    });
+
+    // Initial filter apply
+    filterByPrice();
+});
+</script>
+
+
+<script>
+    // SORTING LOGIC for GPU TABLE (Updated for 'Case' type)
+    document.addEventListener('DOMContentLoaded', () => {
+        const table = document.getElementById("pcbuild-table");
+        const headers = table.querySelectorAll(".sortable-header");
+
+        let currentSort = { key: null, direction: 'asc' };
+
+        headers.forEach(header => {
+            header.addEventListener('click', function () {
+                const key = this.dataset.key;
+                currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
+                currentSort.key = key;
+
+                // Reset header icons
+                headers.forEach(h => {
+                    const text = h.textContent.trim().replace(/^▲|▼|▶/, '');
+                    h.innerHTML = `&#9654; ${text}`;
                 });
 
-                const minPrice = Math.floor(Math.min(...prices));
-                const maxPrice = Math.ceil(Math.max(...prices));
-                let currentMin = minPrice;
-                let currentMax = maxPrice;
+                // Set arrow icon on active header
+                const text = this.textContent.trim().replace(/^▲|▼|▶/, '');
+                this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${text}`;
 
-                minLabel.textContent = `$${minPrice}`;
-                maxLabel.textContent = `$${maxPrice}`;
-
-                sliderContainer.innerHTML = `
-                    <input type="range" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
-                    <input type="range" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
-                `;
-
-                const minSlider = document.getElementById("min-price");
-                const maxSlider = document.getElementById("max-price");
-
-                function filterByPrice() {
-                    const minVal = parseFloat(minSlider.value);
-                    const maxVal = parseFloat(maxSlider.value);
-                    currentMin = minVal;
-                    currentMax = maxVal;
-
-                    minLabel.textContent = `$${minVal}`;
-                    maxLabel.textContent = `$${maxVal}`;
-
-                    rows.forEach(row => {
-                        const priceText = row.querySelector("td:nth-child(7)")?.textContent.replace(/[^0-9.]/g, '') || "0";
-                        const price = parseFloat(priceText) || 0;
-                        row.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
-                    });
-                }
-
-                minSlider.addEventListener("input", () => {
-                    if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
-                        minSlider.value = maxSlider.value;
-                    }
-                    filterByPrice();
-                });
-
-                maxSlider.addEventListener("input", () => {
-                    if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
-                        maxSlider.value = minSlider.value;
-                    }
-                    filterByPrice();
-                });
-
-                filterByPrice();
+                sortTableByKey(key, currentSort.direction);
             });
-        </script>
+        });
 
+        function sortTableByKey(key, direction) {
+            const tbody = table.querySelector("tbody");
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+            const columnIndex = getColumnIndex(key);
+            if (!columnIndex) return;
 
-        <script>
-            // SORTING LOGIC for GPU TABLE (Updated for 'Case' type)
-            document.addEventListener('DOMContentLoaded', () => {
-                const table = document.getElementById("pcbuild-table");
-                const headers = table.querySelectorAll(".sortable-header");
+            rows.sort((a, b) => {
+                const getText = row => row.querySelector(`td:nth-child(${columnIndex})`)?.innerText.trim().toLowerCase() || '';
 
-                let currentSort = { key: null, direction: 'asc' };
+                const valA = getText(a);
+                const valB = getText(b);
 
-                headers.forEach(header => {
-                    header.addEventListener('click', function () {
-                        const key = this.dataset.key;
-                        currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
-                        currentSort.key = key;
+                const parsedA = parseValue(valA, key);
+                const parsedB = parseValue(valB, key);
 
-                        // Reset header icons
-                        headers.forEach(h => {
-                            const text = h.textContent.trim().replace(/^▲|▼|▶/, '');
-                            h.innerHTML = `&#9654; ${text}`;
-                        });
-
-                        // Set arrow icon on active header
-                        const text = this.textContent.trim().replace(/^▲|▼|▶/, '');
-                        this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${text}`;
-
-                        sortTableByKey(key, currentSort.direction);
-                    });
-                });
-
-                function sortTableByKey(key, direction) {
-                    const tbody = table.querySelector("tbody");
-                    const rows = Array.from(tbody.querySelectorAll("tr"));
-                    const columnIndex = getColumnIndex(key);
-                    if (!columnIndex) return;
-
-                    rows.sort((a, b) => {
-                        const getText = row => row.querySelector(`td:nth-child(${columnIndex})`)?.innerText.trim().toLowerCase() || '';
-
-                        const valA = getText(a);
-                        const valB = getText(b);
-
-                        const parsedA = parseValue(valA, key);
-                        const parsedB = parseValue(valB, key);
-
-                        if (typeof parsedA === 'number' && typeof parsedB === 'number') {
-                            return direction === 'asc' ? parsedA - parsedB : parsedB - parsedA;
-                        }
-
-                        return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-                    });
-
-                    rows.forEach((row, i) => {
-                        row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
-                        tbody.appendChild(row);
-                    });
+                if (typeof parsedA === 'number' && typeof parsedB === 'number') {
+                    return direction === 'asc' ? parsedA - parsedB : parsedB - parsedA;
                 }
 
-                function parseValue(value, key) {
-                    switch (key) {
-                        case 'price':
-                            return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
-
-                        case 'rating':
-                            return parseFloat(value) || 0;
-
-                        case 'memory': // e.g., "8GB"
-                            return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
-
-                        case 'core_clock':
-                        case 'boost_clock': // e.g., "1605 MHz"
-                            return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
-
-                        case 'type': // Handling the "type" column for "Case"
-                            // The type value can have multiple words like "ATX Mid Tower"
-                            return value.toLowerCase(); // Sort lexicographically based on the full string
-
-                        default:
-                            return value;
-                    }
-                }
-
-                function getColumnIndex(key) {
-                    const headers = Array.from(table.querySelectorAll("thead th"));
-                    return headers.findIndex(th => th.dataset.key === key) + 1;
-                }
+                return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
             });
-        </script>
+
+            rows.forEach((row, i) => {
+                row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+                tbody.appendChild(row);
+            });
+        }
+
+        function parseValue(value, key) {
+            switch (key) {
+                case 'price':
+                    return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
+
+                case 'rating':
+                    return parseFloat(value) || 0;
+
+                case 'memory': // e.g., "8GB"
+                    return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
+
+                case 'core_clock':
+                case 'boost_clock': // e.g., "1605 MHz"
+                    return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
+
+                case 'type': // Handling the "type" column for "Case"
+                    // The type value can have multiple words like "ATX Mid Tower"
+                    return value.toLowerCase(); // Sort lexicographically based on the full string
+
+                default:
+                    return value;
+            }
+        }
+
+        function getColumnIndex(key) {
+            const headers = Array.from(table.querySelectorAll("thead th"));
+            return headers.findIndex(th => th.dataset.key === key) + 1;
+        }
+    });
+</script>
         
         <?php
     return ob_get_clean();

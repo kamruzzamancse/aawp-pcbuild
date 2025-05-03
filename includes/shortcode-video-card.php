@@ -90,6 +90,65 @@ function aawp_pcbuild_display_parts_gpu($atts) {
                         <label><input type="checkbox" name="rating" value="unrated" /> Unrated</label>
                     </div>
                 </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>CHIPSET</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="chipset-filter">
+                        <label><input type="checkbox" id="chipset-all" checked> All</label><br/>
+                        <!-- Checkboxes for different chipsets will be inserted here by JS -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Memory</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="memory-filter" style="display: block;">
+                        <div id="memory-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="memory-min-label">0 GB</span>
+                            <span id="memory-max-label">0 GB</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Core Clock</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="coreclock-filter" style="display: block;">
+                        <div id="coreclock-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="coreclock-min-label">0 MHz</span>
+                            <span id="coreclock-max-label">0 MHz</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Boost Clock</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="boostclock-filter" style="display: block;">
+                        <div id="boostclock-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="boostclock-min-label">0 MHz</span>
+                            <span id="boostclock-max-label">0 MHz</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Color</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="color-filter">
+                        <label><input type="checkbox" id="color-all" checked> All</label><br/>
+                        <!-- Checkboxes for different colors will be inserted here by JS -->
+                    </div>
+                </div>
 
             </div>
 
@@ -217,6 +276,11 @@ function aawp_pcbuild_display_parts_gpu($atts) {
                                     data-affiliate-url="<?php echo esc_url($product_url); ?>"
                                     data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
                                     data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
+                                    data-chipset="<?php echo esc_attr($chipset); ?>"
+                                    data-memory="<?php echo esc_attr($memory); ?>"
+                                    data-core-clock="<?php echo esc_attr($core); ?>"
+                                    data-boost-clock="<?php echo esc_attr($boost); ?>"
+                                    data-color="<?php echo esc_attr($color); ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                     <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
                                 </button>
@@ -246,6 +310,459 @@ function aawp_pcbuild_display_parts_gpu($atts) {
     </div>
 
     <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const filterContainer = document.getElementById("color-filter");
+    const allCheckbox = document.getElementById("color-all");
+    const colorSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    if (!table || !filterContainer) return;
+
+    const tableRows = Array.from(table.querySelectorAll("tbody tr"));
+
+    // Collect unique colors (case-insensitive)
+    tableRows.forEach(row => {
+        const color = row.querySelector("button.add-to-builder")?.dataset.color || "Unknown";
+        colorSet.add(color.trim().toLowerCase());
+    });
+
+    const colors = Array.from(colorSet).sort();
+    const checkboxElements = [];
+
+    // Create and append checkboxes for each color
+    colors.forEach(color => {
+        const label = document.createElement("label");
+        const displayName = color.charAt(0).toUpperCase() + color.slice(1); // Capitalize the first letter
+        label.innerHTML = `<input type="checkbox" name="color" value="${color}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    // Append checkboxes to the filter container
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none'; // Hide checkboxes beyond the visible count
+        filterContainer.appendChild(el);
+    });
+
+    // Show more/less toggle link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Function to apply color filter to the table
+    function applyColorFilter() {
+        const selectedColors = Array.from(document.querySelectorAll("input[name='color']:checked")).map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const color = row.querySelector("button.add-to-builder")?.dataset.color.trim().toLowerCase();
+            row.style.display = selectedColors.includes(color) ? "" : "none";
+        });
+
+        // Update the state of the 'All' checkbox
+        const allChecked = document.querySelectorAll("input[name='color']:checked").length === document.querySelectorAll("input[name='color']").length;
+        allCheckbox.checked = allChecked;
+
+        // Apply zebra striping after the filter is applied
+        applyZebraStriping();
+    }
+
+    // Zebra striping logic
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";  // Alternate colors
+        });
+    }
+
+    // 'All' checkbox logic
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='color']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyColorFilter();
+    });
+
+    // Individual checkbox logic
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "color") {
+            applyColorFilter();
+        }
+    });
+
+    // Show more/less functionality for the checkboxes
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filter application
+    applyColorFilter();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const sliderContainer = document.getElementById("boostclock-slider");
+    const minLabel = document.getElementById("boostclock-min-label");
+    const maxLabel = document.getElementById("boostclock-max-label");
+
+    if (!table || !sliderContainer) return;
+
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+    // Extract boost clock values from the table (adjusted for your table structure)
+    const boostClockValues = rows.map(row => {
+        const boostClockText = row.querySelector("td:nth-child(5)")?.textContent.trim() || "0 MHz";
+        const match = boostClockText.match(/([\d.]+)\s?(MHz|GHz)/);
+        if (!match) return 0;
+        let value = parseFloat(match[1]);
+        const unit = match[2];
+        return (unit === "GHz") ? value * 1000 : value; // Convert GHz to MHz
+    });
+
+    const minBoostClock = Math.floor(Math.min(...boostClockValues));
+    const maxBoostClock = Math.ceil(Math.max(...boostClockValues));
+    let currentMin = minBoostClock;
+    let currentMax = maxBoostClock;
+
+    minLabel.textContent = `${minBoostClock} MHz`;
+    maxLabel.textContent = `${maxBoostClock} MHz`;
+
+    sliderContainer.innerHTML = `
+        <input type="range" class="min-range-bg" id="min-boostclock" min="${minBoostClock}" max="${maxBoostClock}" value="${minBoostClock}" step="1" style="width: 100%;">
+        <input type="range" class="max-range-bg" id="max-boostclock" min="${minBoostClock}" max="${maxBoostClock}" value="${maxBoostClock}" step="1" style="width: 100%; margin-top: 10px;">
+    `;
+
+    const minSlider = document.getElementById("min-boostclock");
+    const maxSlider = document.getElementById("max-boostclock");
+
+    function applyBoostClockFilter() {
+        const minVal = parseInt(minSlider.value, 10);
+        const maxVal = parseInt(maxSlider.value, 10);
+        currentMin = minVal;
+        currentMax = maxVal;
+
+        minLabel.textContent = `${minVal} MHz`;
+        maxLabel.textContent = `${maxVal} MHz`;
+
+        rows.forEach(row => {
+            const boostClockText = row.querySelector("td:nth-child(5)")?.textContent.trim() || "0 MHz";
+            const match = boostClockText.match(/([\d.]+)\s?(MHz|GHz)/);
+            if (!match) {
+                row.style.display = "none";
+                return;
+            }
+            let value = parseFloat(match[1]);
+            const unit = match[2];
+            const boostClock = (unit === "GHz") ? value * 1000 : value;
+
+            row.style.display = (boostClock >= minVal && boostClock <= maxVal) ? "" : "none";
+        });
+
+        // Zebra striping for visible rows
+        const visibleRows = rows.filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    minSlider.addEventListener("input", () => {
+        if (parseInt(minSlider.value) > parseInt(maxSlider.value)) {
+            minSlider.value = maxSlider.value;
+        }
+        applyBoostClockFilter();
+    });
+
+    maxSlider.addEventListener("input", () => {
+        if (parseInt(maxSlider.value) < parseInt(minSlider.value)) {
+            maxSlider.value = minSlider.value;
+        }
+        applyBoostClockFilter();
+    });
+
+    applyBoostClockFilter();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const sliderContainer = document.getElementById("coreclock-slider");
+    const minLabel = document.getElementById("coreclock-min-label");
+    const maxLabel = document.getElementById("coreclock-max-label");
+
+    if (!table || !sliderContainer) return;
+
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+    // Extract core clock values from the table (adjusted for your table structure)
+    const coreClockValues = rows.map(row => {
+        const coreClockText = row.querySelector("td:nth-child(4)")?.textContent.trim() || "0 MHz";
+        const match = coreClockText.match(/([\d.]+)\s?(MHz|GHz)/);
+        if (!match) return 0;
+        let value = parseFloat(match[1]);
+        const unit = match[2];
+        return (unit === "GHz") ? value * 1000 : value; // Convert GHz to MHz
+    });
+
+    const minCoreClock = Math.floor(Math.min(...coreClockValues));
+    const maxCoreClock = Math.ceil(Math.max(...coreClockValues));
+    let currentMin = minCoreClock;
+    let currentMax = maxCoreClock;
+
+    minLabel.textContent = `${minCoreClock} MHz`;
+    maxLabel.textContent = `${maxCoreClock} MHz`;
+
+    sliderContainer.innerHTML = `
+        <input type="range" class="min-range-bg" id="min-coreclock" min="${minCoreClock}" max="${maxCoreClock}" value="${minCoreClock}" step="1" style="width: 100%;">
+        <input type="range" class="max-range-bg" id="max-coreclock" min="${minCoreClock}" max="${maxCoreClock}" value="${maxCoreClock}" step="1" style="width: 100%; margin-top: 10px;">
+    `;
+
+    const minSlider = document.getElementById("min-coreclock");
+    const maxSlider = document.getElementById("max-coreclock");
+
+    function applyCoreClockFilter() {
+        const minVal = parseInt(minSlider.value, 10);
+        const maxVal = parseInt(maxSlider.value, 10);
+        currentMin = minVal;
+        currentMax = maxVal;
+
+        minLabel.textContent = `${minVal} MHz`;
+        maxLabel.textContent = `${maxVal} MHz`;
+
+        rows.forEach(row => {
+            const coreClockText = row.querySelector("td:nth-child(4)")?.textContent.trim() || "0 MHz";
+            const match = coreClockText.match(/([\d.]+)\s?(MHz|GHz)/);
+            if (!match) {
+                row.style.display = "none";
+                return;
+            }
+            let value = parseFloat(match[1]);
+            const unit = match[2];
+            const coreClock = (unit === "GHz") ? value * 1000 : value;
+
+            row.style.display = (coreClock >= minVal && coreClock <= maxVal) ? "" : "none";
+        });
+
+        // Zebra striping for visible rows
+        const visibleRows = rows.filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    minSlider.addEventListener("input", () => {
+        if (parseInt(minSlider.value) > parseInt(maxSlider.value)) {
+            minSlider.value = maxSlider.value;
+        }
+        applyCoreClockFilter();
+    });
+
+    maxSlider.addEventListener("input", () => {
+        if (parseInt(maxSlider.value) < parseInt(minSlider.value)) {
+            maxSlider.value = minSlider.value;
+        }
+        applyCoreClockFilter();
+    });
+
+    applyCoreClockFilter();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const sliderContainer = document.getElementById("memory-slider");
+    const minLabel = document.getElementById("memory-min-label");
+    const maxLabel = document.getElementById("memory-max-label");
+
+    if (!table || !sliderContainer) return;
+
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+    // Extract memory values from 2nd column (adjusted for your table structure)
+    const memoryValues = rows.map(row => {
+        const memoryText = row.querySelector("td:nth-child(3)")?.textContent.toUpperCase().trim() || "0 GB";
+        const match = memoryText.match(/([\d.]+)\s?(GB)/);
+        if (!match) return 0;
+        return parseFloat(match[1]);
+    });
+
+    const minMemory = Math.floor(Math.min(...memoryValues));
+    const maxMemory = Math.ceil(Math.max(...memoryValues));
+    let currentMin = minMemory;
+    let currentMax = maxMemory;
+
+    minLabel.textContent = `${minMemory} GB`;
+    maxLabel.textContent = `${maxMemory} GB`;
+
+    sliderContainer.innerHTML = `
+        <input type="range" class="min-range-bg" id="min-memory" min="${minMemory}" max="${maxMemory}" value="${minMemory}" step="1" style="width: 100%;">
+        <input type="range" class="max-range-bg" id="max-memory" min="${minMemory}" max="${maxMemory}" value="${maxMemory}" step="1" style="width: 100%; margin-top: 10px;">
+    `;
+
+    const minSlider = document.getElementById("min-memory");
+    const maxSlider = document.getElementById("max-memory");
+
+    function applyMemoryFilter() {
+        const minVal = parseInt(minSlider.value, 10);
+        const maxVal = parseInt(maxSlider.value, 10);
+        currentMin = minVal;
+        currentMax = maxVal;
+
+        minLabel.textContent = `${minVal} GB`;
+        maxLabel.textContent = `${maxVal} GB`;
+
+        rows.forEach(row => {
+            const memoryText = row.querySelector("td:nth-child(3)")?.textContent.toUpperCase().trim() || "0 GB";
+            const match = memoryText.match(/([\d.]+)\s?(GB)/);
+            if (!match) {
+                row.style.display = "none";
+                return;
+            }
+            const memory = parseFloat(match[1]);
+
+            row.style.display = (memory >= minVal && memory <= maxVal) ? "" : "none";
+        });
+
+        // Zebra striping for visible rows
+        const visibleRows = rows.filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    minSlider.addEventListener("input", () => {
+        if (parseInt(minSlider.value) > parseInt(maxSlider.value)) {
+            minSlider.value = maxSlider.value;
+        }
+        applyMemoryFilter();
+    });
+
+    maxSlider.addEventListener("input", () => {
+        if (parseInt(maxSlider.value) < parseInt(minSlider.value)) {
+            maxSlider.value = minSlider.value;
+        }
+        applyMemoryFilter();
+    });
+
+    applyMemoryFilter();
+});
+</script>
+
+<script>
+// Chipset Filtering for Storage Page
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("chipset-filter");
+    const allCheckbox = document.getElementById("chipset-all");
+    const chipsetSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Collect unique chipsets (case-insensitive)
+    tableRows.forEach(row => {
+        const chipset = row.querySelector("button.add-to-builder")?.dataset.chipset || "Unknown";
+        chipsetSet.add(chipset.trim().toLowerCase());
+    });
+
+    const chipsets = Array.from(chipsetSet).sort();
+    const checkboxElements = [];
+
+    // Create and append checkboxes
+    chipsets.forEach(chipset => {
+        const label = document.createElement("label");
+        const displayName = chipset.charAt(0).toUpperCase() + chipset.slice(1);
+        label.innerHTML = `<input type="checkbox" name="chipset" value="${chipset}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Toggle link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='chipset']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyChipsetFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='chipset']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const chipset = row.querySelector("button.add-to-builder")?.dataset.chipset.trim().toLowerCase();
+            row.style.display = selected.includes(chipset) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // All checkbox logic
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='chipset']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyChipsetFilter();
+    });
+
+    // Individual checkbox logic
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "chipset") {
+            applyChipsetFilter();
+        }
+    });
+
+    // Show more/less toggle
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filter application
+    applyChipsetFilter();
+});
+</script>
+
+
+<script>
 // Manufacturer Filtering for Storage Page
 document.addEventListener("DOMContentLoaded", function () {
     const table = document.getElementById("pcbuild-table");

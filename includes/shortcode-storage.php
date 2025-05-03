@@ -490,7 +490,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-    <script>
+<script>
 document.addEventListener("DOMContentLoaded", function () {
     const table = document.getElementById("pcbuild-table");
     const tableRows = table.querySelectorAll("tbody tr");
@@ -586,7 +586,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 
-    <script>
+<script>
 document.addEventListener("DOMContentLoaded", function () {
     const table = document.getElementById("pcbuild-table");
     const sliderContainer = document.getElementById("capacity-slider");
