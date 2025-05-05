@@ -53,17 +53,35 @@ function aawp_pcbuild_display_parts_monitor($atts) {
                     <div>PARTS: <strong id="parts_count"></strong></div>
                     <div>TOTAL: <strong id="parts_total_price"></strong></div>
                 </div>
-                <div style="margin-bottom:20px;">
-                    <strong>PRICE</strong>
-                    <div id="price-slider" style="margin-top: 15px;"></div>
-                    <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
-                        <span id="price-min-label">$0</span>
-                        <span id="price-max-label">$0</span>
+                <div class="filter-group">
+                    <div class="filter-header">
+                        <strong>PRICE</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="price-filter" style="display: block;">
+                        <div id="price-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="price-min-label">$0</span>
+                            <span id="price-max-label">$0</span>
+                        </div>
                     </div>
                 </div>
-                <div style="margin-bottom: 20px;">
-                    <strong>RATING</strong>
-                    <div style="margin-top: 10px;" id="rating-filter">
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>MANUFACTURER</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="manufacturer-filter">
+                        <label><input type="checkbox" id="manufacturer-all" checked> All</label><br/>
+                        <!-- Checkboxes will be inserted here by JS -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>RATING</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="rating-filter">
                         <label><input type="checkbox" name="rating" value="all" checked /> All</label><br/>
                         <label><input type="checkbox" name="rating" value="5" /> <span style="color: orange;">★★★★★</span></label><br/>
                         <label><input type="checkbox" name="rating" value="4" /> <span style="color: orange;">★★★★☆</span></label><br/>
@@ -71,6 +89,65 @@ function aawp_pcbuild_display_parts_monitor($atts) {
                         <label><input type="checkbox" name="rating" value="unrated" /> Unrated</label>
                     </div>
                 </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Screen Size</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="screen-size-filter" style="display: block;">
+                        <div id="screen-size-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="screen-size-min-label">0"</span>
+                            <span id="screen-size-max-label">0"</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Resolution</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="resolution-filter">
+                        <label><input type="checkbox" id="resolution-all" checked> All</label><br/>
+                        <!-- Checkboxes for different resolutions will be inserted here by JS -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Refresh Rate</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="refresh-rate-filter" style="display: block;">
+                        <div id="refresh-rate-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="refresh-rate-min-label">0</span>
+                            <span id="refresh-rate-max-label">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Panel Type</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="panel-type-filter">
+                        <label><input type="checkbox" id="panel-type-all" checked> All</label><br/>
+                        <!-- Checkboxes for different panel types will be inserted here by JS -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Aspect Ratio</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="aspect-ratio-filter">
+                        <label><input type="checkbox" id="aspect-ratio-all" checked> All</label><br/>
+                        <!-- Checkboxes for different aspect ratios will be inserted here by JS -->
+                    </div>
+                </div>
+
+
+
             </div>
 
             <div style="flex:1;">
@@ -109,6 +186,7 @@ function aawp_pcbuild_display_parts_monitor($atts) {
                         $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                         $features_string = implode(' ', $features);
                         $combined_string = $features_string . ' ' . $full_title;
+                        $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
 
                         // Extract monitor attributes
                         preg_match('/(\d+(\.\d+)?)\s*(inches?|")/i', $combined_string, $screen_size_match);
@@ -117,38 +195,14 @@ function aawp_pcbuild_display_parts_monitor($atts) {
                         //preg_match('/(\d+\s*ms)/i', $combined_string, $response_time_match);
                         preg_match('/(IPS|TN|VA|OLED)/i', $combined_string, $panel_type_match);
                         preg_match('/(16:9|21:9|4:3|32:9)/i', $combined_string, $aspect_ratio_match);
-                        //preg_match('/\b(16:9|21:9|32:9|16:10|4:3|5:4|3:2|1:1)\b/i', $combined_string, $aspect_ratio_match);
-
-                        // Check for direct aspect ratio match in features or title
-preg_match('/\b(16:9|21:9|32:9|16:10|4:3|5:4|3:2|1:1)\b/i', $combined_string, $aspect_ratio_match);
-$aspect_ratio = $aspect_ratio_match[1] ?? null;
-
-// Fallback: Check product details like ItemInfo['ProductInfo']['AspectRatio']
-if (!$aspect_ratio && isset($item['ItemInfo']['ProductInfo']['AspectRatio']['DisplayValue'])) {
-    $aspect_ratio = trim($item['ItemInfo']['ProductInfo']['AspectRatio']['DisplayValue']);
-}
-
-// Fallback: Infer from resolution
-if (!$aspect_ratio && preg_match('/(\d{3,4})\s*[xX×]\s*(\d{3,4})/', $combined_string, $res_match)) {
-    $width = (int)$res_match[1];
-    $height = (int)$res_match[2];
-    if ($height > 0) {
-        $gcd = function($a, $b) use (&$gcd) {
-            return ($b == 0) ? $a : $gcd($b, $a % $b);
-        };
-        $factor = $gcd($width, $height);
-        $ar_w = $width / $factor;
-        $ar_h = $height / $factor;
-        $aspect_ratio = "{$ar_w}:{$ar_h}";
-    }
-}
+                        preg_match('/\b(16:9|21:9|32:9|16:10|4:3|5:4|3:2|1:1)\b/i', $combined_string, $aspect_ratio_match);
 
                         $screen_size = isset($screen_size_match[1]) ? number_format($screen_size_match[1], 1) . '"' : '-';
                         $resolution = $resolution_match[1] ?? '-';
                         $refresh_rate = $refresh_rate_match[1] ?? '-';
                         //$response_time = $response_time_match[1] ?? '-';
-                        $panel_type = $panel_type_match[1] ?? '-';
-                        //$aspect_ratio = isset($aspect_ratio_match[1]) ? trim($aspect_ratio_match[1]) : '-';
+                        $panel_type = strtoupper($panel_type_match[1] ?? '-');
+                        $aspect_ratio = isset($aspect_ratio_match[1]) ? trim($aspect_ratio_match[1]) : '-';
 
                         $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
                         $rating_count = $item['CustomerReviews']['Count'] ?? null;
@@ -179,6 +233,12 @@ if (!$aspect_ratio && preg_match('/(\d{3,4})\s*[xX×]\s*(\d{3,4})/', $combined_s
                                 data-category="Monitor"
                                 data-affiliate-url="<?php echo esc_url($product_url); ?>"
                                 data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+                                data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
+                                data-screen-size="<?php echo esc_attr($screen_size); ?>"
+                                data-resolution="<?php echo esc_attr($resolution); ?>"
+                                data-refresh-rate="<?php echo esc_attr($refresh_rate); ?>"
+                                data-panel-type="<?php echo esc_attr($panel_type); ?>"
+                                data-aspect-ratio="<?php echo esc_attr($aspect_ratio); ?>"
                                 style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                 <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
                             </button>
@@ -208,76 +268,647 @@ if (!$aspect_ratio && preg_match('/(\d{3,4})\s*[xX×]\s*(\d{3,4})/', $combined_s
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const table = document.getElementById("pcbuild-table");
-            const sliderContainer = document.getElementById("price-slider");
-            const minLabel = document.getElementById("price-min-label");
-            const maxLabel = document.getElementById("price-max-label");
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("aspect-ratio-filter");
+    const allCheckbox = document.getElementById("aspect-ratio-all");
+    const aspectRatioSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
 
-            if (!table || !sliderContainer || !minLabel || !maxLabel) {
-                console.warn("Table, slider container, or labels not found.");
-                return;
-            }
+    // Collect unique aspect ratios (case-insensitive)
+    tableRows.forEach(row => {
+        const aspectRatio = row.querySelector("button.add-to-builder")?.dataset.aspectRatio || "Unknown";
+        aspectRatioSet.add(aspectRatio.trim().toLowerCase());
+    });
 
-            const rows = Array.from(table.querySelectorAll("tbody tr"));
-            if (!rows.length) {
-                console.warn("No rows found in table.");
-                return;
-            }
+    const aspectRatios = Array.from(aspectRatioSet).sort();
+    const checkboxElements = [];
 
-            // 🟡 Column 8 is the Price column
-            const prices = rows.map(row => {
-                const priceText = row.querySelector("td:nth-child(8)")?.textContent || "";
-                const price = parseFloat(priceText.replace(/[^0-9.]/g, ""));
-                row.dataset.price = isNaN(price) ? 0 : price; // optional but useful for later
-                return isNaN(price) ? 0 : price;
-            });
+    // Create and append checkboxes
+    aspectRatios.forEach(aspectRatio => {
+        const label = document.createElement("label");
+        const displayName = aspectRatio.toUpperCase(); // Convert the aspect ratio to uppercase
+        label.innerHTML = `<input type="checkbox" name="aspect-ratio" value="${aspectRatio}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
 
-            const minPrice = Math.floor(Math.min(...prices));
-            const maxPrice = Math.ceil(Math.max(...prices));
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
 
-            minLabel.textContent = `$${minPrice}`;
-            maxLabel.textContent = `$${maxPrice}`;
+    // Toggle link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
 
-            sliderContainer.innerHTML = `
-                <input type="range" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
-                <input type="range" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
-            `;
-
-            const minSlider = document.getElementById("min-price");
-            const maxSlider = document.getElementById("max-price");
-
-            function filterByPrice() {
-                const minVal = parseFloat(minSlider.value);
-                const maxVal = parseFloat(maxSlider.value);
-
-                minLabel.textContent = `$${minVal}`;
-                maxLabel.textContent = `$${maxVal}`;
-
-                rows.forEach(row => {
-                    const price = parseFloat(row.dataset.price || 0);
-                    const show = price >= minVal && price <= maxVal;
-                    row.style.display = show ? "" : "none";
-                });
-            }
-
-            minSlider.addEventListener("input", () => {
-                if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
-                    minSlider.value = maxSlider.value;
-                }
-                filterByPrice();
-            });
-
-            maxSlider.addEventListener("input", () => {
-                if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
-                    maxSlider.value = minSlider.value;
-                }
-                filterByPrice();
-            });
-
-            filterByPrice(); // Initial run
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
         });
-    </script>
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='aspect-ratio']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyAspectRatioFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='aspect-ratio']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const aspectRatio = row.querySelector("button.add-to-builder")?.dataset.aspectRatio.trim().toLowerCase();
+            row.style.display = selected.includes(aspectRatio) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // All checkbox logic
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='aspect-ratio']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyAspectRatioFilter();
+    });
+
+    // Individual checkbox logic
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "aspect-ratio") {
+            applyAspectRatioFilter();
+        }
+    });
+
+    // Show more/less toggle
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filter application
+    applyAspectRatioFilter();
+});
+</script>
+
+
+<script>
+// Panel Type Filtering
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("panel-type-filter");
+    const allCheckbox = document.getElementById("panel-type-all");
+    const panelTypeSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Collect unique panel types (case-insensitive)
+    tableRows.forEach(row => {
+        const panelType = row.querySelector("button.add-to-builder")?.dataset.panelType || "Unknown";
+        panelTypeSet.add(panelType.trim().toLowerCase());
+    });
+
+    const panelTypes = Array.from(panelTypeSet).sort();
+    const checkboxElements = [];
+
+    // Create and append checkboxes
+    panelTypes.forEach(panelType => {
+        const label = document.createElement("label");
+        const displayName = panelType.toUpperCase(); // Convert the panel type to uppercase
+        label.innerHTML = `<input type="checkbox" name="panel-type" value="${panelType}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Toggle link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='panel-type']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyPanelTypeFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='panel-type']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const panelType = row.querySelector("button.add-to-builder")?.dataset.panelType.trim().toLowerCase();
+            row.style.display = selected.includes(panelType) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // All checkbox logic
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='panel-type']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyPanelTypeFilter();
+    });
+
+    // Individual checkbox logic
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "panel-type") {
+            applyPanelTypeFilter();
+        }
+    });
+
+    // Show more/less toggle
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filter application
+    applyPanelTypeFilter();
+});
+</script>
+
+
+<script>
+// Refresh Rate Filtering
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const sliderContainer = document.getElementById("refresh-rate-slider");
+    const minLabel = document.getElementById("refresh-rate-min-label");
+    const maxLabel = document.getElementById("refresh-rate-max-label");
+
+    if (!table || !sliderContainer) return;
+
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+    const refreshRates = rows.map(row => {
+        // Assuming refresh rate is in the 7th column (index 8), adjust this index based on your table structure
+        const refreshRateText = row.querySelector("td:nth-child(8)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+        return parseFloat(refreshRateText) || 0;
+    });
+
+    const minRate = Math.floor(Math.min(...refreshRates));
+    const maxRate = Math.ceil(Math.max(...refreshRates));
+    let currentMin = minRate;
+    let currentMax = maxRate;
+
+    // Set default labels
+    minLabel.textContent = `${minRate}Hz`;
+    maxLabel.textContent = `${maxRate}Hz`;
+
+    // Create 2 sliders
+    sliderContainer.innerHTML = `
+        <input type="range" class="min-range-bg" id="min-refresh-rate" min="${minRate}" max="${maxRate}" value="${minRate}" step="1" style="width: 100%;">
+        <input type="range" class="max-range-bg" id="max-refresh-rate" min="${minRate}" max="${maxRate}" value="${maxRate}" step="1" style="width: 100%; margin-top: 10px;">
+    `;
+
+    const minSlider = document.getElementById("min-refresh-rate");
+    const maxSlider = document.getElementById("max-refresh-rate");
+
+    function applyZebraStripes() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function filterByRefreshRate() {
+        const minVal = parseFloat(minSlider.value);
+        const maxVal = parseFloat(maxSlider.value);
+        currentMin = minVal;
+        currentMax = maxVal;
+
+        minLabel.textContent = `${minVal}Hz`;
+        maxLabel.textContent = `${maxVal}Hz`;
+
+        rows.forEach(row => {
+            const refreshRateText = row.querySelector("td:nth-child(8)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+            const refreshRate = parseFloat(refreshRateText) || 0;
+
+            row.style.display = (refreshRate >= minVal && refreshRate <= maxVal) ? "" : "none";
+        });
+
+        applyZebraStripes();
+    }
+
+    minSlider.addEventListener("input", () => {
+        if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+            minSlider.value = maxSlider.value;
+        }
+        filterByRefreshRate();
+    });
+
+    maxSlider.addEventListener("input", () => {
+        if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+            maxSlider.value = minSlider.value;
+        }
+        filterByRefreshRate();
+    });
+
+    // Initial filter apply
+    filterByRefreshRate();
+});
+</script>
+
+
+<script>
+// Resolution Filtering for the table
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("resolution-filter");
+    const allCheckbox = document.getElementById("resolution-all");
+    const resolutionSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Collect unique resolutions (case-insensitive) from data-resolution attribute
+    tableRows.forEach(row => {
+        const resolution = row.querySelector("button.add-to-builder")?.dataset.resolution || "Unknown";
+        resolutionSet.add(resolution.trim().toLowerCase());
+    });
+
+    const resolutions = Array.from(resolutionSet).sort();
+    const checkboxElements = [];
+
+    // Create and append checkboxes
+    resolutions.forEach(resolution => {
+        const label = document.createElement("label");
+        const displayName = resolution.charAt(0).toUpperCase() + resolution.slice(1); // Capitalizing first letter
+        label.innerHTML = `<input type="checkbox" name="resolution" value="${resolution}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Toggle link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='resolution']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyResolutionFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='resolution']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const resolution = row.querySelector("button.add-to-builder")?.dataset.resolution.trim().toLowerCase();
+            row.style.display = selected.includes(resolution) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // All checkbox logic
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='resolution']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyResolutionFilter();
+    });
+
+    // Individual checkbox logic
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "resolution") {
+            applyResolutionFilter();
+        }
+    });
+
+    // Show more/less toggle
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filter application
+    applyResolutionFilter();
+});
+</script>
+
+
+<script>
+// Screen Size Filtering
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const sliderContainer = document.getElementById("screen-size-slider");
+    const minLabel = document.getElementById("screen-size-min-label");
+    const maxLabel = document.getElementById("screen-size-max-label");
+
+    if (!table || !sliderContainer) return;
+
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+    const screenSizes = rows.map(row => {
+        // Assuming screen size is stored in the data-screen-size attribute
+        const size = row.querySelector("button.add-to-builder")?.dataset.screenSize || "0";
+        return parseFloat(size) || 0;
+    });
+
+    const minSize = Math.floor(Math.min(...screenSizes));
+    const maxSize = Math.ceil(Math.max(...screenSizes));
+    let currentMin = minSize;
+    let currentMax = maxSize;
+
+    // Set default labels
+    minLabel.textContent = `${minSize}"`;
+    maxLabel.textContent = `${maxSize}"`;
+
+    // Create 2 sliders
+    sliderContainer.innerHTML = `
+        <input type="range" class="min-range-bg" id="min-size" min="${minSize}" max="${maxSize}" value="${minSize}" step="1" style="width: 100%;">
+        <input type="range" class="max-range-bg" id="max-size" min="${minSize}" max="${maxSize}" value="${maxSize}" step="1" style="width: 100%; margin-top: 10px;">
+    `;
+
+    const minSlider = document.getElementById("min-size");
+    const maxSlider = document.getElementById("max-size");
+
+    function applyZebraStripes() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function filterByScreenSize() {
+        const minVal = parseFloat(minSlider.value);
+        const maxVal = parseFloat(maxSlider.value);
+        currentMin = minVal;
+        currentMax = maxVal;
+
+        minLabel.textContent = `${minVal}"`;
+        maxLabel.textContent = `${maxVal}"`;
+
+        rows.forEach(row => {
+            const screenSize = row.querySelector("button.add-to-builder")?.dataset.screenSize || "0";
+            const size = parseFloat(screenSize) || 0;
+
+            row.style.display = (size >= minVal && size <= maxVal) ? "" : "none";
+        });
+
+        applyZebraStripes();
+    }
+
+    minSlider.addEventListener("input", () => {
+        if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+            minSlider.value = maxSlider.value;
+        }
+        filterByScreenSize();
+    });
+
+    maxSlider.addEventListener("input", () => {
+        if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+            maxSlider.value = minSlider.value;
+        }
+        filterByScreenSize();
+    });
+
+    // Initial filter apply
+    filterByScreenSize();
+});
+</script>
+
+<script>
+// Manufacturer Filtering for Storage Page
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("manufacturer-filter");
+    const allCheckbox = document.getElementById("manufacturer-all");
+    const manufacturerSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Collect unique manufacturers (case-insensitive)
+    tableRows.forEach(row => {
+        const manufacturer = row.querySelector("button.add-to-builder")?.dataset.manufacturer || "Unknown";
+        manufacturerSet.add(manufacturer.trim().toLowerCase());
+    });
+
+    const manufacturers = Array.from(manufacturerSet).sort();
+    const checkboxElements = [];
+
+    // Create and append checkboxes
+    manufacturers.forEach(manufacturer => {
+        const label = document.createElement("label");
+        const displayName = manufacturer.charAt(0).toUpperCase() + manufacturer.slice(1);
+        label.innerHTML = `<input type="checkbox" name="manufacturer" value="${manufacturer}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Toggle link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='manufacturer']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyManufacturerFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='manufacturer']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const manufacturer = row.querySelector("button.add-to-builder")?.dataset.manufacturer.trim().toLowerCase();
+            row.style.display = selected.includes(manufacturer) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // All checkbox logic
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='manufacturer']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyManufacturerFilter();
+    });
+
+    // Individual checkbox logic
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "manufacturer") {
+            applyManufacturerFilter();
+        }
+    });
+
+    // Show more/less toggle
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filter application
+    applyManufacturerFilter();
+});
+</script>
+
+<script>
+// Price Filtering
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const sliderContainer = document.getElementById("price-slider");
+    const minLabel = document.getElementById("price-min-label");
+    const maxLabel = document.getElementById("price-max-label");
+
+    if (!table || !sliderContainer) return;
+
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+    const prices = rows.map(row => {
+        // Assuming price is in the 6th column (index 7)
+        const priceText = row.querySelector("td:nth-child(8)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+        return parseFloat(priceText) || 0;
+    });
+
+    const minPrice = Math.floor(Math.min(...prices));
+    const maxPrice = Math.ceil(Math.max(...prices));
+    let currentMin = minPrice;
+    let currentMax = maxPrice;
+
+    // Set default labels
+    minLabel.textContent = `$${minPrice}`;
+    maxLabel.textContent = `$${maxPrice}`;
+
+    // Create 2 sliders
+    sliderContainer.innerHTML = `
+        <input type="range" class="min-range-bg" id="min-price" min="${minPrice}" max="${maxPrice}" value="${minPrice}" step="1" style="width: 100%;">
+        <input type="range" class="max-range-bg" id="max-price" min="${minPrice}" max="${maxPrice}" value="${maxPrice}" step="1" style="width: 100%; margin-top: 10px;">
+    `;
+
+    const minSlider = document.getElementById("min-price");
+    const maxSlider = document.getElementById("max-price");
+
+    function applyZebraStripes() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function filterByPrice() {
+        const minVal = parseFloat(minSlider.value);
+        const maxVal = parseFloat(maxSlider.value);
+        currentMin = minVal;
+        currentMax = maxVal;
+
+        minLabel.textContent = `$${minVal}`;
+        maxLabel.textContent = `$${maxVal}`;
+
+        rows.forEach(row => {
+            const priceText = row.querySelector("td:nth-child(8)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+            const price = parseFloat(priceText) || 0;
+
+            row.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
+        });
+
+        applyZebraStripes();
+    }
+
+    minSlider.addEventListener("input", () => {
+        if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+            minSlider.value = maxSlider.value;
+        }
+        filterByPrice();
+    });
+
+    maxSlider.addEventListener("input", () => {
+        if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+            maxSlider.value = minSlider.value;
+        }
+        filterByPrice();
+    });
+
+    // Initial filter apply
+    filterByPrice();
+});
+</script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {

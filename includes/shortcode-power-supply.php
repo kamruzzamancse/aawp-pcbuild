@@ -110,6 +110,39 @@ function aawp_pcbuild_display_parts_ps($atts) {
                         <!-- Checkboxes for different efficiency ratings will be inserted here by JS -->
                     </div>
                 </div>
+                <div class="filter-group">
+                    <div class="filter-header">
+                        <strong>WATTAGE</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="wattage-filter" style="display: block;">
+                        <div id="wattage-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="wattage-min-label">0 W</span>
+                            <span id="wattage-max-label">0 W</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Modular</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="modular-filter">
+                        <label><input type="checkbox" id="modular-all" checked> All</label><br/>
+                        <!-- Checkboxes for different modular types will be inserted here by JS -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>Color</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="color-filter">
+                        <label><input type="checkbox" id="color-all" checked> All</label><br/>
+                        <!-- Checkboxes for different colors will be inserted here by JS -->
+                    </div>
+                </div>
 
 
             </div>
@@ -202,6 +235,9 @@ function aawp_pcbuild_display_parts_ps($atts) {
                                 data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
                                 data-type="<?php echo esc_attr($type); ?>"
                                 data-efficiency="<?php echo esc_attr($efficiency); ?>"
+                                data-wattage="<?php echo esc_attr($wattage); ?>"
+                                data-modular="<?php echo esc_attr($modular); ?>"
+                                data-color="<?php echo esc_attr($color); ?>"
                                 style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                 <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
                             </button>
@@ -231,6 +267,286 @@ function aawp_pcbuild_display_parts_ps($atts) {
     </div>
 
 <script>
+// Color Filtering for Storage Page
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("color-filter");
+    const allCheckbox = document.getElementById("color-all");
+    const colorSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Collect unique colors (case-insensitive) from data-color attribute
+    tableRows.forEach(row => {
+        const color = row.querySelector("button.add-to-builder")?.dataset.color || "Unknown";
+        colorSet.add(color.trim().toLowerCase());
+    });
+
+    const colors = Array.from(colorSet).sort();
+    const checkboxElements = [];
+
+    // Create and append checkboxes
+    colors.forEach(color => {
+        const label = document.createElement("label");
+        const displayName = color.charAt(0).toUpperCase() + color.slice(1); // Capitalizing first letter
+        label.innerHTML = `<input type="checkbox" name="color" value="${color}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Toggle link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='color']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyColorFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='color']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const color = row.querySelector("button.add-to-builder")?.dataset.color.trim().toLowerCase();
+            row.style.display = selected.includes(color) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // All checkbox logic
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='color']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyColorFilter();
+    });
+
+    // Individual checkbox logic
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "color") {
+            applyColorFilter();
+        }
+    });
+
+    // Show more/less toggle
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filter application
+    applyColorFilter();
+});
+</script>
+
+<script>
+// Modular Filtering for Storage Page
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("modular-filter");
+    const allCheckbox = document.getElementById("modular-all");
+    const modularSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Collect unique modular types (case-insensitive) from data-modular attribute
+    tableRows.forEach(row => {
+        const modular = row.querySelector("button.add-to-builder")?.dataset.modular || "Unknown";
+        modularSet.add(modular.trim().toLowerCase());
+    });
+
+    const modularTypes = Array.from(modularSet).sort();
+    const checkboxElements = [];
+
+    // Create and append checkboxes
+    modularTypes.forEach(modular => {
+        const label = document.createElement("label");
+        const displayName = modular.charAt(0).toUpperCase() + modular.slice(1); // Capitalizing first letter
+        label.innerHTML = `<input type="checkbox" name="modular" value="${modular}" checked> ${displayName}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Toggle link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = checkboxElements.length > VISIBLE_COUNT ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='modular']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyModularFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='modular']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const modular = row.querySelector("button.add-to-builder")?.dataset.modular.trim().toLowerCase();
+            row.style.display = selected.includes(modular) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // All checkbox logic
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='modular']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyModularFilter();
+    });
+
+    // Individual checkbox logic
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "modular") {
+            applyModularFilter();
+        }
+    });
+
+    // Show more/less toggle
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filter application
+    applyModularFilter();
+});
+</script>
+
+<script>
+// Wattage Filtering
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const sliderContainer = document.getElementById("wattage-slider");
+    const minLabel = document.getElementById("wattage-min-label");
+    const maxLabel = document.getElementById("wattage-max-label");
+
+    if (!table || !sliderContainer) return;
+
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+    const wattages = rows.map(row => {
+        // Assuming wattage is in the 4th column (index 3)
+        const wattageText = row.querySelector("td:nth-child(4)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+        return parseFloat(wattageText) || 0;
+    });
+
+    const minWattage = Math.floor(Math.min(...wattages));
+    const maxWattage = Math.ceil(Math.max(...wattages));
+    let currentMin = minWattage;
+    let currentMax = maxWattage;
+
+    // Set default labels
+    minLabel.textContent = `${minWattage} W`;
+    maxLabel.textContent = `${maxWattage} W`;
+
+    // Create 2 sliders
+    sliderContainer.innerHTML = `
+        <input type="range" class="min-range-bg" id="min-wattage" min="${minWattage}" max="${maxWattage}" value="${minWattage}" step="1" style="width: 100%;">
+        <input type="range" class="max-range-bg" id="max-wattage" min="${minWattage}" max="${maxWattage}" value="${maxWattage}" step="1" style="width: 100%; margin-top: 10px;">
+    `;
+
+    const minSlider = document.getElementById("min-wattage");
+    const maxSlider = document.getElementById("max-wattage");
+
+    function applyZebraStripes() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function filterByWattage() {
+        const minVal = parseFloat(minSlider.value);
+        const maxVal = parseFloat(maxSlider.value);
+        currentMin = minVal;
+        currentMax = maxVal;
+
+        minLabel.textContent = `${minVal} W`;
+        maxLabel.textContent = `${maxVal} W`;
+
+        rows.forEach(row => {
+            const wattageText = row.querySelector("td:nth-child(4)")?.textContent.replace(/[^0-9.]/g, '') || "0";
+            const wattage = parseFloat(wattageText) || 0;
+
+            row.style.display = (wattage >= minVal && wattage <= maxVal) ? "" : "none";
+        });
+
+        applyZebraStripes();
+    }
+
+    minSlider.addEventListener("input", () => {
+        if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+            minSlider.value = maxSlider.value;
+        }
+        filterByWattage();
+    });
+
+    maxSlider.addEventListener("input", () => {
+        if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+            maxSlider.value = minSlider.value;
+        }
+        filterByWattage();
+    });
+
+    // Initial filter apply
+    filterByWattage();
+});
+</script>
+
+<script>
 // Efficiency Rating Filtering for Storage Page
 document.addEventListener("DOMContentLoaded", function () {
     const table = document.getElementById("pcbuild-table");
@@ -241,9 +557,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const VISIBLE_COUNT = 4;
     let expanded = false;
 
-    // Collect unique efficiency ratings (case-insensitive) from data-efficiency-rating attribute
+    // Collect unique efficiency ratings (case-insensitive) from data-efficiency attribute
     tableRows.forEach(row => {
-        const efficiencyRating = row.querySelector("button.add-to-builder")?.dataset.efficiencyRating || "Unknown";
+        const efficiencyRating = row.querySelector("button.add-to-builder")?.dataset.efficiency || "Unknown"; // Updated here to match your attribute
         efficiencyRatingSet.add(efficiencyRating.trim().toLowerCase());
     });
 
@@ -293,7 +609,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .map(cb => cb.value);
 
         tableRows.forEach(row => {
-            const efficiencyRating = row.querySelector("button.add-to-builder")?.dataset.efficiencyRating.trim().toLowerCase();
+            const efficiencyRating = row.querySelector("button.add-to-builder")?.dataset.efficiency.trim().toLowerCase(); // Updated here to match your attribute
             row.style.display = selected.includes(efficiencyRating) ? "" : "none";
         });
 
@@ -329,6 +645,7 @@ document.addEventListener("DOMContentLoaded", function () {
     applyEfficiencyRatingFilter();
 });
 </script>
+
 
 <script>
 // Type Filtering for Storage Page
@@ -612,88 +929,88 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const table = document.getElementById("pcbuild-table");
-            const headers = table.querySelectorAll(".sortable-header");
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const table = document.getElementById("pcbuild-table");
+        const headers = table.querySelectorAll(".sortable-header");
 
-            let currentSort = { key: null, direction: 'asc' };
+        let currentSort = { key: null, direction: 'asc' };
 
-            headers.forEach(header => {
-                header.addEventListener('click', function () {
-                    const key = this.dataset.key;
-                    currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
-                    currentSort.key = key;
+        headers.forEach(header => {
+            header.addEventListener('click', function () {
+                const key = this.dataset.key;
+                currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
+                currentSort.key = key;
 
-                    // Reset header icons
-                    headers.forEach(h => {
-                        const text = h.textContent.trim().replace(/^▲|▼|▶/, '');
-                        h.innerHTML = `&#9654; ${text}`;
-                    });
-
-                    // Set arrow icon on active header
-                    const text = this.textContent.trim().replace(/^▲|▼|▶/, '');
-                    this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${text}`;
-
-                    sortTableByKey(key, currentSort.direction);
+                // Reset header icons
+                headers.forEach(h => {
+                    const text = h.textContent.trim().replace(/^▲|▼|▶/, '');
+                    h.innerHTML = `&#9654; ${text}`;
                 });
+
+                // Set arrow icon on active header
+                const text = this.textContent.trim().replace(/^▲|▼|▶/, '');
+                this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${text}`;
+
+                sortTableByKey(key, currentSort.direction);
+            });
+        });
+
+        function sortTableByKey(key, direction) {
+            const tbody = table.querySelector("tbody");
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+            const columnIndex = getColumnIndex(key);
+            if (!columnIndex) return;
+
+            rows.sort((a, b) => {
+                const getText = row => row.querySelector(`td:nth-child(${columnIndex})`)?.innerText.trim().toLowerCase() || '';
+
+                const valA = getText(a);
+                const valB = getText(b);
+
+                const parsedA = parseValue(valA, key);
+                const parsedB = parseValue(valB, key);
+
+                if (typeof parsedA === 'number' && typeof parsedB === 'number') {
+                    return direction === 'asc' ? parsedA - parsedB : parsedB - parsedA;
+                }
+
+                return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
             });
 
-            function sortTableByKey(key, direction) {
-                const tbody = table.querySelector("tbody");
-                const rows = Array.from(tbody.querySelectorAll("tr"));
-                const columnIndex = getColumnIndex(key);
-                if (!columnIndex) return;
+            rows.forEach((row, i) => {
+                row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+                tbody.appendChild(row);
+            });
+        }
 
-                rows.sort((a, b) => {
-                    const getText = row => row.querySelector(`td:nth-child(${columnIndex})`)?.innerText.trim().toLowerCase() || '';
+        function parseValue(value, key) {
+            switch (key) {
+                case 'price':
+                    // Clean the price and return as a number
+                    return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
 
-                    const valA = getText(a);
-                    const valB = getText(b);
+                case 'rating':
+                    return parseFloat(value) || 0;
 
-                    const parsedA = parseValue(valA, key);
-                    const parsedB = parseValue(valB, key);
+                case 'memory': // e.g., "8GB"
+                    return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
 
-                    if (typeof parsedA === 'number' && typeof parsedB === 'number') {
-                        return direction === 'asc' ? parsedA - parsedB : parsedB - parsedA;
-                    }
+                case 'core_clock':
+                case 'boost_clock': // e.g., "1605 MHz"
+                    return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
 
-                    return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-                });
-
-                rows.forEach((row, i) => {
-                    row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
-                    tbody.appendChild(row);
-                });
+                default:
+                    return value;
             }
+        }
 
-            function parseValue(value, key) {
-                switch (key) {
-                    case 'price':
-                        // Clean the price and return as a number
-                        return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
-
-                    case 'rating':
-                        return parseFloat(value) || 0;
-
-                    case 'memory': // e.g., "8GB"
-                        return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
-
-                    case 'core_clock':
-                    case 'boost_clock': // e.g., "1605 MHz"
-                        return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
-
-                    default:
-                        return value;
-                }
-            }
-
-            function getColumnIndex(key) {
-                const headers = Array.from(table.querySelectorAll("thead th"));
-                return headers.findIndex(th => th.dataset.key === key) + 1;
-            }
-        });
-    </script>
+        function getColumnIndex(key) {
+            const headers = Array.from(table.querySelectorAll("thead th"));
+            return headers.findIndex(th => th.dataset.key === key) + 1;
+        }
+    });
+</script>
     
         
     <?php
