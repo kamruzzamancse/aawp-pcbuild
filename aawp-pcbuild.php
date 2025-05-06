@@ -126,18 +126,38 @@ register_activation_hook(__FILE__, 'aawp_pcbuild_activate_plugin');
 // ==========================
 // Plugin Activation Hook
 // ==========================
+
 function aawp_pcbuild_activate() {
     if (!current_user_can('activate_plugins')) return;
 
+    // Add options upon activation
     add_option('aawp_pcbuild_amazon_access_key', '');
     add_option('aawp_pcbuild_amazon_secret_key', '');
     add_option('aawp_pcbuild_amazon_associate_tag', '');
+
+    // Clear transients from wp_options table
+    global $wpdb;
+    $query = "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_%' OR option_name LIKE '_site_transient_%'";
+    error_log($query);
+
+    // Run the query
+    $deleted_rows = $wpdb->query($query);
+
+    // Check if rows were deleted
+    if ($deleted_rows !== false) {
+        // Output for debugging: Show how many rows were deleted
+        error_log("Deleted {$deleted_rows} rows from wp_options table.");
+    } else {
+        // Error logging if the query failed
+        error_log("Error executing query: " . $wpdb->last_error);
+    }
 
     // Flush rewrite rules after adding custom ones
     aawp_pcbuild_add_rewrite_rule();
     flush_rewrite_rules();
 }
 register_activation_hook(__FILE__, 'aawp_pcbuild_activate');
+
 
 // ==========================
 // Plugin Deactivation Hook

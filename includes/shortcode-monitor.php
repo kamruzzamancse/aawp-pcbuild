@@ -164,7 +164,7 @@ function aawp_pcbuild_display_parts_monitor($atts) {
                             <!-- <th class="sortable-header" data-key="response-time"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Response Time (G2G)</span></th> -->
                             <th class="sortable-header" data-key="panel-type"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Panel Type</span></th>
                             <th class="sortable-header" data-key="aspect-ratio"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Aspect Ratio</span></th>
-                            <th class="sortable-header" data-key="rating"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Rating</span></th>
+                            <th class="sortable-header" data-key="rating"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span>Seller Rating</span></th>
                             <th class="sortable-header" data-key="price"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Price</span></th>
                             <th>Action</th>
                         </tr>
