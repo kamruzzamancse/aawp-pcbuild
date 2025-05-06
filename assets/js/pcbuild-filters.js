@@ -27,6 +27,45 @@ searchInput.addEventListener("input", function () {
         row.style.display = nameText.includes(searchTerm) ? "" : "none";
     });
 });
+
+
+// SEARCH FILTER
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("pcbuild-search");
+    const table = document.getElementById("pcbuild-table");
+
+    if (!searchInput || !table) return;
+
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+    // Function to apply zebra striping
+    function applyZebraStriping() {
+        const visibleRows = rows.filter(row => row.style.display !== "none");  // Only visible rows
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';  // Apply alternating colors
+        });
+    }
+
+    // Event listener for the search input field
+    searchInput.addEventListener("input", function () {
+        const searchTerm = this.value.toLowerCase();  // Get the search term in lowercase
+
+        rows.forEach(row => {
+            const nameCell = row.querySelector("td:first-child");  // Assuming product name is in the first column
+            const nameText = nameCell ? nameCell.textContent.toLowerCase() : "";  // Get the product name and make it lowercase
+
+            // Display or hide rows based on the search term match
+            row.style.display = nameText.includes(searchTerm) ? "" : "none";  // Show or hide row
+        });
+
+        // Reapply zebra striping after filtering
+        applyZebraStriping();
+    });
+
+    // Initial zebra striping on page load
+    applyZebraStriping();
+});
+
   
 // ADD TO BUILDER FUNCTIONALITY
 document.querySelectorAll(".add-to-builder").forEach(button => {

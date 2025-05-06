@@ -196,6 +196,7 @@ function aawp_pcbuild_display_parts_memory($atts) {
                             <th>Action</th>
                         </tr>
                     </thead>
+                    <?php include('rating-count.php'); ?>
                     <tbody>
                         <?php foreach ($display_items as $index => $item):
                             $row_bg = ($index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
@@ -212,6 +213,8 @@ function aawp_pcbuild_display_parts_memory($atts) {
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
+                            $feedbackCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
+                            $rating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
 
                             // Extract from features string or title
                             preg_match('/(DDR\d)/i', $features_string . ' ' . $full_title, $ram_type_match);
@@ -256,12 +259,6 @@ function aawp_pcbuild_display_parts_memory($atts) {
                                 }
                             }
 
-                            // Rating
-                            $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
-                            $rating_count = $item['CustomerReviews']['Count'] ?? null;
-                            $rating_display = ($rating !== null && $rating_count !== null)
-                                ? number_format($rating, 1) . ' / 5 (' . number_format($rating_count) . ' reviews)'
-                                : '-';
                         ?>
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 14px">
                             <td style="font-weight:800; padding:10px; display:flex; align-items:center; gap:10px;" title="<?php echo $raw_title; ?>">
@@ -273,7 +270,7 @@ function aawp_pcbuild_display_parts_memory($atts) {
                             <td style="padding:10px;"><?php echo esc_html($price_per_gb); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($color); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($cas_latency); ?></td>
-                            <td style="padding:10px;"><?php echo esc_html($rating_display); ?></td>
+                            <td style="padding:10px;" data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"><?php echo display_rating_and_count($rating, $feedbackCount); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
                                 <button class="add-to-builder"
@@ -734,72 +731,84 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 
-    <script>
-        // SORTING LOGIC for STORAGE TABLE
-        document.addEventListener('DOMContentLoaded', () => {
-            const table = document.getElementById("pcbuild-table");
-            const headers = table.querySelectorAll(".sortable-header");
+<script>
+// Sorting Logic
+document.addEventListener('DOMContentLoaded', () => {
+    const table = document.getElementById("pcbuild-table");
+    const headers = table.querySelectorAll(".sortable-header");
 
-            let currentSort = { key: null, direction: 'asc' };
+    let currentSort = { key: null, direction: 'asc' };
 
-            headers.forEach(header => {
-                header.addEventListener('click', function () {
-                    const key = this.dataset.key;
-                    currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
-                    currentSort.key = key;
+    headers.forEach(header => {
+        header.addEventListener('click', function () {
+            const key = this.dataset.key;
+            currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
+            currentSort.key = key;
 
-                    // Reset all header arrows
-                    headers.forEach(h => {
-                        const text = h.textContent.trim().replace(/^▲|▼|\▶/, '');
-                        h.innerHTML = `&#9654; ${text}`;
-                    });
-
-                    // Update arrow on active column
-                    const text = this.textContent.trim().replace(/^▲|▼|\▶/, '');
-                    this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${text}`;
-
-                    // Sort the table
-                    sortTableByKey(key, currentSort.direction);
-                });
+            headers.forEach(h => {
+                h.innerHTML = `&#9654; ${h.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
             });
 
-            function sortTableByKey(key, direction) {
-                const tbody = table.querySelector("tbody");
-                const rows = Array.from(tbody.querySelectorAll("tr"));
+            this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${this.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
 
-                const columnIndex = getColumnIndex(key);
-                if (!columnIndex) return;
-
-                rows.sort((a, b) => {
-                    const getText = row => row.querySelector(`td:nth-child(${columnIndex})`)?.innerText.trim().toLowerCase() || '';
-                    const valA = getText(a);
-                    const valB = getText(b);
-
-                    const numA = parseFloat(valA.replace(/[^\d.]/g, ''));
-                    const numB = parseFloat(valB.replace(/[^\d.]/g, ''));
-
-                    // Numeric sort if both values are valid numbers
-                    if (!isNaN(numA) && !isNaN(numB)) {
-                        return direction === 'asc' ? numA - numB : numB - numA;
-                    }
-
-                    // Otherwise sort as strings
-                    return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-                });
-
-                // Re-apply zebra striping and re-attach rows
-                rows.forEach((row, i) => {
-                    row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
-                    tbody.appendChild(row);
-                });
-            }
-
-            function getColumnIndex(key) {
-                const headers = Array.from(document.querySelectorAll("#pcbuild-table thead th"));
-                return headers.findIndex(th => th.dataset.key === key) + 1;
-            }
+            sortTableByKey(key, currentSort.direction);
         });
-    </script>
+    });
+
+    function sortTableByKey(key, direction) {
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        rows.sort((a, b) => {
+            const getText = (row, key) => {
+                const index = getColumnIndex(key);
+                const cell = row.querySelector(`td:nth-child(${index})`);
+                if (!cell) return '';
+
+                if (key === 'rating') {
+                    return parseFloat(cell.dataset.rating || '0');
+                }
+
+                if (['price', 'price_per_gb', 'cas_latency'].includes(key)) {
+                    const num = parseFloat(cell.textContent.replace(/[^0-9.]/g, ''));
+                    return isNaN(num) ? 0 : num;
+                }
+
+                return cell.textContent.trim().toLowerCase();
+            };
+
+            const valA = getText(a, key);
+            const valB = getText(b, key);
+
+            if (typeof valA === 'number' && typeof valB === 'number') {
+                return direction === 'asc' ? valA - valB : valB - valA;
+            }
+
+            return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        });
+
+        rows.forEach((row, i) => {
+            row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+            tbody.appendChild(row);
+        });
+    }
+
+    function getColumnIndex(key) {
+        const mapping = {
+            name: 1,
+            type_speed: 2,
+            modules: 3,
+            price_per_gb: 4,
+            color: 5,
+            cas_latency: 6,
+            rating: 7,
+            price: 8
+        };
+        return mapping[key];
+    }
+});
+</script>
+
 
 <script>
 //Manufacturer Filtering

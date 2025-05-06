@@ -146,8 +146,6 @@ function aawp_pcbuild_display_parts_monitor($atts) {
                     </div>
                 </div>
 
-
-
             </div>
 
             <div style="flex:1;">
@@ -171,6 +169,7 @@ function aawp_pcbuild_display_parts_monitor($atts) {
                             <th>Action</th>
                         </tr>
                     </thead>
+                    <?php include('rating-count.php'); ?>
                     <tbody>
                     <?php foreach ($display_items as $index => $item):
                         $row_bg = ($index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
@@ -187,6 +186,8 @@ function aawp_pcbuild_display_parts_monitor($atts) {
                         $features_string = implode(' ', $features);
                         $combined_string = $features_string . ' ' . $full_title;
                         $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
+                        $feedbackCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
+                        $rating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
 
                         // Extract monitor attributes
                         preg_match('/(\d+(\.\d+)?)\s*(inches?|")/i', $combined_string, $screen_size_match);
@@ -203,10 +204,6 @@ function aawp_pcbuild_display_parts_monitor($atts) {
                         //$response_time = $response_time_match[1] ?? '-';
                         $panel_type = strtoupper($panel_type_match[1] ?? '-');
                         $aspect_ratio = isset($aspect_ratio_match[1]) ? trim($aspect_ratio_match[1]) : '-';
-
-                        $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
-                        $rating_count = $item['CustomerReviews']['Count'] ?? null;
-                        $rating_display = ($rating !== null && $rating_count !== null) ? number_format($rating, 1) . ' / 5 (' . number_format($rating_count) . ')' : '-';
                     ?>
                     <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 14px">
                         <td style="font-weight:800; padding:10px; display:flex; align-items:center; gap:10px;" title="<?php echo $raw_title; ?>">
@@ -219,7 +216,7 @@ function aawp_pcbuild_display_parts_monitor($atts) {
                         <!-- <td style="padding:10px;"><?php //echo esc_html($response_time); ?></td> -->
                         <td style="padding:10px;"><?php echo esc_html($panel_type); ?></td>
                         <td style="padding:10px;"><?php echo esc_html($aspect_ratio); ?></td>
-                        <td style="padding:10px;"><?php echo esc_html($rating_display); ?></td>
+                        <td style="padding:10px;" data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"><?php echo display_rating_and_count($rating, $feedbackCount); ?></td>
                         <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                         <td style="padding:10px;">
                             <button class="add-to-builder"
@@ -267,7 +264,7 @@ function aawp_pcbuild_display_parts_monitor($atts) {
         </div>
     </div>
 
-    <script>
+<script>
 document.addEventListener("DOMContentLoaded", function () {
     const table = document.getElementById("pcbuild-table");
     const tableRows = table.querySelectorAll("tbody tr");
@@ -910,89 +907,76 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const table = document.getElementById("pcbuild-table");
-            const headers = table.querySelectorAll(".sortable-header");
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const table = document.getElementById("pcbuild-table");
+    const headers = table.querySelectorAll(".sortable-header");
+    const tbody = table.querySelector("tbody");
 
-            let currentSort = { key: null, direction: 'asc' };
+    let currentSort = { key: null, direction: 'asc' };
 
-            headers.forEach(header => {
-                header.addEventListener('click', function () {
-                    const key = this.dataset.key;
-                    currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
-                    currentSort.key = key;
+    const columnMap = {
+        'name': 0,
+        'screen-size': 1,
+        'resolution': 2,
+        'refresh-rate': 3,
+        'panel-type': 4,
+        'aspect-ratio': 5,
+        'rating': 6,
+        'price': 7
+    };
 
-                    // Reset all headers
-                    headers.forEach(h => {
-                        const label = h.textContent.trim().replace(/^▲|▼|▶/, '');
-                        h.innerHTML = `&#9654; ${label}`;
-                    });
+    headers.forEach(header => {
+        header.addEventListener('click', () => {
+            const key = header.dataset.key;
+            const colIndex = columnMap[key];
+            const direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
 
-                    // Update clicked header
-                    const label = this.textContent.trim().replace(/^▲|▼|▶/, '');
-                    this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${label}`;
+            currentSort = { key, direction };
 
-                    sortTableByKey(key, currentSort.direction);
-                });
+            // Update arrow indicators
+            headers.forEach(h => h.querySelector('.sort-arrow').textContent = '▶');
+            header.querySelector('.sort-arrow').textContent = direction === 'asc' ? '▲' : '▼';
+
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+
+            rows.sort((a, b) => {
+                const getCellValue = (row, index) => {
+                    const cell = row.children[index];
+                    if (!cell) return '';
+                    if (key === 'rating') {
+                        return parseFloat(cell.dataset.rating || '0');
+                    } else if (key === 'price') {
+                        const txt = cell.textContent.replace(/[^0-9.]/g, '');
+                        return parseFloat(txt) || 0;
+                    } else if (key === 'refresh-rate' || key === 'screen-size') {
+                        const txt = cell.textContent.replace(/[^0-9.]/g, '');
+                        return parseFloat(txt) || 0;
+                    } else {
+                        return cell.textContent.trim().toLowerCase();
+                    }
+                };
+
+                const valA = getCellValue(a, colIndex);
+                const valB = getCellValue(b, colIndex);
+
+                if (typeof valA === 'number' && typeof valB === 'number') {
+                    return direction === 'asc' ? valA - valB : valB - valA;
+                }
+
+                return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
             });
 
-            function sortTableByKey(key, direction) {
-                const tbody = table.querySelector("tbody");
-                const rows = Array.from(tbody.querySelectorAll("tr"));
-                const columnIndex = getColumnIndex(key);
-                if (!columnIndex) return;
-
-                rows.sort((a, b) => {
-                    const getValue = row => row.querySelector(`td:nth-child(${columnIndex})`)?.innerText.trim().toLowerCase() || '';
-
-                    const valA = parseValue(getValue(a), key);
-                    const valB = parseValue(getValue(b), key);
-
-                    if (typeof valA === 'number' && typeof valB === 'number') {
-                        return direction === 'asc' ? valA - valB : valB - valA;
-                    }
-
-                    return direction === 'asc' ? String(valA).localeCompare(valB) : String(valB).localeCompare(valA);
-                });
-
-                rows.forEach((row, index) => {
-                    row.style.backgroundColor = index % 2 === 0 ? '#d4d4d4' : '#ebebeb';
-                    tbody.appendChild(row);
-                });
-            }
-
-            function parseValue(value, key) {
-                switch (key) {
-                    case 'screen-size':        // e.g., 27"
-                    case 'refresh-rate':       // e.g., 144 Hz
-                    case 'response-time':      // e.g., 1ms
-                    case 'price':              // e.g., $199.99
-                        return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
-
-                    case 'resolution':         // e.g., 1920x1080
-                        const res = value.match(/(\d+)\s*[x×]\s*(\d+)/);
-                        return res ? parseInt(res[1]) * parseInt(res[2]) : 0;
-
-                    case 'aspect-ratio':       // e.g., 16:9
-                        const ar = value.match(/(\d+):(\d+)/);
-                        return ar ? parseFloat(ar[1]) / parseFloat(ar[2]) : 0;
-
-                    case 'rating':             // e.g., 4.5 out of 5
-                        const match = value.match(/([\d.]+)/);
-                        return match ? parseFloat(match[1]) : 0;
-
-                    default:
-                        return value;
-                }
-            }
-
-            function getColumnIndex(key) {
-                const ths = Array.from(table.querySelectorAll("thead th"));
-                return ths.findIndex(th => th.dataset.key === key) + 1;
-            }
+            // Append sorted rows and update zebra striping
+            rows.forEach((row, i) => {
+                row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+                tbody.appendChild(row);
+            });
         });
-    </script>
+    });
+});
+</script>
+
 
     <?php
     return ob_get_clean();

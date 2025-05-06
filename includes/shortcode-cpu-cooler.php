@@ -141,11 +141,12 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             <th class="sortable-header" data-key="fan_rpm"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Fan RPM</span></th>
                             <th class="sortable-header" data-key="noise"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Noise Level</span></th>
                             <th class="sortable-header" data-key="radiator"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Radiator Size</span></th>
-                            <th class="sortable-header" data-key="rating"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Rating</span></th>
+                            <th class="sortable-header" data-key="rating"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span>Seller Rating</span></th>
                             <th class="sortable-header" data-key="price"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Price</span></th>
                             <th style="padding:10px;">Action</th>
                         </tr>
                     </thead>
+                    <?php include('rating-count.php'); ?>
                     <tbody>
                         <?php foreach ($display_items as $index => $item):
                             $row_bg = ($index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
@@ -163,10 +164,8 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             $features_string = implode(' ', $features);
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
                             $color = $item['ItemInfo']['ProductInfo']['Color']['DisplayValue'] ?? '';
-                            
-                            // Get customer review
-                            $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
-                            $rating_count = $item['CustomerReviews']['Count'] ?? null;
+                            $feedbackCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
+                            $rating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
 
                             // Format the rating display
                             $rating_display = ($rating !== null && $rating_count !== null) 
@@ -208,11 +207,7 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             <td style="padding:10px;"><?php echo esc_html($fan_rpm); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($noise_level); ?></td>
                             <td style="padding:10px;"><?php echo ($radiator !== '-') ? esc_html($radiator) . ' mm' : '-'; ?></td>
-                            
-                            <!-- <td style="padding:10px;"><?php //echo esc_html($rating_display); ?></td> -->
-                            <td style="padding:10px;">
-                                <?php echo esc_html($rating_display); ?>
-                            </td>
+                            <td style="padding:10px;" data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"><?php echo display_rating_and_count($rating, $feedbackCount); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
                                 <button class="add-to-builder"
@@ -932,75 +927,80 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 <script>
-        // SORTING LOGIC
-        document.addEventListener('DOMContentLoaded', () => {
-            const table = document.getElementById("pcbuild-table");
-            if (!table) return;
+// Sorting Logic
+document.addEventListener('DOMContentLoaded', () => {
+    const table = document.getElementById("pcbuild-table");
+    const headers = table.querySelectorAll(".sortable-header");
 
-            const headers = table.querySelectorAll(".sortable-header");
+    let currentSort = { key: null, direction: 'asc' };
 
-            let currentSort = { key: null, direction: 'asc' };
+    headers.forEach(header => {
+        header.addEventListener('click', function () {
+            const key = this.dataset.key;
+            currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
+            currentSort.key = key;
 
-            headers.forEach(header => {
-                header.addEventListener('click', function () {
-                    const key = this.dataset.key;
-                    currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
-                    currentSort.key = key;
-
-                    // Reset all header icons
-                    headers.forEach(h => {
-                        h.innerHTML = `&#9654; ${h.textContent.trim().replace(/^▲|▼|▶/, '')}`;
-                    });
-
-                    // Show active arrow direction
-                    this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${this.textContent.trim().replace(/^▲|▼|▶/, '')}`;
-
-                    // Sort rows by selected column
-                    sortTableByKey(key, currentSort.direction);
-                });
+            headers.forEach(h => {
+                h.innerHTML = `&#9654; ${h.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
             });
 
-            function sortTableByKey(key, direction) {
-                const tbody = table.querySelector("tbody");
-                const rows = Array.from(tbody.querySelectorAll("tr"));
+            this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${this.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
 
-                rows.sort((a, b) => {
-                    const getText = row => row.querySelector(`td:nth-child(${getColumnIndex(key)})`)?.innerText.trim().toLowerCase() || '';
-                    const valA = getText(a);
-                    const valB = getText(b);
-
-                    // Try parsing numbers for numeric sort
-                    const numA = parseFloat(valA.replace(/[^\d.]/g, ''));
-                    const numB = parseFloat(valB.replace(/[^\d.]/g, ''));
-
-                    if (!isNaN(numA) && !isNaN(numB)) {
-                        return direction === 'asc' ? numA - numB : numB - numA;
-                    }
-
-                    return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-                });
-
-                // Apply row backgrounds again after sort
-                rows.forEach((row, i) => {
-                    row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
-                    tbody.appendChild(row);
-                });
-            }
-
-            // Column index mapping
-            function getColumnIndex(key) {
-                const mapping = {
-                    name: 1,
-                    fan_rpm: 2,
-                    noise: 3,
-                    radiator: 4,
-                    rating: 5,
-                    price: 6
-                };
-                return mapping[key];
-            }
+            sortTableByKey(key, currentSort.direction);
         });
-    </script> 
+    });
+
+    function sortTableByKey(key, direction) {
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        rows.sort((a, b) => {
+            const getText = (row, key) => {
+                const index = getColumnIndex(key);
+                const cell = row.querySelector(`td:nth-child(${index})`);
+                if (!cell) return '';
+
+                if (key === 'rating') {
+                    return parseFloat(cell.dataset.rating || '0');
+                }
+
+                if (key === 'price' || key === 'fan_rpm' || key === 'noise_level' || key === 'radiator') {
+                    const num = parseFloat(cell.innerText.replace(/[^0-9.]/g, ''));
+                    return isNaN(num) ? 0 : num;
+                }
+
+                return cell.innerText.trim().toLowerCase();
+            };
+
+            const valA = getText(a, key);
+            const valB = getText(b, key);
+
+            if (typeof valA === 'number' && typeof valB === 'number') {
+                return direction === 'asc' ? valA - valB : valB - valA;
+            }
+
+            return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        });
+
+        rows.forEach((row, i) => {
+            row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+            tbody.appendChild(row);
+        });
+    }
+
+    function getColumnIndex(key) {
+        const mapping = {
+            name: 1,
+            fan_rpm: 2,
+            noise_level: 3,
+            radiator: 4,
+            rating: 5,
+            price: 6
+        };
+        return mapping[key];
+    }
+});
+</script>
 
     <?php
     return ob_get_clean();

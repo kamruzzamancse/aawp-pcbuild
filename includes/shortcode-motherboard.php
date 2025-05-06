@@ -193,7 +193,7 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
                             </th>
                             <th class="sortable-header" data-key="rating">
                                 <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Rating
+                                    <span class="sort-arrow">&#9654;</span> Seller Rating
                                 </span>
                             </th>
                             <th class="sortable-header" data-key="price">
@@ -204,6 +204,7 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
                             <th>Action</th>
                         </tr>
                     </thead>
+                    <?php include('rating-count.php'); ?>
                     <tbody>
                         <?php foreach ($display_items as $index => $item):
                             $row_bg = ($index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
@@ -219,6 +220,8 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
                             $product_url = $item['DetailPageURL'] ?? '#';
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
+                            $feedbackCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
+                            $rating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
 
                             //Color filtering
                             $known_colors = [
@@ -242,9 +245,6 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
                             $memory_max = $memory_max_match[1] ?? '-';
                             $memory_slots = $memory_slots_match[1] ?? '-';
                             $chipset = $chipset_match[1] ?? '-';
-                            $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
-                            $rating_count = $item['CustomerReviews']['Count'] ?? null;
-                            $rating_display = ($rating !== null && $rating_count !== null) ? number_format($rating, 1) . ' / 5 (' . number_format($rating_count) . ' reviews)' : '-';
                         ?>
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 16px">
                             <td style="font-weight:800; padding:10px; display:flex; align-items:center; gap:10px;" title="<?php echo $raw_title; ?>">
@@ -256,7 +256,7 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
                             <td style="padding:10px;"><?php echo esc_html($memory_max); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($memory_slots); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($color); ?></td>
-                            <td style="padding:10px;"><?php echo esc_html($rating_display); ?></td>
+                            <td style="padding:10px;" data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"><?php echo display_rating_and_count($rating, $feedbackCount); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
                                 <button class="add-to-builder"
@@ -899,75 +899,86 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 </script>
 
-    <script>
-        // SORTING LOGIC for MOTHERBOARD TABLE
-        document.addEventListener('DOMContentLoaded', () => {
-            const table = document.getElementById("pcbuild-table");
-            const headers = table.querySelectorAll(".sortable-header");
+<script>
+    // Sorting Logic
+    document.addEventListener('DOMContentLoaded', () => {
+        const table = document.getElementById("pcbuild-table");
+        const headers = table.querySelectorAll(".sortable-header");
 
-            let currentSort = { key: null, direction: 'asc' };
+        let currentSort = { key: null, direction: 'asc' };
 
-            headers.forEach(header => {
-                header.addEventListener('click', function () {
-                    const key = this.dataset.key;
-                    currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
-                    currentSort.key = key;
+        headers.forEach(header => {
+            header.addEventListener('click', function () {
+                const key = this.dataset.key;
+                currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
+                currentSort.key = key;
 
-                    // Reset header icons
-                    headers.forEach(h => {
-                        h.innerHTML = `&#9654; ${h.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
-                    });
-
-                    // Show arrow direction on clicked header
-                    this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${this.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
-
-                    // Sort rows based on clicked column
-                    sortTableByKey(key, currentSort.direction);
+                // Reset header icons
+                headers.forEach(h => {
+                    h.innerHTML = `&#9654; ${h.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
                 });
+
+                // Show arrow on clicked header
+                this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${this.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
+
+                sortTableByKey(key, currentSort.direction);
             });
+        });
 
-            // Sort rows function
-            function sortTableByKey(key, direction) {
-                const tbody = table.querySelector("tbody");
-                const rows = Array.from(tbody.querySelectorAll("tr"));
+        function sortTableByKey(key, direction) {
+            const tbody = table.querySelector("tbody");
+            const rows = Array.from(tbody.querySelectorAll("tr"));
 
-                rows.sort((a, b) => {
-                    const getText = row => row.querySelector(`td:nth-child(${getColumnIndex(key)})`)?.innerText.trim().toLowerCase() || '';
-                    const valA = getText(a);
-                    const valB = getText(b);
+            rows.sort((a, b) => {
+                const getText = (row, key) => {
+                    const index = getColumnIndex(key);
+                    const cell = row.querySelector(`td:nth-child(${index})`);
+                    if (!cell) return '';
 
-                    // If both values are numbers, sort numerically
-                    if (!isNaN(parseFloat(valA)) && !isNaN(parseFloat(valB))) {
-                        return direction === 'asc' ? parseFloat(valA) - parseFloat(valB) : parseFloat(valB) - parseFloat(valA);
+                    if (key === 'rating') {
+                        return parseFloat(cell.dataset.rating || '0');
                     }
 
-                    // Otherwise sort alphabetically
-                    return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-                });
+                    if (key === 'price' || key === 'memory_max' || key === 'memory_slots') {
+                        const num = parseFloat(cell.innerText.replace(/[^0-9.]/g, ''));
+                        return isNaN(num) ? 0 : num;
+                    }
 
-                // Apply alternating row backgrounds after sort
-                rows.forEach((row, i) => {
-                    row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
-                    tbody.appendChild(row);
-                });
-            }
-
-            // Column index mapping based on data-key for motherboard
-            function getColumnIndex(key) {
-                const mapping = {
-                    name: 1,
-                    socket: 2,
-                    form_factor: 3,
-                    memory_max: 4,
-                    memory_slots: 5,
-                    color: 6,
-                    rating: 7,
-                    price: 8
+                    return cell.innerText.trim().toLowerCase();
                 };
-                return mapping[key];
-            }
-        });
-    </script>
+
+                const valA = getText(a, key);
+                const valB = getText(b, key);
+
+                if (typeof valA === 'number' && typeof valB === 'number') {
+                    return direction === 'asc' ? valA - valB : valB - valA;
+                }
+
+                return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            });
+
+            rows.forEach((row, i) => {
+                row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+                tbody.appendChild(row);
+            });
+        }
+
+        function getColumnIndex(key) {
+            const mapping = {
+                name: 1,
+                socket: 2,
+                form_factor: 3,
+                memory_max: 4,
+                memory_slots: 5,
+                color: 6,
+                rating: 7,
+                price: 8
+            };
+            return mapping[key];
+        }
+    });
+</script>
+
 
 <!-- PRICE RANGE SLIDER FILTER -->
 <script>

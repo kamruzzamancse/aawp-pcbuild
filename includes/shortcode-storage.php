@@ -188,7 +188,7 @@ function aawp_pcbuild_display_parts_storage($atts) {
                             </th>
                             <th class="sortable-header" data-key="rating">
                                 <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Rating
+                                    <span class="sort-arrow">&#9654;</span> Seller Rating
                                 </span>
                             </th>
                             <th class="sortable-header" data-key="price">
@@ -199,6 +199,7 @@ function aawp_pcbuild_display_parts_storage($atts) {
                             <th>Action</th>
                         </tr>
                     </thead>
+                    <?php include('rating-count.php'); ?>
                     <tbody>
                         <?php foreach ($display_items as $index => $item):
                             $row_bg = ($index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
@@ -215,6 +216,8 @@ function aawp_pcbuild_display_parts_storage($atts) {
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
+                            $feedbackCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
+                            $rating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
 
                             // Parse storage details
                             
@@ -249,12 +252,6 @@ function aawp_pcbuild_display_parts_storage($atts) {
                                 ? '$' . number_format($price_value / $capacity_gb, 3)
                                 : '-';
 
-                            // Rating
-                            $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
-                            $rating_count = $item['CustomerReviews']['Count'] ?? null;
-                            $rating_display = ($rating !== null && $rating_count !== null)
-                                ? number_format($rating, 1) . ' / 5 (' . number_format($rating_count) . ' reviews)'
-                                : '-';
                         ?>
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 14px">
                             <td style="font-weight:800; padding:10px; display:flex; align-items:center; gap:10px;" title="<?php echo $raw_title; ?>">
@@ -267,7 +264,7 @@ function aawp_pcbuild_display_parts_storage($atts) {
                             <td style="padding:10px;"><?php echo esc_html($cache); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($form_factor); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($interface); ?></td>
-                            <td style="padding:10px;"><?php echo esc_html($rating_display); ?></td>
+                            <td style="padding:10px;" data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"><?php echo display_rating_and_count($rating, $feedbackCount); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
                                 <button class="add-to-builder"
@@ -851,93 +848,92 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-    <script>
-        // SORTING LOGIC for MEMORY TABLE
-        document.addEventListener('DOMContentLoaded', () => {
-            const table = document.getElementById("pcbuild-table");
-            const headers = table.querySelectorAll(".sortable-header");
+<script>
+    //sorting logic
+    document.addEventListener('DOMContentLoaded', () => {
+        const table = document.getElementById("pcbuild-table");
+        const headers = table.querySelectorAll(".sortable-header");
 
-            let currentSort = { key: null, direction: 'asc' };
+        let currentSort = { key: null, direction: 'asc' };
 
-            headers.forEach(header => {
-                header.addEventListener('click', function () {
-                    const key = this.dataset.key;
-                    currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
-                    currentSort.key = key;
+        headers.forEach(header => {
+            header.addEventListener('click', function () {
+                const key = this.dataset.key;
+                currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
+                currentSort.key = key;
 
-                    // Reset header icons
-                    headers.forEach(h => {
-                        const text = h.textContent.trim().replace(/^▲|▼|▶/, '');
-                        h.innerHTML = `&#9654; ${text}`;
-                    });
-
-                    // Set arrow icon on active header
-                    const text = this.textContent.trim().replace(/^▲|▼|▶/, '');
-                    this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${text}`;
-
-                    sortTableByKey(key, currentSort.direction);
+                // Reset header icons
+                headers.forEach(h => {
+                    h.innerHTML = `&#9654; ${h.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
                 });
+
+                // Show arrow direction on clicked header
+                this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${this.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
+
+                // Sort rows based on clicked column
+                sortTableByKey(key, currentSort.direction);
             });
+        });
 
-            function sortTableByKey(key, direction) {
-                const tbody = table.querySelector("tbody");
-                const rows = Array.from(tbody.querySelectorAll("tr"));
-                const columnIndex = getColumnIndex(key);
-                if (!columnIndex) return;
+        function sortTableByKey(key, direction) {
+            const tbody = table.querySelector("tbody");
+            const rows = Array.from(tbody.querySelectorAll("tr"));
 
-                rows.sort((a, b) => {
-                    const getText = row => row.querySelector(`td:nth-child(${columnIndex})`)?.innerText.trim().toLowerCase() || '';
+            rows.sort((a, b) => {
+                const getText = (row, key) => {
+                    const index = getColumnIndex(key);
+                    const cell = row.querySelector(`td:nth-child(${index})`);
+                    if (!cell) return '';
 
-                    const valA = getText(a);
-                    const valB = getText(b);
-
-                    const parsedA = parseValue(valA, key);
-                    const parsedB = parseValue(valB, key);
-
-                    if (typeof parsedA === 'number' && typeof parsedB === 'number') {
-                        return direction === 'asc' ? parsedA - parsedB : parsedB - parsedA;
+                    if (key === 'rating') {
+                        return parseFloat(cell.dataset.rating || '0');
                     }
 
-                    return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-                });
+                    const text = cell.innerText.trim().toLowerCase();
 
-                rows.forEach((row, i) => {
-                    row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
-                    tbody.appendChild(row);
-                });
-            }
+                    // Parse numbers if applicable
+                    if (['capacity', 'price_per_gb', 'price'].includes(key)) {
+                        const num = parseFloat(text.replace(/[^0-9.]/g, ''));
+                        return isNaN(num) ? 0 : num;
+                    }
 
-            function parseValue(value, key) {
-                switch (key) {
-                    case 'price':
-                    case 'price_per_gb':
-                        return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
+                    return text;
+                };
 
-                    case 'cache':
-                        if (value.includes('gb')) return parseFloat(value) * 1024;
-                        if (value.includes('mb')) return parseFloat(value);
-                        return 0;
+                const valA = getText(a, key);
+                const valB = getText(b, key);
 
-                    case 'capacity':
-                        if (value.includes('tb')) return parseFloat(value) * 1000;
-                        if (value.includes('gb')) return parseFloat(value);
-                        return 0;
-
-                    case 'rating':
-                        return parseFloat(value) || 0;
-
-                    default:
-                        return value;
+                if (typeof valA === 'number' && typeof valB === 'number') {
+                    return direction === 'asc' ? valA - valB : valB - valA;
                 }
-            }
 
-            function getColumnIndex(key) {
-                const headers = Array.from(table.querySelectorAll("thead th"));
-                return headers.findIndex(th => th.dataset.key === key) + 1;
-            }
-        });
-    </script>
+                return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            });
 
+            // Apply zebra striping
+            rows.forEach((row, i) => {
+                row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+                tbody.appendChild(row);
+            });
+        }
+
+        function getColumnIndex(key) {
+            const mapping = {
+                name: 1,
+                capacity: 2,
+                price_per_gb: 3,
+                type: 4,
+                cache: 5,
+                form_factor: 6,
+                interface: 7,
+                rating: 8,
+                price: 9
+                // Note: Column 10 is 'Action' (Add to Builder), not sortable
+            };
+            return mapping[key];
+        }
+    });
+</script>
 
     <?php
     return ob_get_clean();

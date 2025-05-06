@@ -49,6 +49,7 @@ function aawp_pcbuild_get_products($category) {
                 'Offers.Listings.Price',
                 'Offers.Listings.DeliveryInfo.IsFreeShippingEligible',
                 'Offers.Listings.Promotions',
+                'Offers.Listings.MerchantInfo',
                 'Offers.Listings.Availability.Message',
                 'CustomerReviews.Count',
                 'CustomerReviews.StarRating',

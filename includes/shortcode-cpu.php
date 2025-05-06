@@ -198,7 +198,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             </th>
                             <th class="sortable-header" data-key="rating">
                                 <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Rating
+                                    <span class="sort-arrow">&#9654;</span> Seller Rating
                                 </span>
                             </th>
                             <th class="sortable-header" data-key="price">
@@ -209,6 +209,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             <th style="padding:10px;">Action</th>
                         </tr>
                     </thead>
+                    <?php include('rating-count.php'); ?>
                     <tbody>
                         <?php foreach ($display_items as $index => $item):
                             $row_bg = ($index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
@@ -225,6 +226,8 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
+                            $feedbackCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
+                            $rating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
                             $combined_string = $features_string . ' ' . $full_title;
 
                             // Extract new data points
@@ -269,9 +272,6 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             $boost_clock = $boost_match[1] ?? '-';
                             $microarch = $arch_match[0] ?? '-';
                             $series = $series_match[0] ?? '-';
-                            $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
-                            $rating_count = $item['CustomerReviews']['Count'] ?? null;
-                            $rating_display = ($rating !== null && $rating_count !== null) ? number_format($rating, 1) . ' / 5 (' . number_format($rating_count) . ' reviews)' : '-';
                         ?>
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 16px">
                             <td style="font-weight:800; padding:10px; display:flex; align-items:center; gap:10px;" title="<?php echo $raw_title; ?>">
@@ -282,7 +282,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             <td style="padding:10px;"><?php echo $base_clock !== '-' ? $base_clock . ' GHz' : '-'; ?></td>
                             <td style="padding:10px;"><?php echo $boost_clock !== '-' ? $boost_clock . ' GHz' : '-'; ?></td>
                             <td style="padding:10px;"><?php echo $microarch; ?></td>
-                            <td style="padding:10px;"><?php echo esc_html($rating_display); ?></td>
+                            <td style="padding:10px;" data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"><?php echo display_rating_and_count($rating, $feedbackCount); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
                                 <button class="add-to-builder"
@@ -298,7 +298,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                                     data-category="<?php echo esc_attr($category); ?>"
                                     data-affiliate-url="<?php echo esc_url($product_url); ?>"
                                     data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
-                                    data-rating="<?php echo isset($rating_display) ? esc_attr($rating_display) : ''; ?>"
+                                    data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"
                                     data-socket="<?php echo isset($socket) ? esc_attr($socket) : ''; ?>"
                                     data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
                                     data-chipset="<?php echo isset($chipset) ? esc_attr($chipset) : ''; ?>"
@@ -1079,75 +1079,83 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 </script>
 
-    <script>
-        // SORTING LOGIC
-        document.addEventListener('DOMContentLoaded', () => {
-            const table = document.getElementById("pcbuild-table");
-            const headers = table.querySelectorAll(".sortable-header");
+<script>
+    // SORTING LOGIC
+    document.addEventListener('DOMContentLoaded', () => {
+        const table = document.getElementById("pcbuild-table");
+        const headers = table.querySelectorAll(".sortable-header");
 
-            let currentSort = { key: null, direction: 'asc' };
+        let currentSort = { key: null, direction: 'asc' };
 
-            headers.forEach(header => {
-                header.addEventListener('click', function () {
-                    const key = this.dataset.key;
-                    currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
-                    currentSort.key = key;
+        headers.forEach(header => {
+            header.addEventListener('click', function () {
+                const key = this.dataset.key;
+                currentSort.direction = (currentSort.key === key && currentSort.direction === 'asc') ? 'desc' : 'asc';
+                currentSort.key = key;
 
-                    // Reset header icons
-                    headers.forEach(h => {
-                        h.innerHTML = `&#9654; ${h.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
-                    });
-
-                    // Show arrow direction on clicked header
-                    this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${this.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
-
-                    // Sort rows based on clicked column
-                    sortTableByKey(key, currentSort.direction);
+                // Reset header icons
+                headers.forEach(h => {
+                    h.innerHTML = `&#9654; ${h.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
                 });
+
+                // Show arrow direction on clicked header
+                this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${this.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
+
+                // Sort rows based on clicked column
+                sortTableByKey(key, currentSort.direction);
+            });
+        });
+
+        // Sort rows function
+        function sortTableByKey(key, direction) {
+            const tbody = table.querySelector("tbody");
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+
+            rows.sort((a, b) => {
+                const getText = (row, key) => {
+                    const cell = row.querySelector(`td:nth-child(${getColumnIndex(key)})`);
+                    if (key === 'rating') {
+                        // Get the rating value from the data-rating attribute for sorting
+                        const ratingValue = parseFloat(cell?.dataset.rating || '0');
+                        return ratingValue;
+                    }
+                    return cell?.innerText.trim().toLowerCase() || '';
+                };
+
+                const valA = getText(a, key);
+                const valB = getText(b, key);
+
+                // If both values are numbers, sort numerically
+                if (!isNaN(valA) && !isNaN(valB)) {
+                    return direction === 'asc' ? valA - valB : valB - valA;
+                }
+
+                // Otherwise sort alphabetically
+                return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
             });
 
-            // Sort rows function
-            function sortTableByKey(key, direction) {
-                const tbody = table.querySelector("tbody");
-                const rows = Array.from(tbody.querySelectorAll("tr"));
+            // Apply alternating row backgrounds after sort
+            rows.forEach((row, i) => {
+                row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+                tbody.appendChild(row);
+            });
+        }
 
-                rows.sort((a, b) => {
-                    const getText = row => row.querySelector(`td:nth-child(${getColumnIndex(key)})`)?.innerText.trim().toLowerCase() || '';
-                    const valA = getText(a);
-                    const valB = getText(b);
-
-                    // If both values are numbers, sort numerically
-                    if (!isNaN(parseFloat(valA)) && !isNaN(parseFloat(valB))) {
-                        return direction === 'asc' ? parseFloat(valA) - parseFloat(valB) : parseFloat(valB) - parseFloat(valA);
-                    }
-
-                    // Otherwise sort alphabetically
-                    return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-                });
-
-                // Apply alternating row backgrounds after sort
-                rows.forEach((row, i) => {
-                    row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
-                    tbody.appendChild(row);
-                });
-            }
-
-            // Column index mapping based on data-key
-            function getColumnIndex(key) {
-                const mapping = {
-                    name: 1,
-                    core_count: 2,
-                    base_clock: 3,
-                    boost_clock: 4,
-                    microarch: 5,
-                    rating: 6,
-                    price: 7
-                };
-                return mapping[key];
-            }
-        });
-        
-    </script>
+        // Column index mapping based on data-key
+        function getColumnIndex(key) {
+            const mapping = {
+                name: 1,
+                core_count: 2,
+                base_clock: 3,
+                boost_clock: 4,
+                microarch: 5,
+                rating: 6,
+                price: 7
+            };
+            return mapping[key];
+        }
+    });
+</script>
     
     <?php
     return ob_get_clean();

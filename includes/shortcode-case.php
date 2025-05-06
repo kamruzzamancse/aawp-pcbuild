@@ -150,11 +150,12 @@ function aawp_pcbuild_display_parts_case($atts) {
                             <th class="sortable-header" data-key="side_panel"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Side Panel</span></th>
                             <!-- <th class="sortable-header" data-key="volume"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> External Volume</span></th>
                             <th class="sortable-header" data-key="drive_bays"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Internal 3.5" Bays</span></th> -->
-                            <th class="sortable-header" data-key="rating"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Rating</span></th>
+                            <th class="sortable-header" data-key="rating"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span>Seller Rating</span></th>
                             <th class="sortable-header" data-key="price"><span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Price</span></th>
                             <th style="padding:10px;">Action</th>
                         </tr>
                     </thead>
+                    <?php include('rating-count.php'); ?>
                     <tbody>
                         <?php foreach ($display_items as $index => $item):
                             $row_bg = ($index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
@@ -170,6 +171,8 @@ function aawp_pcbuild_display_parts_case($atts) {
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
+                            $feedbackCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
+                            $rating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
 
                             preg_match('/(ATX\s?Mid\s?Tower|Full\s?Tower|Mini\s?ITX|Micro\s?ATX|Small\s?Form\s?Factor|ITX|E-ATX|Cube|Tower)/i', $full_title . ' ' . $features_string, $type_match);
                             preg_match('/(Black|White|Red|Blue|Gray|Silver|ARGB|RGB)/i', $features_string, $color_match);
@@ -193,10 +196,6 @@ function aawp_pcbuild_display_parts_case($atts) {
                             $side_panel = $panel_match[1] ?? '-';
                             //$volume = isset($volume_match[1]) ? $volume_match[1] . ' L' : '-';
                             //$drive_bays = $bay_match[1] ?? '-';
-
-                            $rating = $item['CustomerReviews']['StarRating']['DisplayValue'] ?? null;
-                            $rating_count = $item['CustomerReviews']['Count'] ?? null;
-                            $rating_display = ($rating !== null && $rating_count !== null) ? number_format($rating, 1) . ' / 5 (' . number_format($rating_count) . ' reviews)' : '-';
                         ?>
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 14px">
                             <td style="font-weight:600; padding:10px; display:flex; align-items:center; gap:10px;" title="<?php echo $raw_title; ?>">
@@ -209,7 +208,7 @@ function aawp_pcbuild_display_parts_case($atts) {
                             <td style="padding:10px;"><?php echo esc_html($side_panel); ?></td>
                             <!-- <td style="padding:10px;"><?php //echo esc_html($volume); ?></td>
                             <td style="padding:10px;"><?php //echo esc_html($drive_bays); ?></td> -->
-                            <td style="padding:10px;"><?php echo esc_html($rating_display); ?></td>
+                            <td style="padding:10px;" data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"><?php echo display_rating_and_count($rating, $feedbackCount); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
                                 <button class="add-to-builder"
@@ -842,7 +841,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 <script>
-    // SORTING LOGIC for GPU TABLE (Updated for 'Case' type)
+    // Sorting Logic
     document.addEventListener('DOMContentLoaded', () => {
         const table = document.getElementById("pcbuild-table");
         const headers = table.querySelectorAll(".sortable-header");
@@ -857,14 +856,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Reset header icons
                 headers.forEach(h => {
-                    const text = h.textContent.trim().replace(/^▲|▼|▶/, '');
-                    h.innerHTML = `&#9654; ${text}`;
+                    h.innerHTML = `&#9654; ${h.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
                 });
 
-                // Set arrow icon on active header
-                const text = this.textContent.trim().replace(/^▲|▼|▶/, '');
-                this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${text}`;
+                // Show arrow direction on clicked header
+                this.innerHTML = `${currentSort.direction === 'asc' ? '▲' : '▼'} ${this.textContent.trim().replace(/^▲|▼|\▶/, '')}`;
 
+                // Sort rows based on clicked column
                 sortTableByKey(key, currentSort.direction);
             });
         });
@@ -872,61 +870,58 @@ document.addEventListener("DOMContentLoaded", function () {
         function sortTableByKey(key, direction) {
             const tbody = table.querySelector("tbody");
             const rows = Array.from(tbody.querySelectorAll("tr"));
-            const columnIndex = getColumnIndex(key);
-            if (!columnIndex) return;
 
             rows.sort((a, b) => {
-                const getText = row => row.querySelector(`td:nth-child(${columnIndex})`)?.innerText.trim().toLowerCase() || '';
+                const getText = (row, key) => {
+                    const index = getColumnIndex(key);
+                    const cell = row.querySelector(`td:nth-child(${index})`);
+                    if (!cell) return '';
 
-                const valA = getText(a);
-                const valB = getText(b);
+                    if (key === 'rating') {
+                        return parseFloat(cell.dataset.rating || '0');
+                    }
 
-                const parsedA = parseValue(valA, key);
-                const parsedB = parseValue(valB, key);
+                    if (key === 'price') {
+                        const num = parseFloat(cell.innerText.replace(/[^0-9.]/g, ''));
+                        return isNaN(num) ? 0 : num;
+                    }
 
-                if (typeof parsedA === 'number' && typeof parsedB === 'number') {
-                    return direction === 'asc' ? parsedA - parsedB : parsedB - parsedA;
+                    return cell.innerText.trim().toLowerCase();
+                };
+
+                const valA = getText(a, key);
+                const valB = getText(b, key);
+
+                if (typeof valA === 'number' && typeof valB === 'number') {
+                    return direction === 'asc' ? valA - valB : valB - valA;
                 }
 
                 return direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
             });
 
+            // Zebra striping
             rows.forEach((row, i) => {
                 row.style.backgroundColor = (i % 2 === 0) ? '#d4d4d4' : '#ebebeb';
                 tbody.appendChild(row);
             });
         }
 
-        function parseValue(value, key) {
-            switch (key) {
-                case 'price':
-                    return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
-
-                case 'rating':
-                    return parseFloat(value) || 0;
-
-                case 'memory': // e.g., "8GB"
-                    return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
-
-                case 'core_clock':
-                case 'boost_clock': // e.g., "1605 MHz"
-                    return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
-
-                case 'type': // Handling the "type" column for "Case"
-                    // The type value can have multiple words like "ATX Mid Tower"
-                    return value.toLowerCase(); // Sort lexicographically based on the full string
-
-                default:
-                    return value;
-            }
-        }
-
         function getColumnIndex(key) {
-            const headers = Array.from(table.querySelectorAll("thead th"));
-            return headers.findIndex(th => th.dataset.key === key) + 1;
+            const mapping = {
+                name: 1,
+                type: 2,
+                color: 3,
+                power_supply: 4,
+                side_panel: 5,
+                rating: 6,
+                price: 7
+                // Column 8 (Action) is not sortable
+            };
+            return mapping[key];
         }
     });
 </script>
+
         
         <?php
     return ob_get_clean();
