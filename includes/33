@@ -1,360 +1,260 @@
-{
- "SearchResult": {
-  "Items": [
-   {
-    "ASIN": "B09LGY38L4",
-    "DetailPageURL": "https://www.amazon.com/dp/B09LGY38L4?tag=pcbuildpartscom-20&linkCode=osi&th=1&psc=1",
-    "Images": {
-     "Primary": {
-      "Large": {
-       "Height": 500,
-       "URL": "https://m.media-amazon.com/images/I/41hFTmi5aUL._SL500_.jpg",
-       "Width": 500
-      }
-     }
-    },
-    "Offers": {
-     "Listings": [
-      {
-       "Id": "XzfRD%2FVbEAcEc79qxMEb8dxkwQWcVwrlToAN%2FpSgR3UhX6fVCrMhG9Mzb9vUWIYYsNG3l8Z3JiX82AIFJKLm97jmTH9HX5%2FElot1Dd4Q%2Bm5TxF0c0pTmLLU3Uw4o%2BRaI8M7TGttA%2FFcg24QQUG6tMvlyfOnqunrZFbjTDCXcI4qqpELU%2F1EvRN5oRmcoJG40",
-       "MerchantInfo": {
-        "DefaultShippingCountry": "CN",
-        "FeedbackCount": 1276,
-        "FeedbackRating": 4.68,
-        "Id": "A1BCKG4OE2CKC4",
-        "Name": "Thermalright Direct 2"
-       },
-       "Price": {
-        "Amount": 34.9,
-        "Currency": "USD",
-        "DisplayAmount": "$34.90",
-        "Savings": {
-         "Amount": 4,
-         "Currency": "USD",
-         "DisplayAmount": "$4.00 (10%)",
-         "Percentage": 10
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+      // Build checkout URL and open cart in Amazon
+      document.getElementById("checkoutAllBtn").addEventListener("click", function () {
+          const rows = document.querySelectorAll(".row");
+          let asins = [];
+          const associateTag = pcbuild_ajax_object.associate_tag;
+
+          rows.forEach(row => {
+            const categorySpan = row.querySelector(".componentName");
+            if (categorySpan) {
+              const category = categorySpan.textContent.trim().toLowerCase();
+              const storedData = localStorage.getItem(`pcbuild_${category}`);
+              if (storedData) {
+                try {
+                  const product = JSON.parse(storedData);
+                  if (product.asin) {
+                    asins.push(product.asin);
+                  }
+                } catch (e) {
+                  console.error(`Invalid JSON for ${category}`, e);
+                }
+              }
+            }
+          });
+
+          if (asins.length === 0) {
+            alert("Please select some parts before checking out.");
+            return;
+          }
+
+          let cartUrl = `https://www.amazon.com/gp/aws/cart/add.html?AssociateTag=${associateTag}`;
+          asins.forEach((asin, index) => {
+            const num = index + 1;
+            cartUrl += `&ASIN.${num}=${asin}&Quantity.${num}=1`;
+          });
+
+          window.open(cartUrl, "_blank");
+        });
+        
+        // Redicting function
+        document.querySelectorAll('[data-redirect]').forEach(el => {
+            el.addEventListener("click", function () {
+                const target = this.getAttribute("data-redirect");
+                if (target) window.location.href = target;
+            });
+        });
+
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const partTriggers = document.querySelectorAll(".pc-part");
+      const partModal = document.getElementById("cpuModal");
+      const modalOverlay = document.getElementById("modalOverlay");
+      const popupContent = document.getElementById("popupContent");
+
+      // Restore selected parts from localStorage on page load
+      const rows = document.querySelectorAll(".row");
+      rows.forEach(row => {
+        const categorySpan = row.querySelector(".componentName");
+        if (categorySpan) {
+          const category = categorySpan.textContent.trim().toLowerCase();
+          const savedData = localStorage.getItem(`pcbuild_${category}`);
+          if (savedData) {
+            const parsedData = JSON.parse(savedData);
+            updateRow(category, parsedData);
+          }
         }
-       },
-       "ViolatesMAP": false
+      });
+
+      // Handle clicking on a component part to open modal
+      if (partTriggers.length && partModal && modalOverlay && popupContent) {
+        partTriggers.forEach(trigger => {
+          trigger.addEventListener("click", function () {
+            const row = trigger.closest(".row");
+            const categorySpan = row.querySelector(".componentName");
+            const category = categorySpan ? categorySpan.textContent.trim() : "CPU";
+
+            // Save category for modal context
+            partModal.setAttribute('data-current-category', category);
+
+            // Show modal and overlay
+            partModal.style.display = "block";
+            modalOverlay.style.display = "block";
+
+            // Load modal product list dynamically via AJAX
+            fetch(pcbuild_ajax_object.ajax_url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              },
+              body: 'action=load_pcbuild_parts&category=' + encodeURIComponent(category)
+            })
+            .then(response => response.text())
+            .then(html => {
+              popupContent.innerHTML = html;
+            });
+          });
+        });
+
+        // Close modal if overlay is clicked
+        modalOverlay.addEventListener("click", function () {
+          closePartModal();
+        });
+
       }
-     ]
-    }
-   },
-   {
-    "ASIN": "B07H25DYM3",
-    "DetailPageURL": "https://www.amazon.com/dp/B07H25DYM3?tag=pcbuildpartscom-20&linkCode=osi&th=1&psc=1",
-    "Images": {
-     "Primary": {
-      "Large": {
-       "Height": 500,
-       "URL": "https://m.media-amazon.com/images/I/41lddbz57kL._SL500_.jpg",
-       "Width": 500
-      }
-     }
-    },
-    "Offers": {
-     "Listings": [
-      {
-       "Id": "XzfRD%2FVbEAcEc79qxMEb8Vk%2F%2F7u28h6EbYpTUIe%2F3x0UgMkKqAW9t3Gs2gLx0FJRm2erImohwiZamHYZwgGP5AGcjFMOCZoEQOrD3ieS9hKxlPmursfXsp3jSqQJpmzWc3QF9nVtXLWklBCGTmVb6w%3D%3D",
-       "MerchantInfo": {
-        "FeedbackCount": 384,
-        "FeedbackRating": 4.67,
-        "Id": "ATVPDKIKX0DER",
-        "Name": "Amazon.com"
-       },
-       "Price": {
-        "Amount": 29.99,
-        "Currency": "USD",
-        "DisplayAmount": "$29.99"
-       },
-       "ViolatesMAP": false
-      }
-     ]
-    }
-   },
-   {
-    "ASIN": "B0DP7DFRLJ",
-    "DetailPageURL": "https://www.amazon.com/dp/B0DP7DFRLJ?tag=pcbuildpartscom-20&linkCode=osi&th=1&psc=1",
-    "Images": {
-     "Primary": {
-      "Large": {
-       "Height": 500,
-       "URL": "https://m.media-amazon.com/images/I/41ddNhePcSL._SL500_.jpg",
-       "Width": 500
-      }
-     }
-    },
-    "Offers": {
-     "Listings": [
-      {
-       "Id": "XzfRD%2FVbEAcEc79qxMEb8TVAVkxQsGtfOLJLGlI6%2FcS%2FGhLfIWwkfT%2BL1E4FmOE40KlkNzqbjO1ZTVASuSR0RaOYgDZObkgkRQGcL8MdcJ5vBPlzE%2BZV1ChHIEWUqXqfG7l0WyZEGHQr9IWOyPDng%2FQW3u7I6vp%2FuL7VH1oNnC%2Be3fwHvwQETfoAyPOOJpIa",
-       "MerchantInfo": {
-        "DefaultShippingCountry": "CN",
-        "FeedbackCount": 1276,
-        "FeedbackRating": 4.68,
-        "Id": "A1BCKG4OE2CKC4",
-        "Name": "Thermalright Direct 2"
-       },
-       "Price": {
-        "Amount": 45.9,
-        "Currency": "USD",
-        "DisplayAmount": "$45.90"
-       },
-       "ViolatesMAP": false
-      }
-     ]
-    }
-   },
-   {
-    "ASIN": "B0DLWGG85P",
-    "DetailPageURL": "https://www.amazon.com/dp/B0DLWGG85P?tag=pcbuildpartscom-20&linkCode=osi&th=1&psc=1",
-    "Images": {
-     "Primary": {
-      "Large": {
-       "Height": 500,
-       "URL": "https://m.media-amazon.com/images/I/31fz8McEhDL._SL500_.jpg",
-       "Width": 500
-      }
-     }
-    },
-    "Offers": {
-     "Listings": [
-      {
-       "Id": "XzfRD%2FVbEAcEc79qxMEb8dZ8NB3SblEw%2FQ6CNPZVqAyt2Eku3Z%2FDUc6Iy2tGPHywW%2BlPK4zU2P7PLE%2BratI3oKuZZiXQnqihjngyfMboeYNx%2F95iIdf8TfZ%2BPWHFr2%2F4QyNZLnype2w00CjzdPBq5r3GkbMKS9uatA5yd%2BXcmGtSvuRTnM2rIOyFFATRW2jI",
-       "MerchantInfo": {
-        "DefaultShippingCountry": "US",
-        "FeedbackCount": 1502,
-        "FeedbackRating": 4.87,
-        "Id": "A2T6N244WTLWGU",
-        "Name": "ARCTIC Inc"
-       },
-       "Price": {
-        "Amount": 87.59,
-        "Currency": "USD",
-        "DisplayAmount": "$87.59",
-        "Savings": {
-         "Amount": 37.4,
-         "Currency": "USD",
-         "DisplayAmount": "$37.40 (30%)",
-         "Percentage": 30
+
+      // Handle "Add to Builder" button clicks
+      document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("add-to-builder")) {
+          const button = e.target;
+
+          const productData = {
+            title: button.dataset.title,
+            image: button.dataset.image,
+            base: button.dataset.base,
+            promo: button.dataset.promo,
+            shipping: button.dataset.shipping,
+            tax: button.dataset.tax,
+            availability: button.dataset.availability,
+            price: button.dataset.price,
+            affiliateUrl: button.dataset.affiliateUrl,
+            asin: button.dataset.asin,
+            rating: button.dataset.rating || ''
+          };
+
+          const category = button.dataset.category.toLowerCase();
+          localStorage.setItem(`pcbuild_${category}`, JSON.stringify(productData));
+
+          updateRow(category, productData);
+          closePartModal();
         }
-       },
-       "ViolatesMAP": false
+      });
+
+      // Update selected part's UI in the builder list
+      function updateRow(category, data) {
+        const rows = document.querySelectorAll(".row");
+
+        rows.forEach(row => {
+          const categorySpan = row.querySelector(".componentName");
+          if (categorySpan && categorySpan.textContent.trim().toLowerCase() === category.toLowerCase()) {
+
+            const base = data.base || '';
+            const promo = data.promo || '';
+            const shipping = data.shipping || '';
+            const tax = data.tax || '';
+            const availability = data.availability || '';
+            const price = data.price || '';
+            const affiliateUrl = data.affiliateUrl || '#';
+            const title = data.title || '';
+            const image = data.image || '';
+
+            const truncatedTitle = title.length > 70 ? title.slice(0, 70) + "..." : title;
+            const escapedTitle = truncatedTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+            // Update selected image and title
+            if (row.querySelector(".selection")) {
+              row.querySelector(".selection").innerHTML = `
+                <div class="product-selected" style="display: flex; align-items: center; gap: 12px;">
+                  <img src="${image}" alt="${escapedTitle}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
+                  <div style="flex: 1;">
+                    <strong style="font-size: 14px; display: block;">${escapedTitle}</strong>
+                  </div>
+                </div>`;
+            }
+
+            // Update pricing, availability, and shipping info
+            if (row.querySelector(".base")) row.querySelector(".base").textContent = base;
+            if (row.querySelector(".promo")) row.querySelector(".promo").textContent = promo;
+            if (row.querySelector(".shipping")) row.querySelector(".shipping").textContent = shipping;
+            if (row.querySelector(".tax")) row.querySelector(".tax").textContent = tax;
+            if (row.querySelector(".availability")) row.querySelector(".availability").textContent = availability;
+            if (row.querySelector(".price")) row.querySelector(".price").textContent = price;
+
+            // Update "Buy from Amazon" button
+            if (row.querySelector(".where")) {
+              row.querySelector(".where").innerHTML = `
+                <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+                  <img src="http://localhost/pcbuildparts/wp-content/uploads/2025/04/amazon-logo.png" 
+                    alt="Buy on Amazon" style="width:80px; height:auto;" />
+                </a>`;
+            }
+
+            if (row.querySelector(".buy")) {
+              row.querySelector(".buy").innerHTML = `
+                <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+                  <button style="background:#28a745; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
+                    Buy
+                  </button>
+                </a>`;
+            }
+
+            // Add remove button
+            if (row.querySelector(".cancel")) {
+              row.querySelector(".cancel").innerHTML = `
+                <button class="remove-from-builder" data-category="${category}"
+                  style="background:none; border:none; font-size:30px; font-weight:bold; cursor:pointer; color:#ccc; line-height:1;">
+                  &times;
+                </button>`;
+            }
+          }
+        });
+        calculateTotalPrice();
       }
-     ]
-    }
-   },
-   {
-    "ASIN": "B09LHBFPJ6",
-    "DetailPageURL": "https://www.amazon.com/dp/B09LHBFPJ6?tag=pcbuildpartscom-20&linkCode=osi&th=1&psc=1",
-    "Images": {
-     "Primary": {
-      "Large": {
-       "Height": 500,
-       "URL": "https://m.media-amazon.com/images/I/41aJwdGRuAL._SL500_.jpg",
-       "Width": 500
-      }
-     }
-    },
-    "Offers": {
-     "Listings": [
-      {
-       "Id": "XzfRD%2FVbEAcEc79qxMEb8ThU421q176NRU7j6q1gfUnl2SO7BklVYT2D7UD89s9ZTQlnBs9DEtlYCIARkGaYahAykM59Vy48FSiEi8JwW%2BloI7pkLPPaj9PRkhcYVxLgRfcFlpgMjLhKrM7gU9GgNEPCHCPokQXrH07LTmUhsMPWXsV2yW%2FELbN1Dkzcytg5",
-       "MerchantInfo": {
-        "DefaultShippingCountry": "CN",
-        "FeedbackCount": 1276,
-        "FeedbackRating": 4.68,
-        "Id": "A1BCKG4OE2CKC4",
-        "Name": "Thermalright Direct 2"
-       },
-       "Price": {
-        "Amount": 17.9,
-        "Currency": "USD",
-        "DisplayAmount": "$17.90",
-        "Savings": {
-         "Amount": 2,
-         "Currency": "USD",
-         "DisplayAmount": "$2.00 (10%)",
-         "Percentage": 10
+
+      function calculateTotalPrice() {
+        let total = 0;
+        let parts = 0;
+
+        const priceElements = document.querySelectorAll('.row .price');
+
+        priceElements.forEach(priceEl => {
+          const priceText = priceEl.textContent.replace(/[^0-9.]/g, ''); // Remove $ and commas
+          const priceValue = parseFloat(priceText);
+          if (!isNaN(priceValue)) {
+            total += priceValue;
+            parts++;
+          }
+        });
+
+        // Store total in localStorage
+        localStorage.setItem('cartTotal', total.toFixed(2));
+        localStorage.setItem('cartPartsCount', parts);
+
+        // Update builder list total (if exists)
+        const totalDiv = document.getElementById('products_total_price');
+        if (totalDiv) {
+          totalDiv.style.cssText = 'margin-top: 20px; font-size: 18px; font-weight: bold; text-align: right;';
+          totalDiv.textContent = `Total: $${total.toFixed(2)}`;
         }
-       },
-       "ViolatesMAP": false
+
+        // Update parts count and total on another page
+        const partsCountEl = document.getElementById('parts_count');
+        const partsTotalEl = document.getElementById('parts_total_price');
+
+        if (partsCountEl) partsCountEl.textContent = parts;
+        if (partsTotalEl) partsTotalEl.textContent = `$${total.toFixed(2)}`;
       }
-     ]
-    }
-   },
-   {
-    "ASIN": "B0BR3JQTSN",
-    "DetailPageURL": "https://www.amazon.com/dp/B0BR3JQTSN?tag=pcbuildpartscom-20&linkCode=osi&th=1&psc=1",
-    "Images": {
-     "Primary": {
-      "Large": {
-       "Height": 500,
-       "URL": "https://m.media-amazon.com/images/I/51KizlEeQZL._SL500_.jpg",
-       "Width": 500
-      }
-     }
-    },
-    "Offers": {
-     "Listings": [
-      {
-       "Id": "XzfRD%2FVbEAcEc79qxMEb8R4b%2Fljqtm%2BAuIJIOHyvIPgUjN2dfyMb%2Fi3V3tS%2BxUWZUUcSee0F%2FyeF97%2BqbjMa6VDi8FHirvMGlwKQXfcQ7Q6zP0uQS3LtUKmEpDgot7LYUGPAwvVott5ifbbTOVNJY0U9%2BfAJQ88ja2h1ttMpcjKqlwILRwcudr35X4r6dzuC",
-       "MerchantInfo": {
-        "DefaultShippingCountry": "CN",
-        "FeedbackCount": 420,
-        "FeedbackRating": 4.79,
-        "Id": "AECMV4Q5B05GL",
-        "Name": "Thermalright Direct"
-       },
-       "Price": {
-        "Amount": 37.9,
-        "Currency": "USD",
-        "DisplayAmount": "$37.90"
-       },
-       "ViolatesMAP": false
-      }
-     ]
-    }
-   },
-   {
-    "ASIN": "B0DT4TZ7S6",
-    "DetailPageURL": "https://www.amazon.com/dp/B0DT4TZ7S6?tag=pcbuildpartscom-20&linkCode=osi&th=1&psc=1",
-    "Images": {
-     "Primary": {
-      "Large": {
-       "Height": 500,
-       "URL": "https://m.media-amazon.com/images/I/317dee0KpiL._SL500_.jpg",
-       "Width": 500
-      }
-     }
-    },
-    "Offers": {
-     "Listings": [
-      {
-       "Id": "XzfRD%2FVbEAcEc79qxMEb8WyeHPRAyexm%2BAamRct7LwN9qBlZmKx2Xrhx5hM2oUGnlKDpnbDgotoU9U%2FWR6IKTkSA9LkKb%2Fst14dEpRnhUuupAnFm3%2F8SWM1OdCgF%2FyWEucxibdHM4lVJPC37c%2BkBjbFZ6msqN07deqbO5c7Cu2ziACTVjVhqlp59h%2F0goSx8",
-       "MerchantInfo": {
-        "DefaultShippingCountry": "US",
-        "FeedbackCount": 605,
-        "FeedbackRating": 4.3,
-        "Id": "A2YRDP9TGVDAYI",
-        "Name": "Only1deal"
-       },
-       "Price": {
-        "Amount": 169.99,
-        "Currency": "USD",
-        "DisplayAmount": "$169.99"
-       },
-       "ViolatesMAP": false
-      }
-     ]
-    }
-   },
-   {
-    "ASIN": "B0DX153LT5",
-    "DetailPageURL": "https://www.amazon.com/dp/B0DX153LT5?tag=pcbuildpartscom-20&linkCode=osi&th=1&psc=1",
-    "Images": {
-     "Primary": {
-      "Large": {
-       "Height": 457,
-       "URL": "https://m.media-amazon.com/images/I/517l9vM3SML._SL500_.jpg",
-       "Width": 500
-      }
-     }
-    },
-    "Offers": {
-     "Listings": [
-      {
-       "Id": "XzfRD%2FVbEAcEc79qxMEb8UbGvESDIWG%2FDjOTtQLUzfn9xKF2IucElrbtNhCMgT8PSapfvanKBBvKABIInwsA3hF82ZoGRn5IMjCJK6REsHx2KlD0HPb1Htn8i69ztcRHcp5eMfJ6cdeXny8VibqiWo%2BSRg44B2XYEtlsOlx8JPcwKH8YB0%2Ft3i5pZyGUdOUi",
-       "MerchantInfo": {
-        "DefaultShippingCountry": "US",
-        "FeedbackCount": 430,
-        "FeedbackRating": 4.57,
-        "Id": "A1Y2SO38WVVFQ4",
-        "Name": "be-quiet-official"
-       },
-       "Price": {
-        "Amount": 49.7,
-        "Currency": "USD",
-        "DisplayAmount": "$49.70",
-        "Savings": {
-         "Amount": 9.2,
-         "Currency": "USD",
-         "DisplayAmount": "$9.20 (16%)",
-         "Percentage": 16
+
+
+      // Remove item from builder and refresh
+      document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("remove-from-builder")) {
+          const category = e.target.dataset.category.toLowerCase();
+          localStorage.removeItem(`pcbuild_${category}`);
+          location.reload(); // Optional: Use more elegant UI clearing
         }
-       },
-       "ViolatesMAP": false
-      }
-     ]
-    }
-   },
-   {
-    "ASIN": "B0C4C421RZ",
-    "DetailPageURL": "https://www.amazon.com/dp/B0C4C421RZ?tag=pcbuildpartscom-20&linkCode=osi&th=1&psc=1",
-    "Images": {
-     "Primary": {
-      "Large": {
-       "Height": 500,
-       "URL": "https://m.media-amazon.com/images/I/318QuRIAJ3L._SL500_.jpg",
-       "Width": 500
-      }
-     }
-    },
-    "Offers": {
-     "Listings": [
-      {
-       "Id": "XzfRD%2FVbEAcEc79qxMEb8dV059fFq%2BGH6Ya9%2BO0XOEIn%2BgtWnpqqNs6tkUlvLFIhajZF7MJSHFsUDxP5qcVBXc3dpfNp2uWRHw7nA%2BZqnt%2F7S2JcAm45AvTmRrJz2KTmoY72o4w4Ulo6D4IDuUT%2FiQ%3D%3D",
-       "MerchantInfo": {
-        "FeedbackCount": 384,
-        "FeedbackRating": 4.67,
-        "Id": "ATVPDKIKX0DER",
-        "Name": "Amazon.com"
-       },
-       "Price": {
-        "Amount": 99.99,
-        "Currency": "USD",
-        "DisplayAmount": "$99.99"
-       },
-       "ViolatesMAP": false
-      }
-     ]
-    }
-   },
-   {
-    "ASIN": "B09Q7XVZ2V",
-    "DetailPageURL": "https://www.amazon.com/dp/B09Q7XVZ2V?tag=pcbuildpartscom-20&linkCode=osi&th=1&psc=1",
-    "Images": {
-     "Primary": {
-      "Large": {
-       "Height": 500,
-       "URL": "https://m.media-amazon.com/images/I/51bTXt-wzEL._SL500_.jpg",
-       "Width": 500
-      }
-     }
-    },
-    "Offers": {
-     "Listings": [
-      {
-       "Id": "XzfRD%2FVbEAcEc79qxMEb8V73Vh2JP2OmQc7xN2e63%2BuZ%2BiqR0s%2B1e0k3EHlfVy%2Bu90ua6N9yGn3I%2F5RYhdtds4sVswcIkWQH3YVD5y%2BKY0QBAblQgjPRqNTLYlc1AT838OqcLOT8ZD6GQmdHYM3JpQpPoxWqe0ZJpWHurza8jHwKWKAIg31fCyOWrEcQS%2FC6",
-       "MerchantInfo": {
-        "DefaultShippingCountry": "CN",
-        "FeedbackCount": 302,
-        "FeedbackRating": 4.61,
-        "Id": "A3JC3X3O0Y5YSA",
-        "Name": "ID-COOLING"
-       },
-       "Price": {
-        "Amount": 18.99,
-        "Currency": "USD",
-        "DisplayAmount": "$18.99"
-       },
-       "ViolatesMAP": false
-      }
-     ]
-    }
-   }
-  ],
-  "SearchURL": "https://www.amazon.com/s?k=CPU+Cooler&i=computers&rh=p_n_availability%3A2661600011&tag=pcbuildpartscom-20&linkCode=osi",
-  "TotalResultCount": 1000
- }
-}
+      });
+
+      // Close modal and clear content
+      window.closePartModal = function () {
+        partModal.style.display = "none";
+        modalOverlay.style.display = "none";
+        popupContent.innerHTML = '';
+      };
+      
+    });
+  </script>

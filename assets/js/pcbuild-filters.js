@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   
 // ADD TO BUILDER FUNCTIONALITY
-document.querySelectorAll(".add-to-builder").forEach(button => {
+/* document.querySelectorAll(".add-to-builder").forEach(button => {
     button.addEventListener("click", () => {
         const category = button.dataset.category?.toLowerCase() || 'other';
 
@@ -126,7 +126,68 @@ document.querySelectorAll(".add-to-builder").forEach(button => {
             window.location.href = "/pcbuildparts/pc-build-parts/";
         }
     });
+}); */
+
+
+document.getElementById('add-selected-to-builder').addEventListener('click', () => {
+    const selected = document.querySelectorAll('.select-product:checked');
+
+    selected.forEach(checkbox => {
+        const button = checkbox.closest('tr').querySelector('.add-to-builder');
+        if (!button) return;
+
+        const category = button.dataset.category?.toLowerCase() || 'other';
+
+        const productData = {
+            title: button.dataset.title,
+            image: button.dataset.image,
+            base: button.dataset.base,
+            promo: button.dataset.promo,
+            shipping: button.dataset.shipping,
+            tax: button.dataset.tax,
+            availability: button.dataset.availability,
+            price: button.dataset.price,
+            affiliateUrl: button.dataset.affiliateUrl,
+            asin: button.dataset.asin,
+            features: button.dataset.features,
+            rating: button.dataset.rating,
+            socket: button.dataset.socket,
+            chipset: button.dataset.chipset,
+            category: button.dataset.category
+        };
+
+        // Save product to localStorage
+        localStorage.setItem(`pcbuild_${category}`, JSON.stringify(productData));
+
+        // Category-specific logic
+        switch (category) {
+            case 'cpu':
+                localStorage.setItem('selected_cpu_socket', productData.socket);
+                localStorage.setItem('pcbuild_cpu', JSON.stringify(productData));
+                break;
+            case 'cpu cooler':
+                localStorage.setItem('selected_cpu_cooler_socket', JSON.stringify(productData.socket));
+                break;
+            case 'motherboard':
+                localStorage.setItem('selected_motherboard_socket', productData.socket);
+                localStorage.setItem('selected_motherboard_chipset', productData.chipset);
+                localStorage.setItem('pcbuild_motherboard', JSON.stringify(productData));
+                break;
+            case 'memory':
+            case 'ram':
+                localStorage.setItem('selected_ram_type', productData.ram_type);
+                localStorage.setItem('selected_ram_speed', productData.ram_speed);
+                localStorage.setItem('pcbuild_ram', JSON.stringify(productData));
+                break;
+            default:
+                break;
+        }
+    });
+
+    // Redirect to builder page
+    window.location.href = "/pcbuildparts/pc-build-parts/";
 });
+
 
 // SCROLL TO TABLE ON PAGINATION
 const params = new URLSearchParams(window.location.search);

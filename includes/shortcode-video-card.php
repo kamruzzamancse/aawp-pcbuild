@@ -156,7 +156,10 @@ function aawp_pcbuild_display_parts_gpu($atts) {
             <div style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div style="font-weight:bold;"><?php echo $total_items; ?> Products</div>
-                    <div><input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc;" /></div>
+                    <div>
+                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
+                        <button class="add-from-filter">Add From Filter</button>
+                    </div>
                 </div>
 
                 <table id="pcbuild-table" style="width:100%; border-collapse:collapse;">
@@ -227,7 +230,8 @@ function aawp_pcbuild_display_parts_gpu($atts) {
                             $features_string = implode(' ', $features);
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
                             $feedbackCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
-                            $rating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
+                            $sellerCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
+                            $sellerRating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
 
                             // Append title to features string for better matching
                             $combined_string = $features_string . ' ' . $full_title . ' ' . ($item['ItemInfo']['ProductInfo']['Size']['DisplayValue'] ?? '');
@@ -247,6 +251,7 @@ function aawp_pcbuild_display_parts_gpu($atts) {
                             $boost = isset($boost_match[1]) ? $boost_match[1] . ' MHz' : '-';
                             $color = $color_match[1] ?? '-';
                             //$length = $length_match[1] ?? '-';
+                            $rating_count = display_rating_and_count($sellerRating, $sellerCount);
                         ?>
 
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 14px">
@@ -260,7 +265,7 @@ function aawp_pcbuild_display_parts_gpu($atts) {
                             <td style="padding:10px;"><?php echo esc_html($boost); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($color); ?></td>
                             <!-- <td style="padding:10px;"><?php //echo esc_html($length); ?> mm</td> -->
-                            <td style="padding:10px;" data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"><?php echo display_rating_and_count($rating, $feedbackCount); ?></td>
+                            <td style="padding:10px;" data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"><?php echo $rating_count; ?></td>
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
                                 <button class="add-to-builder"
@@ -280,8 +285,9 @@ function aawp_pcbuild_display_parts_gpu($atts) {
                                     data-core-clock="<?php echo esc_attr($core); ?>"
                                     data-boost-clock="<?php echo esc_attr($boost); ?>"
                                     data-color="<?php echo esc_attr($color); ?>"
+                                    data-rating="<?php echo isset($sellerRating) ? esc_attr($ratsellerRatinging) : ''; ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
-                                    <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
+                                    <?php _e('Add', 'aawp-pcbuild'); ?>
                                 </button>
                             </td>
                         </tr>

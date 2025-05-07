@@ -151,7 +151,10 @@ function aawp_pcbuild_display_parts_monitor($atts) {
             <div style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div style="font-weight:bold;"><?php echo $total_items; ?> Products</div>
-                    <div><input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc;" /></div>
+                    <div>
+                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
+                        <button class="add-from-filter">Add From Filter</button>
+                    </div>
                 </div>
 
                 <table id="pcbuild-table" style="width:100%; border-collapse:collapse;">
@@ -186,8 +189,8 @@ function aawp_pcbuild_display_parts_monitor($atts) {
                         $features_string = implode(' ', $features);
                         $combined_string = $features_string . ' ' . $full_title;
                         $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
-                        $feedbackCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
-                        $rating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
+                        $sellerCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
+                        $sellerRating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
 
                         // Extract monitor attributes
                         preg_match('/(\d+(\.\d+)?)\s*(inches?|")/i', $combined_string, $screen_size_match);
@@ -204,6 +207,7 @@ function aawp_pcbuild_display_parts_monitor($atts) {
                         //$response_time = $response_time_match[1] ?? '-';
                         $panel_type = strtoupper($panel_type_match[1] ?? '-');
                         $aspect_ratio = isset($aspect_ratio_match[1]) ? trim($aspect_ratio_match[1]) : '-';
+                        $rating_count = display_rating_and_count($sellerRating, $sellerCount);
                     ?>
                     <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 14px">
                         <td style="font-weight:800; padding:10px; display:flex; align-items:center; gap:10px;" title="<?php echo $raw_title; ?>">
@@ -216,7 +220,7 @@ function aawp_pcbuild_display_parts_monitor($atts) {
                         <!-- <td style="padding:10px;"><?php //echo esc_html($response_time); ?></td> -->
                         <td style="padding:10px;"><?php echo esc_html($panel_type); ?></td>
                         <td style="padding:10px;"><?php echo esc_html($aspect_ratio); ?></td>
-                        <td style="padding:10px;" data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"><?php echo display_rating_and_count($rating, $feedbackCount); ?></td>
+                        <td style="padding:10px;" data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"><?php echo $rating_count; ?></td>
                         <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                         <td style="padding:10px;">
                             <button class="add-to-builder"
@@ -236,8 +240,9 @@ function aawp_pcbuild_display_parts_monitor($atts) {
                                 data-refresh-rate="<?php echo esc_attr($refresh_rate); ?>"
                                 data-panel-type="<?php echo esc_attr($panel_type); ?>"
                                 data-aspect-ratio="<?php echo esc_attr($aspect_ratio); ?>"
+                                data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
                                 style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
-                                <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
+                                <?php _e('Add', 'aawp-pcbuild'); ?>
                             </button>
                         </td>
                     </tr>

@@ -164,13 +164,22 @@ function aawp_pcbuild_display_parts_cpu($atts) {
             <!-- Main Table Section -->
             <div style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div style="font-weight:bold;"><?php echo $total_items; ?> Products</div>
-                    <div><input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc;" /></div>
+                    <div style="font-weight:bold;"><?php echo $total_items; ?> 
+                        Products <br><br>
+                        <a href="#" class="productList_all" id="select_all" style="margin-right: 10px">Select All</a> 
+                        <a href="#" class="productList_clear disabled" id="clear_selected" style="margin-right: 10px">Select None</a>
+                        <a href="#" class="productList_compare disabled" id="compare_selected">Compare Selected</a>
+                    </div>
+                    <div>
+                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
+                        <button class="add-selected-to-builder">Add From Filter</button>
+                    </div> 
                 </div>
 
                 <table id="pcbuild-table" style="width:100%; border-collapse:collapse;">
                     <thead style="background:#f0f0f0;">
                         <tr>
+                            <th>&nbsp;</th>
                             <th class="sortable-header" data-key="name">
                                 <span class="sort-header-label">
                                     <span class="sort-arrow">&#9654;</span> Name
@@ -226,9 +235,9 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
-                            $feedbackCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
-                            $rating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
                             $combined_string = $features_string . ' ' . $full_title;
+                            $sellerCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
+                            $sellerRating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
 
                             // Extract new data points
                             preg_match('/(\d+)[ -]?[Cc]ore/', $features_string, $core_match);
@@ -272,8 +281,13 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             $boost_clock = $boost_match[1] ?? '-';
                             $microarch = $arch_match[0] ?? '-';
                             $series = $series_match[0] ?? '-';
+                            $rating_count = display_rating_and_count($sellerRating, $sellerCount);
                         ?>
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 16px">
+                           
+                            <td style="padding:10px; text-align:center;">
+                            <input type="checkbox" class="select-product" data-category="<?php echo esc_attr($category); ?>">
+                            </td>
                             <td style="font-weight:800; padding:10px; display:flex; align-items:center; gap:10px;" title="<?php echo $raw_title; ?>">
                                 <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>" style="width:125px; height:125px; object-fit:cover; border-radius:4px;" />
                                 <?php echo $title; ?>
@@ -282,7 +296,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             <td style="padding:10px;"><?php echo $base_clock !== '-' ? $base_clock . ' GHz' : '-'; ?></td>
                             <td style="padding:10px;"><?php echo $boost_clock !== '-' ? $boost_clock . ' GHz' : '-'; ?></td>
                             <td style="padding:10px;"><?php echo $microarch; ?></td>
-                            <td style="padding:10px;" data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"><?php echo display_rating_and_count($rating, $feedbackCount); ?></td>
+                            <td style="padding:10px;" data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"><?php echo $rating_count; ?></td>
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
                                 <button class="add-to-builder"
@@ -298,13 +312,13 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                                     data-category="<?php echo esc_attr($category); ?>"
                                     data-affiliate-url="<?php echo esc_url($product_url); ?>"
                                     data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
-                                    data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"
+                                    data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
                                     data-socket="<?php echo isset($socket) ? esc_attr($socket) : ''; ?>"
                                     data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
                                     data-chipset="<?php echo isset($chipset) ? esc_attr($chipset) : ''; ?>"
                                     data-series="<?php echo isset($series) ? esc_attr($series) : ''; ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
-                                    <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
+                                    <?php _e('Add', 'aawp-pcbuild'); ?>
                                 </button>
                             </td>
                         </tr>
@@ -1156,6 +1170,55 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const selectAllBtn = document.getElementById("select_all");
+    const clearSelectedBtn = document.getElementById("clear_selected");
+    const compareSelectedBtn = document.getElementById("compare_selected");
+    const checkboxes = document.querySelectorAll(".product-checkbox");
+    //const masterCheckbox = document.getElementById("master_checkbox");
+
+    // Helper: update compare + clear buttons
+    function updateButtonStates() {
+        const anyChecked = [...checkboxes].some(cb => cb.checked);
+        clearSelectedBtn.classList.toggle("disabled", !anyChecked);
+        compareSelectedBtn.classList.toggle("disabled", !anyChecked);
+    }
+
+    // Select All
+    selectAllBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        checkboxes.forEach(cb => cb.checked = true);
+        updateButtonStates();
+    });
+
+    // Select None
+    clearSelectedBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        checkboxes.forEach(cb => cb.checked = false);
+        updateButtonStates();
+    });
+
+    // Master checkbox toggle
+    /* if (masterCheckbox) {
+        masterCheckbox.addEventListener("change", function () {
+            checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+            updateButtonStates();
+        });
+    } */
+
+    // Individual checkbox change
+    checkboxes.forEach(cb => {
+        cb.addEventListener("change", updateButtonStates);
+    });
+
+    // Initial state
+    updateButtonStates();
+});
+
+</script>
+
     
     <?php
     return ob_get_clean();

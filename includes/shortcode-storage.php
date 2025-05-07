@@ -145,7 +145,10 @@ function aawp_pcbuild_display_parts_storage($atts) {
             <div style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div style="font-weight:bold;"><?php echo $total_items; ?> Products</div>
-                    <div><input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc;" /></div>
+                    <div>
+                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
+                        <button class="add-from-filter">Add From Filter</button>
+                    </div>
                 </div>
 
                 <table id="pcbuild-table" style="width:100%; border-collapse:collapse;">
@@ -216,8 +219,8 @@ function aawp_pcbuild_display_parts_storage($atts) {
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
-                            $feedbackCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
-                            $rating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
+                            $sellerCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
+                            $sellerRating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
 
                             // Parse storage details
                             
@@ -251,6 +254,7 @@ function aawp_pcbuild_display_parts_storage($atts) {
                             $price_per_gb = ($capacity_gb && $price_value > 0)
                                 ? '$' . number_format($price_value / $capacity_gb, 3)
                                 : '-';
+                            $rating_count = display_rating_and_count($sellerRating, $sellerCount);
 
                         ?>
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 14px">
@@ -264,7 +268,7 @@ function aawp_pcbuild_display_parts_storage($atts) {
                             <td style="padding:10px;"><?php echo esc_html($cache); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($form_factor); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($interface); ?></td>
-                            <td style="padding:10px;" data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"><?php echo display_rating_and_count($rating, $feedbackCount); ?></td>
+                            <td style="padding:10px;" data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"><?php echo $rating_count; ?></td>
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
                                 <button class="add-to-builder"
@@ -283,8 +287,9 @@ function aawp_pcbuild_display_parts_storage($atts) {
                                     data-type="<?php echo esc_attr($type); ?>"
                                     data-cache="<?php echo esc_attr($cache); ?>"
                                     data-form_factor="<?php echo esc_attr($form_factor); ?>"
+                                    data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
-                                    <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
+                                    <?php _e('Add', 'aawp-pcbuild'); ?>
                                 </button>
                             </td>
                         </tr>

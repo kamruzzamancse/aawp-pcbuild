@@ -155,7 +155,10 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
             <div id="motherboard-table-container" style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div style="font-weight:bold;"><?php echo esc_html($total_items); ?> Products</div>
-                    <div><input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc;" /></div>
+                    <div>
+                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
+                        <button class="add-from-filter">Add From Filter</button>
+                    </div>
                 </div>
 
                 <table id="pcbuild-table" style="width:100%; border-collapse:collapse;">
@@ -220,8 +223,8 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
                             $product_url = $item['DetailPageURL'] ?? '#';
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
-                            $feedbackCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
-                            $rating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
+                            $sellerCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
+                            $sellerRating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
 
                             //Color filtering
                             $known_colors = [
@@ -245,6 +248,7 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
                             $memory_max = $memory_max_match[1] ?? '-';
                             $memory_slots = $memory_slots_match[1] ?? '-';
                             $chipset = $chipset_match[1] ?? '-';
+                            $rating_count = display_rating_and_count($sellerRating, $sellerCount);
                         ?>
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 16px">
                             <td style="font-weight:800; padding:10px; display:flex; align-items:center; gap:10px;" title="<?php echo $raw_title; ?>">
@@ -256,7 +260,7 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
                             <td style="padding:10px;"><?php echo esc_html($memory_max); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($memory_slots); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($color); ?></td>
-                            <td style="padding:10px;" data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"><?php echo display_rating_and_count($rating, $feedbackCount); ?></td>
+                            <td style="padding:10px;" data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"><?php echo $rating_count; ?></td>
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
                                 <button class="add-to-builder"
@@ -273,8 +277,9 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
                                     data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
                                     data-socket="<?php echo esc_attr($socket); ?>"
                                     data-chipset="<?php echo esc_attr($chipset); ?>"
+                                    data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
-                                    <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
+                                    <?php _e('Add', 'aawp-pcbuild'); ?>
                                 </button>
                             </td>
                         </tr>

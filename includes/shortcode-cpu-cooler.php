@@ -131,7 +131,10 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
             <div style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div id="total_products" style="font-weight:bold;"><?php echo $total_items; ?> Products</div>
-                    <div><input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc;" /></div>
+                    <div>
+                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
+                        <button class="add-from-filter">Add From Filter</button>
+                    </div>
                 </div>
 
                 <table id="pcbuild-table" style="width:100%; border-collapse:collapse;">
@@ -164,13 +167,8 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             $features_string = implode(' ', $features);
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
                             $color = $item['ItemInfo']['ProductInfo']['Color']['DisplayValue'] ?? '';
-                            $feedbackCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
-                            $rating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
-
-                            // Format the rating display
-                            $rating_display = ($rating !== null && $rating_count !== null) 
-                                ? number_format($rating, 1) . ' / 5 (' . number_format($rating_count) . ' reviews)' 
-                                : '-';
+                            $sellerCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
+                            $sellerRating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
                              
                             // Get height and convert to mm (assuming it's in inches by default)
                             $height_in = $item['ItemInfo']['ProductInfo']['ItemDimensions']['Height']['DisplayValue'] ?? '';
@@ -196,6 +194,7 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             if (empty($compatible_sockets)) $compatible_sockets[] = 'all';
                             $socket = implode(',', $compatible_sockets);
                             //echo $socket1 = implode(',', $compatible_sockets).'<br>';
+                            $rating_count = display_rating_and_count($sellerRating, $sellerCount);
 
                         ?>
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 16px"
@@ -207,7 +206,7 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                             <td style="padding:10px;"><?php echo esc_html($fan_rpm); ?></td>
                             <td style="padding:10px;"><?php echo esc_html($noise_level); ?></td>
                             <td style="padding:10px;"><?php echo ($radiator !== '-') ? esc_html($radiator) . ' mm' : '-'; ?></td>
-                            <td style="padding:10px;" data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"><?php echo display_rating_and_count($rating, $feedbackCount); ?></td>
+                            <td style="padding:10px;" data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"><?php echo $rating_count; ?></td>
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
                                 <button class="add-to-builder"
@@ -221,13 +220,13 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                                     data-category="<?php echo esc_attr($category); ?>"
                                     data-affiliate-url="<?php echo esc_url($product_url); ?>"
                                     data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
-                                    data-rating="<?php echo isset($rating_display) ? esc_attr($rating_display) : ''; ?>"
+                                    data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
                                     data-socket="<?php echo isset($socket) ? esc_attr($socket) : ''; ?>"
                                     data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
                                     data-color="<?php echo esc_attr($color); ?>"
                                     data-height="<?php echo esc_attr($height_mm); ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
-                                    <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
+                                    <?php _e('Add', 'aawp-pcbuild'); ?>
                                 </button>
                             </td>
                         </tr>

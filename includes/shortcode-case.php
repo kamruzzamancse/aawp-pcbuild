@@ -137,7 +137,10 @@ function aawp_pcbuild_display_parts_case($atts) {
             <div style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div style="font-weight:bold;"><?php echo $total_items; ?> Products</div>
-                    <div><input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc;" /></div>
+                    <div>
+                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
+                        <button class="add-from-filter">Add From Filter</button>
+                    </div>
                 </div>
 
                 <table id="pcbuild-table" style="width:100%; border-collapse:collapse;">
@@ -171,8 +174,8 @@ function aawp_pcbuild_display_parts_case($atts) {
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);
                             $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
-                            $feedbackCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
-                            $rating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
+                            $sellerCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
+                            $sellerRating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
 
                             preg_match('/(ATX\s?Mid\s?Tower|Full\s?Tower|Mini\s?ITX|Micro\s?ATX|Small\s?Form\s?Factor|ITX|E-ATX|Cube|Tower)/i', $full_title . ' ' . $features_string, $type_match);
                             preg_match('/(Black|White|Red|Blue|Gray|Silver|ARGB|RGB)/i', $features_string, $color_match);
@@ -196,6 +199,7 @@ function aawp_pcbuild_display_parts_case($atts) {
                             $side_panel = $panel_match[1] ?? '-';
                             //$volume = isset($volume_match[1]) ? $volume_match[1] . ' L' : '-';
                             //$drive_bays = $bay_match[1] ?? '-';
+                            $rating_count = display_rating_and_count($sellerRating, $sellerCount);
                         ?>
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 14px">
                             <td style="font-weight:600; padding:10px; display:flex; align-items:center; gap:10px;" title="<?php echo $raw_title; ?>">
@@ -208,7 +212,7 @@ function aawp_pcbuild_display_parts_case($atts) {
                             <td style="padding:10px;"><?php echo esc_html($side_panel); ?></td>
                             <!-- <td style="padding:10px;"><?php //echo esc_html($volume); ?></td>
                             <td style="padding:10px;"><?php //echo esc_html($drive_bays); ?></td> -->
-                            <td style="padding:10px;" data-rating="<?php echo isset($rating) ? esc_attr($rating) : ''; ?>"><?php echo display_rating_and_count($rating, $feedbackCount); ?></td>
+                            <td style="padding:10px;" data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"><?php echo $rating_count; ?></td>
                             <td style="padding:10px;"><?php echo esc_html($price); ?></td>
                             <td style="padding:10px;">
                                 <button class="add-to-builder"
@@ -224,13 +228,14 @@ function aawp_pcbuild_display_parts_case($atts) {
                                     data-category="<?php echo esc_attr($category); ?>"
                                     data-affiliate-url="<?php echo esc_url($product_url); ?>"
                                     data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+                                    data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
                                     data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
                                     data-type="<?php echo esc_attr($type); ?>"
                                     data-color="<?php echo esc_attr($color); ?>"
                                     data-power-supply="<?php echo esc_attr($power_supply); ?>"
                                     data-side-panel="<?php echo esc_attr($side_panel); ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
-                                    <?php _e('Add to Builder', 'aawp-pcbuild'); ?>
+                                    <?php _e('Add', 'aawp-pcbuild'); ?>
                                 </button>
                             </td>
                         </tr>
