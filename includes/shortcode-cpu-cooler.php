@@ -46,7 +46,7 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
         Choose A <?php echo esc_html($category); ?>
     </div>
     <div style="width:90%; margin:0 auto; font-family:sans-serif;">
-        <div style="display:flex; gap:20px; margin-top:20px;">
+        <div class="pcbuilder-container" style="display:flex; gap:20px; margin-top:20px;">
             <!-- Sidebar -->
             <div class="pcbuild-sidebar" style="width:250px; background:#f9f9f9; padding:20px; border-radius:8px;">
                 <div style="margin-bottom:20px;"><strong>Part</strong> | <strong>List</strong></div>
@@ -128,12 +128,12 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
             </div>
 
             <!-- Main Section -->
-            <div style="flex:1;">
+            <div class="pcbuilder-main" style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div id="total_products" style="font-weight:bold;"><?php echo $total_items; ?> Products</div>
                     <div>
                         <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
-                        <button class="add-from-filter">Add From Filter</button>
+                        <!-- <button class="add-from-filter">Add From Filter</button> -->
                     </div>
                 </div>
 
@@ -251,6 +251,22 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
             </div>
         </div>
     </div>
+
+    <style>
+        @media (max-width: 768px) {
+            .pcbuilder-container {
+                flex-direction: column;
+            }
+            .pcbuild-sidebar,
+            .pcbuilder-main {
+                width: 100% !important;
+            }
+            .pcbuilder-main {
+                max-height: 80vh; /* Adjust based on your layout */
+                overflow-y: auto;
+            }
+        }
+    </style>
 
     <script>
     // Socket filtering

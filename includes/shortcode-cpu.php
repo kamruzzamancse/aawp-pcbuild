@@ -48,9 +48,9 @@ function aawp_pcbuild_display_parts_cpu($atts) {
         Choose A <?php echo esc_html($category); ?>
     </div>
     <div style="width:90%; margin:0 auto; font-family:sans-serif;">
-        <div style="display:flex; gap:20px; margin-top:20px;">
+        <div class="pcbuilder-container" style="display:flex; gap:20px; margin-top:20px;">
             <!-- Sidebar -->
-            <div style="width:250px; background:#f9f9f9; padding:20px; border-radius:8px;">
+            <div class="pcbuild-sidebar" style="width:250px; background:#f9f9f9; padding:20px; border-radius:8px;">
                 <div style="margin-bottom:20px;"><strong>Part</strong> | <strong>List</strong></div>
                 <div style="margin-bottom:20px;"><label><input type="checkbox" checked disabled /> Compatibility Filter</label></div>
                 <div style="margin-bottom:20px;">
@@ -162,7 +162,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
             </div>
 
             <!-- Main Table Section -->
-            <div style="flex:1;">
+            <div class="pcbuilder-main" style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div style="font-weight:bold;"><?php echo $total_items; ?> 
                         Products <br><br>
@@ -344,6 +344,23 @@ function aawp_pcbuild_display_parts_cpu($atts) {
             </div>
         </div>
     </div>
+
+<style>
+    @media (max-width: 768px) {
+        .pcbuilder-container {
+            flex-direction: column;
+        }
+        .pcbuild-sidebar,
+        .pcbuilder-main {
+            width: 100% !important;
+        }
+        .pcbuilder-main {
+            max-height: 80vh; /* Adjust based on your layout */
+            overflow-y: auto;
+        }
+    }
+</style>
+
 
     <script>
     // Manufacturer filtering
@@ -941,7 +958,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const rows = Array.from(table.querySelectorAll("tbody tr"));
         const coreCounts = rows.map(row => {
-            const coreText = row.querySelector("td:nth-child(2)")?.textContent.trim() || "0";
+            const coreText = row.querySelector("td:nth-child(3)")?.textContent.trim() || "0";
             return parseInt(coreText) || 0;
         });
 
@@ -981,7 +998,7 @@ document.addEventListener("DOMContentLoaded", function () {
             maxLabel.textContent = `${maxVal}`;
 
             rows.forEach(row => {
-                const coreText = row.querySelector("td:nth-child(2)")?.textContent.trim() || "0";
+                const coreText = row.querySelector("td:nth-child(3)")?.textContent.trim() || "0";
                 const coreCount = parseInt(coreText) || 0;
 
                 // Show or hide the row based on core count filter
@@ -1158,13 +1175,13 @@ document.addEventListener("DOMContentLoaded", function () {
         // Column index mapping based on data-key
         function getColumnIndex(key) {
             const mapping = {
-                name: 1,
-                core_count: 2,
-                base_clock: 3,
-                boost_clock: 4,
-                microarch: 5,
-                rating: 6,
-                price: 7
+                name: 2,
+                core_count: 3,
+                base_clock: 4,
+                boost_clock: 5,
+                microarch: 6,
+                rating: 7,
+                price: 8
             };
             return mapping[key];
         }
@@ -1199,14 +1216,6 @@ document.addEventListener("DOMContentLoaded", function () {
         checkboxes.forEach(cb => cb.checked = false);
         updateButtonStates();
     });
-
-    // Master checkbox toggle
-    /* if (masterCheckbox) {
-        masterCheckbox.addEventListener("change", function () {
-            checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
-            updateButtonStates();
-        });
-    } */
 
     // Individual checkbox change
     checkboxes.forEach(cb => {

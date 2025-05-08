@@ -8,9 +8,7 @@ function pcbuild_render_ui_shortcode() {
     ob_start();
     $cards = [
         'base',
-        'promo',
         'shipping',
-        'tax',
         'availability',
         'price',
         'where',
@@ -19,13 +17,12 @@ function pcbuild_render_ui_shortcode() {
     ];
     ?>
     <!-- Start of the PC Builder section which contains the UI for selecting and reviewing PC components -->
-    <section id="buildOverview">
-        <!-- Placeholder for modal that will show component selection details or options -->
-        <div id="component_modal"></div>
-            <!-- Header section that includes tabs for navigating between component selection and overview -->
-            <div class="partsHeader">
-                <h3>Choose Your Parts</h3>
-                <div class="navNtab">
+  <section id="buildOverview">
+
+          <!-- Header section that includes tabs for navigating between component selection and overview -->
+          <div class="partsHeader">
+              <h3>Choose Your Parts</h3>
+              <!-- <div class="navNtab">
                 <ol>
                     <li>
                         <button class="tab-btn" onclick="openTab(event, 'tab1')">Choose Component</button>
@@ -34,197 +31,210 @@ function pcbuild_render_ui_shortcode() {
                         <button class="tab-btn active" onclick="openTab(event, 'tab2')">Overview</button>
                     </li>
                 </ol>
-                </div>
-            </div>
-            <div class="container">
+              </div> -->
+          </div>
+          
+          <div class="container">
 
-                <div class="tab_Content_Warpper">
+              <div class="tab_Content_Warpper">
+                
                 <!-- Wrapper for all the tabbed content, including component selection and build overview -->
                 <div id="tab1" class="tab-content active">
-                    <div class="cardWarpper">
-                    <!-- Header row that labels each column in the component selection table -->
-                    <div class="row">
-                        <div class="comp card"><span class="rowHeading">Component</span></div>
-                        <div class="selection card"><span class="rowHeading">Selection</span></div>
-                        <div class="base card"><span class="rowHeading">Base</span></div>
-                        <div class="promo card"><span class="rowHeading">Promo</span></div>
-                        <div class="shipping card"><span class="rowHeading">Shipping</span></div>
-                        <div class="tax card"><span class="rowHeading">Tax</span></div>
-                        <div class="availability card"><span class="rowHeading">Availability</span></div>
-                        <div class="price card"><span class="rowHeading">Price</span></div>
-                        <div class="where card"><span class="rowHeading">Where</span></div>
-                        <div class="buy card"></div>
-                        <div class="cancel card"></div>
-                    </div>
+                    
+                    <div class="pcbuild-scroll-wrapper">
+                        <div class="cardWarpper">
+                            <!-- Header row that labels each column in the component selection table -->
+                            <div class="row">
+                                <div class="comp card"><span class="rowHeading">Component</span></div>
+                                <div class="selection card"><span class="rowHeading">Selection</span></div>
+                                <div class="base card"><span class="rowHeading">Base</span></div>
+                                <div class="shipping card"><span class="rowHeading">Shipping</span></div>
+                                <div class="availability card"><span class="rowHeading">Availability</span></div>
+                                <div class="price card"><span class="rowHeading">Price</span></div>
+                                <div class="where card"><span class="rowHeading">Where</span></div>
+                                <div class="buy card"></div>
+                                <div class="cancel card"></div>
+                            </div>
 
-                    <!-- Row for CPU selection and its associated pricing and availability information -->
-                        <div class="row">
-                          <div class="comp card">
-                              <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/cpu">
-                                  <span class="componentName">CPU</span>
-                              </a>
-                          </div>
+                            <!-- Row for CPU selection and its associated pricing and availability information -->
+                            <div class="row">
+                              <div class="comp card">
+                                  <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/cpu'); ?>">
+                                      <span class="componentName">CPU</span>
+                                  </a>
+                              </div>
 
-                          <div class="selection card">
-                              <button class="selectionBTN" data-redirect="/pcbuildparts/products/cpu">
-                                  <span style="font-size:20px;">&#43;</span>
-                                  <span class="pc-part">Choose a CPU</span>
-                              </button>
-                          </div>
-                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
-                        </div>
-                        <!-- Row for CPU Cooler selection with dynamic pricing and vendor details -->
-                        <div class="row">
-                            <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/cpu-cooler">
-                                    <span class="componentName">CPU Cooler</span>
-                                </a>
+                              <div class="selection card">
+                                  <button class="selectionBTN" data-redirect="<?php echo site_url('/products/cpu'); ?>">
+                                      <span style="font-size:20px; ">&#43;</span>
+                                      <span class="pc-part">Choose a CPU</span>
+                                  </button>
+                              </div>
+                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                             </div>
-                            <div class="selection card">
-                                <button class="selectionBTN">
-                                    <span style="font-size:20px;">&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/cpu-cooler">
-                                        <span>Choose A CPU Cooler</span>
+
+                            <!-- Row for CPU Cooler selection with dynamic pricing and vendor details -->
+                            <div class="row">
+                                <div class="comp card">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/cpu-cooler'); ?>">
+                                      <span class="componentName">CPU Cooler</span>
                                     </a>
-                                </button>
+                                </div>
+                                <div class="selection card">
+                                    <button class="selectionBTN">
+                                        <span style="font-size:20px;">&#43;</span>
+                                        <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/cpu-cooler'); ?>">
+                                            <span>Choose A CPU Cooler</span>
+                                        </a>
+                                    </button>
+                                </div>
+                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                             </div>
-                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
-                        </div>
-                        <!-- Row for selecting the motherboard and displaying related data -->
-                        <div class="row">
-                            <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/motherboard">
-                                    <span class="componentName">Motherboard</span>
-                                </a>
-                            </div>
-                            <div class="selection card">
-                                <button class="selectionBTN">
-                                    <span style="font-size:20px;">&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/motherboard">
-                                        <span>Choose A Motherboard</span>
+
+                            <!-- Row for selecting the motherboard and displaying related data -->
+                            <div class="row">
+                                <div class="comp card">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/motherboard'); ?>">
+                                        <span class="componentName">Motherboard</span>
                                     </a>
-                                </button>
+                                </div>
+                                <div class="selection card">
+                                    <button class="selectionBTN">
+                                        <span style="font-size:20px;">&#43;</span>
+                                        <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/motherboard'); ?>">
+                                            <span>Choose A Motherboard</span>
+                                        </a>
+                                    </button>
+                                </div>
+                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                             </div>
-                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
-                        </div>
-                        <!-- Memory selection row including price, promo, tax, etc. -->
-                        <div class="row">
-                            <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/memory">
-                                <span class="componentName" data-key="ram">Memory</span>
-                                </a>
-                            </div>
-                            <div class="selection card">
-                                <button class="selectionBTN">
-                                    <span style='font-size:20px;'>&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/memory">
-                                        <span>Choose A Memory</span>
+
+                            <!-- Memory selection row including price, promo, tax, etc. -->
+                            <div class="row">
+                                <div class="comp card">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/memory'); ?>">
+                                    <span class="componentName" data-key="ram">Memory</span>
                                     </a>
-                                </button>
+                                </div>
+                                <div class="selection card">
+                                    <button class="selectionBTN">
+                                        <span style='font-size:20px;'>&#43;</span>
+                                        <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/memory'); ?>">
+                                            <span>Choose A Memory</span>
+                                        </a>
+                                    </button>
+                                </div>
+                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                             </div>
-                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
-                        </div>
-                        <!-- Storage device selection row with associated info and controls -->
-                        <div class="row">
-                            <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/storage">
-                                    <span class="componentName">Storage</span>
-                                </a>
-                            </div>
-                            <div class="selection card">
-                                <button class="selectionBTN">
-                                    <span style='font-size:20px;'>&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/storage">
-                                        <span>Choose A Storage</span>
+
+                            <!-- Storage device selection row with associated info and controls -->
+                            <div class="row">
+                                <div class="comp card">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/storage'); ?>">
+                                        <span class="componentName">Storage</span>
                                     </a>
-                                </button>
+                                </div>
+                                <div class="selection card">
+                                    <button class="selectionBTN">
+                                        <span style='font-size:20px;'>&#43;</span>
+                                        <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/storage'); ?>">
+                                            <span>Choose A Storage</span>
+                                        </a>
+                                    </button>
+                                </div>
+                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                             </div>
-                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
-                        </div>
-                        <!-- Row for choosing a GPU or video card with details like price, tax, and source -->
-                        <div class="row">
-                            <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/video-card">
-                                    <span class="componentName">Video Card</span>
-                                </a>
-                            </div>
-                            <div class="selection card">
-                                <button class="selectionBTN">
-                                    <span style='font-size:20px;'>&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/video-card">
-                                        <span>Choose A Video Card</span>
+
+                            <!-- Row for choosing a GPU or video card with details like price, tax, and source -->
+                            <div class="row">
+                                <div class="comp card">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/video-card'); ?>">
+                                        <span class="componentName">Video Card</span>
                                     </a>
-                                </button>
+                                </div>
+                                <div class="selection card">
+                                    <button class="selectionBTN">
+                                        <span style='font-size:20px;'>&#43;</span>
+                                        <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/video-card'); ?>">
+                                            <span>Choose A Video Card</span>
+                                        </a>
+                                    </button>
+                                </div>
+                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                             </div>
-                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
-                        </div>
-                        <!-- PC case selection row along with its pricing and availability -->
-                        <div class="row">
-                            <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/case">
-                                    <span class="componentName">Case</span>
-                                </a>
-                            </div>
-                            <div class="selection card">
-                                <button class="selectionBTN">
-                                    <span style='font-size:20px;'>&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/case">
-                                        <span>Choose A Case</span>
+
+                            <!-- PC case selection row along with its pricing and availability -->
+                            <div class="row">
+                                <div class="comp card">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/case'); ?>">
+                                        <span class="componentName">Case</span>
                                     </a>
-                                </button>
+                                </div>
+                                <div class="selection card">
+                                    <button class="selectionBTN">
+                                        <span style='font-size:20px;'>&#43;</span>
+                                        <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/case'); ?>">
+                                            <span>Choose A Case</span>
+                                        </a>
+                                    </button>
+                                </div>
+                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                             </div>
-                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
-                        </div>
-                        <!-- Row for selecting a PSU (Power Supply Unit) and its metadata -->
-                        <div class="row">
-                            <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/power-supply">
-                                    <span class="componentName">Power Supply</span>
-                                </a>
-                            </div>
-                            <div class="selection card">
-                                <button class="selectionBTN">
-                                    <span style='font-size:20px;'>&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/power-supply">
-                                        <span>Choose A Power Supply</span>
+
+                            <!-- Row for selecting a PSU (Power Supply Unit) and its metadata -->
+                            <div class="row">
+                                <div class="comp card">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/power-supply'); ?>">
+                                        <span class="componentName">Power Supply</span>
                                     </a>
-                                </button>
+                                </div>
+                                <div class="selection card">
+                                    <button class="selectionBTN">
+                                        <span style='font-size:20px;'>&#43;</span>
+                                        <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/power-supply'); ?>">
+                                            <span>Choose A Power Supply</span>
+                                        </a>
+                                    </button>
+                                </div>
+                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                             </div>
-                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
-                        </div>
-                        <!-- Operating System selection row with related information -->
-                        <div class="row">
-                            <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/operating-system">
-                                    <span class="componentName">Operating System</span>
-                                </a>
-                            </div>
-                            <div class="selection card">
-                                <button class="selectionBTN">
-                                    <span style='font-size:20px;'>&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/operating-system">
-                                        <span>Choose A Operating System</span>
+
+                            <!-- Operating System selection row with related information -->
+                            <div class="row">
+                                <div class="comp card">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/operating-system'); ?>">
+                                        <span class="componentName">Operating System</span>
                                     </a>
-                                </button>
+                                </div>
+                                <div class="selection card">
+                                    <button class="selectionBTN">
+                                        <span style='font-size:20px;'>&#43;</span>
+                                        <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/operating-system'); ?>">
+                                            <span>Choose A Operating System</span>
+                                        </a>
+                                    </button>
+                                </div>
+                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                             </div>
-                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
-                        </div>
-                        <!-- Monitor selection row showing pricing, availability, and purchase options -->
-                        <div class="row">
-                            <div class="comp card">
-                                <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/monitor">
-                                    <span class="componentName">Monitor</span>
-                                </a>
-                            </div>
-                            <div class="selection card">
-                                <button class="selectionBTN">
-                                    <span style='font-size:20px;'>&#43;</span>
-                                    <a href="javascript:void(0)" class="pc-part" data-redirect="/pcbuildparts/products/monitor">
-                                        <span>Choose A Monitor</span>
+
+                            <!-- Monitor selection row showing pricing, availability, and purchase options -->
+                            <div class="row">
+                                <div class="comp card">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/monitor'); ?>">
+                                        <span class="componentName">Monitor</span>
                                     </a>
-                                </button>
+                                </div>
+                                <div class="selection card">
+                                    <button class="selectionBTN">
+                                        <span style='font-size:20px;'>&#43;</span>
+                                        <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/monitor'); ?>">
+                                            <span>Choose A Monitor</span>
+                                        </a>
+                                    </button>
+                                </div>
+                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                             </div>
-                            <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+
                         </div>
                     </div>
 
@@ -248,209 +258,303 @@ function pcbuild_render_ui_shortcode() {
                   <div id="overviewProductDetails" style="margin-top: 30px;"></div>
                 </div>
 
-            </div>
-        </div>
-    </section>
+              </div>
+
+          </div>
+
+      </div>
+  </section>
+
+<style>
+  .selectionBTN span{
+    color: #FFFFFF !important;
+  }
+  .selectionBTN {
+    background-color: #2c87c3 !important;
+    color: #FFFFFF !important;
+    padding-top: 5px !important;
+  }
+  .selectionBTN:hover {
+    background-color: #1e5c85 !important;
+  }
+  .selectionBTN {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Optional, centers contents inside button */
+    gap: 8px; /* space between icon and text */
+    padding: 8px 12px;
+    font-size: 14px;
+}
+.selectionBTN .icon {
+    font-size: 20px;
+    line-height: 1;
+}
+</style>
 
 <script>
-// Checkout All Button + Redirect Handler
+
 document.addEventListener("DOMContentLoaded", function () {
-  document.getElementById("checkoutAllBtn")?.addEventListener("click", function () {
-    const rows = document.querySelectorAll(".row");
-    const asins = [];
-    const associateTag = pcbuild_ajax_object.associate_tag;
 
-    rows.forEach(row => {
-      const category = row.querySelector(".componentName")?.textContent.trim().toLowerCase();
-      const storedData = localStorage.getItem(`pcbuild_${category}`);
-      if (storedData) {
-        try {
-          const product = JSON.parse(storedData);
-          if (product?.asin) asins.push(product.asin);
-        } catch (e) {
-          console.error(`Invalid JSON for ${category}`, e);
+  // Build checkout URL and open cart in Amazon
+  document.getElementById("checkoutAllBtn").addEventListener("click", function () {
+      const rows = document.querySelectorAll(".row");
+      let asins = [];
+      const associateTag = pcbuild_ajax_object.associate_tag;
+
+      rows.forEach(row => {
+        const categorySpan = row.querySelector(".componentName");
+        if (categorySpan) {
+          const category = categorySpan.textContent.trim().toLowerCase();
+          const storedData = localStorage.getItem(`pcbuild_${category}`);
+          if (storedData) {
+            try {
+              const product = JSON.parse(storedData);
+              if (product.asin) {
+                asins.push(product.asin);
+              }
+            } catch (e) {
+              console.error(`Invalid JSON for ${category}`, e);
+            }
+          }
         }
+      });
+
+      if (asins.length === 0) {
+        alert("Please select some parts before checking out.");
+        return;
       }
+
+      let cartUrl = `https://www.amazon.com/gp/aws/cart/add.html?AssociateTag=${associateTag}`;
+      asins.forEach((asin, index) => {
+        const num = index + 1;
+        cartUrl += `&ASIN.${num}=${asin}&Quantity.${num}=1`;
+      });
+
+      window.open(cartUrl, "_blank");
+    });
+    
+    // Redicting function
+    document.querySelectorAll('[data-redirect]').forEach(el => {
+        el.addEventListener("click", function () {
+            const target = this.getAttribute("data-redirect");
+            if (target) window.location.href = target;
+        });
     });
 
-    if (asins.length === 0) return alert("Please select some parts before checking out.");
-
-    let cartUrl = `https://www.amazon.com/gp/aws/cart/add.html?AssociateTag=${associateTag}`;
-    asins.forEach((asin, i) => {
-      const num = i + 1;
-      cartUrl += `&ASIN.${num}=${asin}&Quantity.${num}=1`;
-    });
-
-    window.open(cartUrl, "_blank");
-  });
-
-  document.querySelectorAll('[data-redirect]').forEach(el => {
-    el.addEventListener("click", function () {
-      const target = this.getAttribute("data-redirect");
-      if (target) window.location.href = target;
-    });
-  });
 });
-</script>
 
-<script>
-// Modal Open/Close Logic
 document.addEventListener("DOMContentLoaded", function () {
   const partTriggers = document.querySelectorAll(".pc-part");
   const partModal = document.getElementById("cpuModal");
   const modalOverlay = document.getElementById("modalOverlay");
   const popupContent = document.getElementById("popupContent");
 
+  // Restore selected parts from localStorage on page load
+  const rows = document.querySelectorAll(".row");
+  rows.forEach(row => {
+    const categorySpan = row.querySelector(".componentName");
+    if (categorySpan) {
+      const category = categorySpan.textContent.trim().toLowerCase();
+      const savedData = localStorage.getItem(`pcbuild_${category}`);
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        updateRow(category, parsedData);
+      }
+    }
+  });
+
+  // Handle clicking on a component part to open modal
   if (partTriggers.length && partModal && modalOverlay && popupContent) {
     partTriggers.forEach(trigger => {
       trigger.addEventListener("click", function () {
         const row = trigger.closest(".row");
-        const category = row.querySelector(".componentName")?.textContent.trim() || "CPU";
+        const categorySpan = row.querySelector(".componentName");
+        const category = categorySpan ? categorySpan.textContent.trim() : "CPU";
+
+        // Save category for modal context
         partModal.setAttribute('data-current-category', category);
 
+        // Show modal and overlay
         partModal.style.display = "block";
         modalOverlay.style.display = "block";
 
+        // Load modal product list dynamically via AJAX
         fetch(pcbuild_ajax_object.ajax_url, {
           method: 'POST',
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
           body: 'action=load_pcbuild_parts&category=' + encodeURIComponent(category)
         })
-        .then(res => res.text())
-        .then(html => popupContent.innerHTML = html);
+        .then(response => response.text())
+        .then(html => {
+          popupContent.innerHTML = html;
+        });
       });
     });
 
-    modalOverlay.addEventListener("click", () => closePartModal());
-
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && partModal.style.display === "block") {
-        closePartModal();
-      }
+    // Close modal if overlay is clicked
+    modalOverlay.addEventListener("click", function () {
+      closePartModal();
     });
+
   }
 
-  window.closePartModal = function () {
-    partModal.style.display = "none";
-    modalOverlay.style.display = "none";
-    popupContent.innerHTML = '';
-  };
-});
-</script>
-
-<script>
-// Add to Builder Logic
-document.addEventListener("DOMContentLoaded", function () {
+  // Handle "Add to Builder" button clicks
   document.addEventListener("click", function (e) {
     if (e.target.classList.contains("add-to-builder")) {
-      const btn = e.target;
-      const category = btn.dataset.category.toLowerCase();
+      const button = e.target;
+
       const productData = {
-        title: btn.dataset.title,
-        image: btn.dataset.image,
-        base: btn.dataset.base,
-        promo: btn.dataset.promo,
-        shipping: btn.dataset.shipping,
-        tax: btn.dataset.tax,
-        availability: btn.dataset.availability,
-        price: btn.dataset.price,
-        affiliateUrl: btn.dataset.affiliateUrl,
-        asin: btn.dataset.asin,
-        rating: btn.dataset.rating || ''
+        title: button.dataset.title,
+        image: button.dataset.image,
+        base: button.dataset.base,
+        //promo: button.dataset.promo,
+        shipping: button.dataset.shipping,
+        //tax: button.dataset.tax,
+        availability: button.dataset.availability,
+        price: button.dataset.price,
+        affiliateUrl: button.dataset.affiliateUrl,
+        asin: button.dataset.asin,
+        rating: button.dataset.rating || ''
       };
 
+      const category = button.dataset.category.toLowerCase();
       localStorage.setItem(`pcbuild_${category}`, JSON.stringify(productData));
+
       updateRow(category, productData);
       closePartModal();
     }
   });
-});
-</script>
 
-<script>
-// Update Row + Total Calculation
-function updateRow(category, data) {
-  const rows = document.querySelectorAll(".row");
-  rows.forEach(row => {
-    const rowCat = row.querySelector(".componentName")?.textContent.trim().toLowerCase();
-    if (rowCat === category) {
-      const htmlSafe = str => str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      const truncated = data.title.length > 70 ? data.title.slice(0, 70) + "..." : data.title;
-      const escapedTitle = htmlSafe(truncated);
+  // Update selected part's UI in the builder list
+  function updateRow(category, data) {
+    const rows = document.querySelectorAll(".row");
 
-      row.querySelector(".selection").innerHTML = `
-        <div class="product-selected" style="display: flex; align-items: center; gap: 12px;">
-          <img src="${data.image}" alt="${escapedTitle}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
-          <div style="flex: 1;"><strong style="font-size: 14px;">${escapedTitle}</strong></div>
-        </div>`;
+    rows.forEach(row => {
+      const categorySpan = row.querySelector(".componentName");
+      if (categorySpan && categorySpan.textContent.trim().toLowerCase() === category.toLowerCase()) {
 
-      row.querySelector(".base").textContent = data.base || '';
-      row.querySelector(".promo").textContent = data.promo || '';
-      row.querySelector(".shipping").textContent = data.shipping || '';
-      row.querySelector(".tax").textContent = data.tax || '';
-      row.querySelector(".availability").textContent = data.availability || '';
-      row.querySelector(".price").textContent = data.price || '';
+        const base = data.base || '';
+        //const promo = data.promo || '';
+        const shipping = data.shipping || '';
+        //const tax = data.tax || '';
+        const availability = data.availability || '';
+        const price = data.price || '';
+        const affiliateUrl = data.affiliateUrl || '#';
+        const title = data.title || '';
+        const image = data.image || '';
 
-      row.querySelector(".where").innerHTML = `
-        <a href="${data.affiliateUrl}" target="_blank" rel="nofollow noopener">
-          <img src="http://localhost/pcbuildparts/wp-content/uploads/2025/04/amazon-logo.png" alt="Amazon" style="width:80px;">
-        </a>`;
+        const truncatedTitle = title.length > 70 ? title.slice(0, 70) + "..." : title;
+        const escapedTitle = truncatedTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-      row.querySelector(".buy").innerHTML = `
-        <a href="${data.affiliateUrl}" target="_blank" rel="nofollow noopener">
-          <button style="background:#28a745; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
-            Buy
-          </button>
-        </a>`;
+        // Update selected image and title
+        if (row.querySelector(".selection")) {
+          row.querySelector(".selection").innerHTML = `
+            <div class="product-selected" style="display: flex; align-items: center; gap: 12px;">
+              <img src="${image}" alt="${escapedTitle}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
+              <div style="flex: 1;">
+                <strong style="font-size: 14px; display: block;">${escapedTitle}</strong>
+              </div>
+            </div>`;
+        }
 
-      row.querySelector(".cancel").innerHTML = `
-        <button class="remove-from-builder" data-category="${category}"
-          style="background:none; border:none; font-size:30px; font-weight:bold; cursor:pointer; color:#ccc;">
-          &times;
-        </button>`;
+        // Update pricing, availability, and shipping info
+        if (row.querySelector(".base")) row.querySelector(".base").textContent = base;
+        //if (row.querySelector(".promo")) row.querySelector(".promo").textContent = promo;
+        if (row.querySelector(".shipping")) row.querySelector(".shipping").textContent = shipping;
+        //if (row.querySelector(".tax")) row.querySelector(".tax").textContent = tax;
+        if (row.querySelector(".availability")) row.querySelector(".availability").textContent = availability;
+        if (row.querySelector(".price")) row.querySelector(".price").textContent = price;
+
+        // Update "Buy from Amazon" button
+        if (row.querySelector(".where")) {
+          const logoUrl = `${pcbuild_ajax_object.uploads_url}/2025/04/amazon-logo.png`;
+          row.querySelector(".where").innerHTML = `
+            <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+              <img src="${logoUrl}" 
+                  alt="Buy on Amazon" style="width:80px; height:auto;" />
+            </a>`;
+        }
+
+        if (row.querySelector(".buy")) {
+          row.querySelector(".buy").innerHTML = `
+            <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+              <button style="background:#28a745; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
+                Buy
+              </button>
+            </a>`;
+        }
+
+        // Add remove button
+        if (row.querySelector(".cancel")) {
+          row.querySelector(".cancel").innerHTML = `
+            <button class="remove-from-builder" data-category="${category}"
+              style="background:none; border:none; font-size:30px; font-weight:bold; cursor:pointer; color:#ccc; line-height:1;">
+              &times;
+            </button>`;
+        }
+      }
+    });
+    calculateTotalPrice();
+  }
+
+  function calculateTotalPrice() {
+    let total = 0;
+    let parts = 0;
+
+    const priceElements = document.querySelectorAll('.row .price');
+
+    priceElements.forEach(priceEl => {
+      const priceText = priceEl.textContent.replace(/[^0-9.]/g, ''); // Remove $ and commas
+      const priceValue = parseFloat(priceText);
+      if (!isNaN(priceValue)) {
+        total += priceValue;
+        parts++;
+      }
+    });
+
+    // Store total in localStorage
+    localStorage.setItem('cartTotal', total.toFixed(2));
+    localStorage.setItem('cartPartsCount', parts);
+
+    // Update builder list total (if exists)
+    const totalDiv = document.getElementById('products_total_price');
+    if (totalDiv) {
+      totalDiv.style.cssText = 'margin-top: 20px; font-size: 18px; font-weight: bold; text-align: right;';
+      totalDiv.textContent = `Total: $${total.toFixed(2)}`;
     }
-  });
 
-  calculateTotalPrice();
-}
+    // Update parts count and total on another page
+    const partsCountEl = document.getElementById('parts_count');
+    const partsTotalEl = document.getElementById('parts_total_price');
 
-function calculateTotalPrice() {
-  let total = 0, parts = 0;
-  document.querySelectorAll('.row .price').forEach(el => {
-    const price = parseFloat(el.textContent.replace(/[^0-9.]/g, ''));
-    if (!isNaN(price)) {
-      total += price;
-      parts++;
-    }
-  });
+    if (partsCountEl) partsCountEl.textContent = parts;
+    if (partsTotalEl) partsTotalEl.textContent = `$${total.toFixed(2)}`;
+  }
 
-  localStorage.setItem('cartTotal', total.toFixed(2));
-  localStorage.setItem('cartPartsCount', parts);
 
-  document.getElementById('products_total_price')?.textContent = `Total: $${total.toFixed(2)}`;
-  document.getElementById('parts_count')?.textContent = parts;
-  document.getElementById('parts_total_price')?.textContent = `$${total.toFixed(2)}`;
-}
-</script>
-
-<script>
-// Remove from Builder
-document.addEventListener("DOMContentLoaded", function () {
+  // Remove item from builder and refresh
   document.addEventListener("click", function (e) {
     if (e.target.classList.contains("remove-from-builder")) {
       const category = e.target.dataset.category.toLowerCase();
       localStorage.removeItem(`pcbuild_${category}`);
-      location.reload(); // Or call updateRow(category, null) to clear UI without reload
+      location.reload(); // Optional: Use more elegant UI clearing
     }
   });
+
+  // Close modal and clear content
+ /*  window.closePartModal = function () {
+    partModal.style.display = "none";
+    modalOverlay.style.display = "none";
+    popupContent.innerHTML = '';
+  }; */
+  
 });
 </script>
 
 
-
-
 <script>
-  
   // Function to handle tab switching
   function openTab(evt, tabId) {
     // Hide all tab contents and deactivate all tab buttons
@@ -563,6 +667,51 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 </script>
+
+<style>
+/* Wrapper allows horizontal scroll */
+.pcbuild-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Inner content keeps its full width */
+.cardWarpper {
+  min-width: 1100px; /* or wider if needed */
+  display: block;
+}
+
+/* Optional: make rows stack better on very narrow screens */
+@media (max-width: 768px) {
+  .cardWarpper .row {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .cardWarpper .card {
+    min-width: 120px;
+    padding: 8px;
+    box-sizing: border-box;
+  }
+
+  .partsHeader h3 {
+    font-size: 18px;
+    text-align: center;
+  }
+
+  #checkoutWrapper {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  #checkoutAllBtn {
+    width: 100%;
+    font-size: 18px;
+  }
+}
+
+</style>
 
   <?php
   return ob_get_clean();

@@ -65,11 +65,14 @@ function aawp_pcbuild_enqueue_styles() {
         true
     );
 
-    // Pass data to JavaScript
-    wp_localize_script('aawp-pcbuild-main', 'pcbuild_ajax_object', array(
-        'ajax_url' => admin_url('admin-ajax.php'),
-        'associate_tag' => get_option('aawp_pcbuild_amazon_associate_tag'),
-    ));
+     // Get the uploads base URL
+     $upload_dir = wp_get_upload_dir();
+
+     wp_localize_script('aawp-pcbuild-main', 'pcbuild_ajax_object', array(
+         'ajax_url'       => admin_url('admin-ajax.php'),
+         'associate_tag'  => get_option('aawp_pcbuild_amazon_associate_tag'),
+         'uploads_url'    => $upload_dir['baseurl'],
+     ));
 }
 add_action('wp_enqueue_scripts', 'aawp_pcbuild_enqueue_styles');
 
