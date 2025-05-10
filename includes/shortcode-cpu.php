@@ -83,17 +83,20 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                 </div>
                 <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
                     <div class="filter-header">
-                        <strong>RATING</strong>
+                        <span class="filter-title">RATING</span>
                         <button class="filter-toggle">−</button>
                     </div>
                     <div class="filter-options" id="rating-filter">
-                        <label><input type="checkbox" name="rating" value="all" checked /> All</label><br/>
-                        <label><input type="checkbox" name="rating" value="5" /> <span style="color: orange;">★★★★★</span></label><br/>
-                        <label><input type="checkbox" name="rating" value="4" /> <span style="color: orange;">★★★★☆</span></label><br/>
-                        <label><input type="checkbox" name="rating" value="3" /> <span style="color: orange;">★★★☆☆</span></label><br/>
-                        <label><input type="checkbox" name="rating" value="unrated" /> Unrated</label>
+                        <label><input type="checkbox" value="all" checked> All</label><br/>
+                        <label><input type="checkbox" value="5"> 5 Stars</label><br/>
+                        <label><input type="checkbox" value="4"> 4 Stars</label><br/>
+                        <label><input type="checkbox" value="3"> 3 Stars</label><br/>
+                        <label><input type="checkbox" value="2"> 2 Stars</label><br/>
+                        <label><input type="checkbox" value="1"> 1 Star</label><br/>
+                        <label><input type="checkbox" value="unrated"> Unrated</label><br/>
                     </div>
                 </div>
+
                 <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
                     <div class="filter-header">
                         <strong>CORE COUNT</strong>
@@ -361,6 +364,79 @@ function aawp_pcbuild_display_parts_cpu($atts) {
     }
 </style>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const ratingCheckboxes = document.querySelectorAll("#rating-filter input[type='checkbox']");
+    const allRatingCheckbox = document.querySelector("#rating-filter input[value='all']");
+    const tableRows = document.querySelectorAll("#pcbuild-table tbody tr");
+
+    // Function to apply zebra striping
+    function applyZebraStripes(rows) {
+        let visibleIndex = 0;
+        rows.forEach(row => {
+            if (row.style.display !== "none") {
+                row.style.backgroundColor = visibleIndex % 2 === 0 ? "#d4d4d4" : "#ebebeb";
+                visibleIndex++;
+            }
+        });
+    }
+
+    function filterRowsByRating() {
+        let selectedRatings = Array.from(ratingCheckboxes)
+            .filter(checkbox => checkbox.checked && checkbox.value !== "all")
+            .map(checkbox => checkbox.value);
+
+        const isAllChecked = allRatingCheckbox.checked || selectedRatings.length === 0;
+
+        tableRows.forEach(row => {
+            const ratingAttr = row.querySelector("[data-rating]")?.getAttribute("data-rating");
+            const rating = ratingAttr ? parseFloat(ratingAttr) : null;
+
+            if (isAllChecked) {
+                row.style.display = "";
+            } else {
+                let showRow = false;
+                if (rating === null || isNaN(rating)) {
+                    showRow = selectedRatings.includes("unrated");
+                } else {
+                    const roundedRating = Math.floor(rating);
+                    showRow = selectedRatings.includes(roundedRating.toString());
+                }
+                row.style.display = showRow ? "" : "none";
+            }
+        });
+
+        applyZebraStripes(tableRows);
+    }
+
+    // Handle checkbox logic
+    ratingCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener("change", () => {
+            if (checkbox.value === "all") {
+                if (checkbox.checked) {
+                    ratingCheckboxes.forEach(cb => {
+                        if (cb !== checkbox) cb.checked = false;
+                    });
+                }
+            } else {
+                allRatingCheckbox.checked = false;
+            }
+
+            // If no specific boxes are checked, re-check "All"
+            const anyChecked = Array.from(ratingCheckboxes).some(cb => cb.checked && cb.value !== "all");
+            if (!anyChecked) {
+                allRatingCheckbox.checked = true;
+            }
+
+            filterRowsByRating();
+        });
+    });
+
+    // Initial filtering on load
+    filterRowsByRating();
+});
+
+</script>
 
     <script>
     // Manufacturer filtering

@@ -118,7 +118,7 @@ document.querySelectorAll(".add-to-builder").forEach(button => {
         }
 
         // UI update or redirect
-        if (window.location.pathname.includes("/pcbuildparts/pc-build-parts")) {
+        if (window.location.pathname.includes("/pcbuildparts/pc-build-parts/")) {
             if (typeof updateRow === "function") {
                 updateRow(category, productData);
             }
@@ -139,7 +139,7 @@ if (params.has('pcbuild_page')) {
 });
 
 //RATING FILTER CHECKBOXES
-const ratingFilter = document.getElementById("rating-filter");
+/* const ratingFilter = document.getElementById("rating-filter");
 if (ratingFilter) {
     ratingFilter.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
         checkbox.addEventListener('change', function () {
@@ -168,7 +168,7 @@ if (ratingFilter) {
             });
         });
     });
-}
+} */
 
 //MANUFATURER FILTER CHECKBOX
 document.addEventListener('DOMContentLoaded', function () {

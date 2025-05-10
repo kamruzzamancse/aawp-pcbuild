@@ -17,10 +17,15 @@ if (!defined('ABSPATH')) exit;
 define('AAWP_PCBUILD_PATH', plugin_dir_path(__FILE__));
 define('AAWP_PCBUILD_URL', plugin_dir_url(__FILE__));
 
+// For Cron Jobs
+register_activation_hook(__FILE__, 'aawp_pcbuild_schedule_cron');
+register_deactivation_hook(__FILE__, 'aawp_pcbuild_clear_cron');
+
 // ==========================
 // Include Required Files
 // ==========================
 require_once AAWP_PCBUILD_PATH . 'includes/api-handler.php';
+require_once AAWP_PCBUILD_PATH . 'includes/cron-handler.php';
 require_once AAWP_PCBUILD_PATH . 'includes/shortcode-cpu.php';
 require_once AAWP_PCBUILD_PATH . 'includes/shortcode-cpu-cooler.php';
 require_once AAWP_PCBUILD_PATH . 'includes/shortcode-motherboard.php';
@@ -137,23 +142,6 @@ function aawp_pcbuild_activate() {
     add_option('aawp_pcbuild_amazon_access_key', '');
     add_option('aawp_pcbuild_amazon_secret_key', '');
     add_option('aawp_pcbuild_amazon_associate_tag', '');
-
-    // Clear transients from wp_options table
-    global $wpdb;
-    $query = "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_%' OR option_name LIKE '_site_transient_%'";
-    error_log($query);
-
-    // Run the query
-    $deleted_rows = $wpdb->query($query);
-
-    // Check if rows were deleted
-    if ($deleted_rows !== false) {
-        // Output for debugging: Show how many rows were deleted
-        error_log("Deleted {$deleted_rows} rows from wp_options table.");
-    } else {
-        // Error logging if the query failed
-        error_log("Error executing query: " . $wpdb->last_error);
-    }
 
     // Flush rewrite rules after adding custom ones
     aawp_pcbuild_add_rewrite_rule();
