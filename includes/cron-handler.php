@@ -4,27 +4,25 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Register custom cron schedule (hourly)
+// Register custom cron schedule (every 3 hours)
 add_filter('cron_schedules', function($schedules) {
-    if (!isset($schedules['aawp_pcbuild_hourly'])) {
-        $schedules['aawp_pcbuild_hourly'] = [
-            'interval' => HOUR_IN_SECONDS,
-            'display'  => __('Every Hour (AAWP PC Builder)')
+    if (!isset($schedules['aawp_pcbuild_3_hours'])) {
+        $schedules['aawp_pcbuild_3_hours'] = [
+            'interval' => 3 * HOUR_IN_SECONDS,
+            'display'  => __('Every 3 Hours (AAWP PC Builder)')
         ];
     }
     return $schedules;
 });
 
 // Schedule the cron event on plugin activation
-//register_activation_hook(__FILE__, 'aawp_pcbuild_schedule_cron');
 function aawp_pcbuild_schedule_cron() {
     if (!wp_next_scheduled('aawp_pcbuild_cron_hook')) {
-        wp_schedule_event(time(), 'aawp_pcbuild_hourly', 'aawp_pcbuild_cron_hook');
+        wp_schedule_event(time(), 'aawp_pcbuild_3_hours', 'aawp_pcbuild_cron_hook');
     }
 }
 
 // Clear cron on plugin deactivation
-//register_deactivation_hook(__FILE__, 'aawp_pcbuild_clear_cron');
 function aawp_pcbuild_clear_cron() {
     $timestamp = wp_next_scheduled('aawp_pcbuild_cron_hook');
     if ($timestamp) {

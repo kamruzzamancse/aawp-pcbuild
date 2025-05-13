@@ -1,5 +1,6 @@
 <?php
 function aawp_pcbuild_display_parts_cpu_cooler($atts) {
+
     $atts = shortcode_atts(array('category' => 'cpu-cooler'), $atts);
     $input_category = sanitize_title($atts['category']);
 
@@ -23,7 +24,7 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
     // If no cached products, fetch and cache them
     if ($products === false) {
         $products = aawp_pcbuild_get_products($category);
-        set_transient($transient_key, $products, HOUR_IN_SECONDS);
+        set_transient($transient_key, $products, 3 * HOUR_IN_SECONDS);
     }
 
     // If still no products, show error
@@ -80,15 +81,11 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
                 </div>
                 <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
                     <div class="filter-header">
-                        <strong>RATING</strong>
+                        <strong>SELLER RATING</strong>
                         <button class="filter-toggle">−</button>
                     </div>
                     <div class="filter-options" id="rating-filter">
-                        <label><input type="checkbox" name="rating" value="all" checked /> All</label><br/>
-                        <label><input type="checkbox" name="rating" value="5" /> <span style="color: orange;">★★★★★</span></label><br/>
-                        <label><input type="checkbox" name="rating" value="4" /> <span style="color: orange;">★★★★☆</span></label><br/>
-                        <label><input type="checkbox" name="rating" value="3" /> <span style="color: orange;">★★★☆☆</span></label><br/>
-                        <label><input type="checkbox" name="rating" value="unrated" /> Unrated</label>
+                        <!-- Filters will be injected here -->
                     </div>
                 </div>
                 <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
@@ -267,6 +264,122 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
             }
         }
     </style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const ratingRanges = {
+        "5": { min: 4.5, max: 5.0 },
+        "4": { min: 3.5, max: 4.4 },
+        "3": { min: 2.5, max: 3.4 },
+        "unrated": "unrated"
+    };
+
+    const ratingFilterContainer = document.getElementById("rating-filter");
+    const productRows = document.querySelectorAll("#pcbuild-table tbody tr");
+
+    // Define rating filter options
+    const ratingOptions = [
+        { value: "all", label: "All" },
+        { value: "5", label: "★★★★★" },
+        { value: "4", label: "★★★★☆" },
+        { value: "3", label: "★★★☆☆" },
+        { value: "unrated", label: "Unrated" }
+    ];
+
+    // Inject rating checkboxes
+    ratingFilterContainer.innerHTML = "";
+    ratingOptions.forEach(opt => {
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.name = "rating";
+        input.value = opt.value;
+        if (opt.value === "all") input.checked = true;
+        label.style.display = "block";
+        label.style.margin = "4px 0";
+        label.appendChild(input);
+        label.insertAdjacentHTML("beforeend", ` ${opt.label}`);
+        ratingFilterContainer.appendChild(label);
+    });
+
+    const ratingFilterInputs = document.querySelectorAll('#rating-filter input[type="checkbox"]');
+
+    function applyZebraStriping() {
+        let visibleIndex = 0;
+        productRows.forEach(row => {
+            if (row.style.display !== "none") {
+                row.style.backgroundColor = (visibleIndex % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+                visibleIndex++;
+            } else {
+                row.style.backgroundColor = ""; // Reset hidden rows
+            }
+        });
+    }
+
+    function applyRatingFilter() {
+        const selected = Array.from(ratingFilterInputs)
+            .filter(input => input.checked && input.value !== "all")
+            .map(input => input.value);
+
+        const isAllChecked = document.querySelector('#rating-filter input[value="all"]').checked;
+        let visibleCount = 0;
+
+        productRows.forEach((row, index) => {
+            const ratingAttr = row.querySelector(".add-to-builder")?.getAttribute("data-rating");
+            const rating = parseFloat(ratingAttr);
+            const isRated = !isNaN(rating);
+            let visible = false;
+
+            if (isAllChecked) {
+                visible = true;
+            } else if (selected.includes("unrated") && !isRated) {
+                visible = true;
+            } else if (isRated) {
+                for (const value of selected) {
+                    const range = ratingRanges[value];
+                    if (range && typeof range === "object" && rating >= range.min && rating <= range.max) {
+                        visible = true;
+                        break;
+                    }
+                }
+            }
+
+            row.style.display = visible ? "" : "none";
+
+            // Zebra striping
+            row.style.backgroundColor = (visibleCount % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+            if (visible) {
+                visibleCount++;
+            }
+        });
+    }
+
+    // Handle 'All' checkbox
+    document.querySelector('#rating-filter input[value="all"]').addEventListener("change", function () {
+        if (this.checked) {
+            ratingFilterInputs.forEach(input => {
+                if (input.value !== "all") input.checked = false;
+            });
+        }
+        applyRatingFilter();
+    });
+
+    // Handle other checkboxes
+    ratingFilterInputs.forEach(input => {
+        if (input.value !== "all") {
+            input.addEventListener("change", function () {
+                if (this.checked) {
+                    document.querySelector('#rating-filter input[value="all"]').checked = false;
+                }
+                applyRatingFilter();
+            });
+        }
+    });
+
+    applyRatingFilter(); // Initial render
+});
+</script>
+
 
     <script>
     // Socket filtering

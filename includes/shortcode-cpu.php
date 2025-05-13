@@ -1,5 +1,6 @@
 <?php
 function aawp_pcbuild_display_parts_cpu($atts) {
+    
     $atts = shortcode_atts(array('category' => 'cpu'), $atts);
     $input_category = sanitize_title($atts['category']);
     
@@ -24,8 +25,8 @@ function aawp_pcbuild_display_parts_cpu($atts) {
     // If no cached products, fetch and cache them
     if ($products === false) {
         $products = aawp_pcbuild_get_products($category);
-        set_transient($transient_key, $products, HOUR_IN_SECONDS);
-    }
+        set_transient($transient_key, $products, 3 * HOUR_IN_SECONDS);
+    }    
     
     // If still no products, show error
     if (!is_array($products) || empty($products['SearchResult']['Items'])) {
@@ -83,20 +84,13 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                 </div>
                 <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
                     <div class="filter-header">
-                        <span class="filter-title">RATING</span>
+                        <strong>SELLER RATING</strong>
                         <button class="filter-toggle">−</button>
                     </div>
                     <div class="filter-options" id="rating-filter">
-                        <label><input type="checkbox" value="all" checked> All</label><br/>
-                        <label><input type="checkbox" value="5"> 5 Stars</label><br/>
-                        <label><input type="checkbox" value="4"> 4 Stars</label><br/>
-                        <label><input type="checkbox" value="3"> 3 Stars</label><br/>
-                        <label><input type="checkbox" value="2"> 2 Stars</label><br/>
-                        <label><input type="checkbox" value="1"> 1 Star</label><br/>
-                        <label><input type="checkbox" value="unrated"> Unrated</label><br/>
+                        <!-- Filters will be injected here -->
                     </div>
                 </div>
-
                 <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
                     <div class="filter-header">
                         <strong>CORE COUNT</strong>
@@ -168,14 +162,10 @@ function aawp_pcbuild_display_parts_cpu($atts) {
             <div class="pcbuilder-main" style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div style="font-weight:bold;"><?php echo $total_items; ?> 
-                        Products <br><br>
-                        <a href="#" class="productList_all" id="select_all" style="margin-right: 10px">Select All</a> 
-                        <a href="#" class="productList_clear disabled" id="clear_selected" style="margin-right: 10px">Select None</a>
-                        <a href="#" class="productList_compare disabled" id="compare_selected">Compare Selected</a>
+                        Products
                     </div>
                     <div>
-                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
-                        <button class="add-selected-to-builder">Add From Filter</button>
+                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" />
                     </div> 
                 </div>
 
@@ -363,6 +353,156 @@ function aawp_pcbuild_display_parts_cpu($atts) {
         }
     }
 </style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const ratingRanges = {
+        "5": { min: 4.5, max: 5.0 },
+        "4": { min: 3.5, max: 4.4 },
+        "3": { min: 2.5, max: 3.4 },
+        "unrated": "unrated"
+    };
+
+    const ratingFilterContainer = document.getElementById("rating-filter");
+    const productRows = document.querySelectorAll(".product-row");
+
+    // Inject checkboxes
+    const ratingOptions = [
+        { value: "all", label: "All" },
+        { value: "5", label: "★★★★★" },
+        { value: "4", label: "★★★★☆" },
+        { value: "3", label: "★★★☆☆" },
+        { value: "unrated", label: "Unrated" }
+    ];
+
+    ratingFilterContainer.innerHTML = "";
+    ratingOptions.forEach(opt => {
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.name = "rating";
+        input.value = opt.value;
+        if (opt.value === "all") input.checked = true;
+        label.appendChild(input);
+        label.insertAdjacentHTML("beforeend", ` ${opt.label}`);
+        ratingFilterContainer.appendChild(label);
+        ratingFilterContainer.appendChild(document.createElement("br"));
+    });
+
+    const ratingFilterInputs = document.querySelectorAll('#rating-filter input[type="checkbox"]');
+
+    function applyZebraStriping() {
+        let visibleIndex = 0;
+        productRows.forEach(row => {
+            if (row.style.display !== "none") {
+                // Apply zebra striping only to visible rows
+                row.style.backgroundColor = (visibleIndex % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+                visibleIndex++;
+            } else {
+                row.style.backgroundColor = ""; // Reset background for hidden rows
+            }
+        });
+    }
+
+    function applyRatingFilter() {
+        const selectedValues = Array.from(ratingFilterInputs)
+            .filter(input => input.checked && input.value !== "all")
+            .map(input => input.value);
+
+        const isAllSelected = document.querySelector('#rating-filter input[value="all"]').checked;
+        let visibleCount = 0;
+
+        console.log("Selected Ratings:", selectedValues);
+
+        productRows.forEach(row => {
+            const button = row.querySelector(".add-to-builder");
+            const ratingStr = button?.getAttribute("data-rating");
+            const rating = parseFloat(ratingStr);
+            const isRated = !isNaN(rating);
+            let showRow = false;
+
+            console.log("Product Rating:", ratingStr, "| Parsed:", rating);
+
+            if (isAllSelected) {
+                showRow = true;
+            } else if (selectedValues.includes("unrated") && !isRated) {
+                showRow = true;
+            } else if (isRated) {
+                for (let val of selectedValues) {
+                    const range = ratingRanges[val];
+                    if (range && typeof range === "object") {
+                        if (rating >= range.min && rating <= range.max) {
+                            showRow = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Display or hide the row based on the rating filter
+            row.style.display = showRow ? "" : "none";
+
+            // Render the star rating for each product
+            if (button) {
+                const starsContainer = button.querySelector('.star-rating-container');
+                if (starsContainer) {
+                    starsContainer.innerHTML = ''; // Clear any existing stars
+
+                    if (isRated) {
+                        let fullStars = Math.floor(rating);
+                        let halfStar = (rating % 1 >= 0.25 && rating % 1 < 0.75) ? 1 : 0;
+                        let emptyStars = 5 - fullStars - halfStar;
+
+                        // Full stars
+                        for (let i = 0; i < fullStars; i++) {
+                            starsContainer.innerHTML += '<span class="star-rating">★</span>';
+                        }
+
+                        // Half star
+                        if (halfStar) {
+                            starsContainer.innerHTML += '<span class="star-rating half">★</span>';
+                        }
+
+                        // Empty stars
+                        for (let i = 0; i < emptyStars; i++) {
+                            starsContainer.innerHTML += '<span class="star-rating empty">☆</span>';
+                        }
+                    } else {
+                        starsContainer.innerHTML = '<span class="star-rating empty">No rating</span>';
+                    }
+                }
+            }
+
+        });
+
+        applyZebraStriping(); // Apply zebra striping after filtering
+    }
+
+    // Checkbox behavior
+    document.querySelector('#rating-filter input[value="all"]').addEventListener("change", function () {
+        if (this.checked) {
+            ratingFilterInputs.forEach(input => {
+                if (input.value !== "all") input.checked = false;
+            });
+        }
+        applyRatingFilter();
+    });
+
+    ratingFilterInputs.forEach(input => {
+        if (input.value !== "all") {
+            input.addEventListener("change", function () {
+                if (this.checked) {
+                    document.querySelector('#rating-filter input[value="all"]').checked = false;
+                }
+                applyRatingFilter();
+            });
+        }
+    });
+
+    applyRatingFilter(); // Initial call
+});
+</script>
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {

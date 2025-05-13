@@ -138,38 +138,6 @@ if (params.has('pcbuild_page')) {
 }
 });
 
-//RATING FILTER CHECKBOXES
-/* const ratingFilter = document.getElementById("rating-filter");
-if (ratingFilter) {
-    ratingFilter.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', function () {
-            // Ensure only one rating is selected at a time
-            ratingFilter.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            this.checked = true;
-
-            const selectedValue = this.value;
-            const rows = document.querySelectorAll("#pcbuild-table tbody tr");
-
-            rows.forEach(row => {
-                const ratingText = row.querySelector("td:nth-child(6)")?.innerText || '';
-                const match = ratingText.match(/^(\d(\.\d)?)/);
-                const rating = match ? parseFloat(match[1]) : 0;
-
-                let show = false;
-                if (selectedValue === 'all') {
-                    show = true;
-                } else if (selectedValue === 'unrated') {
-                    show = rating === 0;
-                } else {
-                    show = Math.floor(rating) === parseInt(selectedValue);
-                }
-
-                row.style.display = show ? '' : 'none';
-            });
-        });
-    });
-} */
-
 //MANUFATURER FILTER CHECKBOX
 document.addEventListener('DOMContentLoaded', function () {
     const toggles = document.querySelectorAll('.filter-toggle');

@@ -1,19 +1,24 @@
 <?php
-    // Function to display stars based on rating and show review count
+   // Function to display stars as ★★★☆☆ and show review count
     function display_rating_and_count($rating, $count) {
-        $fullStars = floor($rating); // Number of full stars
-        $halfStars = ($rating - $fullStars) >= 0.5 ? 1 : 0; // Half star if rating has a decimal part of 0.5 or more
-        $emptyStars = 5 - ($fullStars + $halfStars); // Remaining stars are empty
+        // Round the rating based on Math.round() logic
+        $roundedRating = round($rating); // This rounds the rating to nearest integer
+        $fullStars = $roundedRating;
+        $emptyStars = 5 - $fullStars;
+
         $starsHtml = '';
+
+        // Full stars (★)
         for ($i = 0; $i < $fullStars; $i++) {
-            $starsHtml .= '<span style="color: #FFA500 !important;">★</span>'; // Full star with color
+            $starsHtml .= '<span style="color: orange;">★</span>';
         }
-        if ($halfStars) {
-            $starsHtml .= '<span style="color: #FFA500 !important;">★</span>'; // Half star with color
-        }
+
+        // Empty stars (☆)
         for ($i = 0; $i < $emptyStars; $i++) {
-            $starsHtml .= '<span style="color: #BBBBBB !important;">★</span>'; // Empty star with color
+            $starsHtml .= '<span style="color: orange;">☆</span>';
         }
+
+        // Add review count
         return $starsHtml . ' (' . number_format($count) . ')';
     }
 ?>
