@@ -162,10 +162,14 @@ function aawp_pcbuild_display_parts_cpu($atts) {
             <div class="pcbuilder-main" style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div style="font-weight:bold;"><?php echo $total_items; ?> 
-                        Products
+                        Products <br><br>
+                        <a href="#" id="select_all">Select All</a>&nbsp;&nbsp;
+                        <a href="#" id="clear_selected" class="disabled">Select None</a>&nbsp;&nbsp;
+                        <a href="#" id="compare_selected" class="disabled">Compare Selected</a>
                     </div>
                     <div>
-                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" />
+                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
+                        <a href="#" id="add_from_filter">Add From Filter</a>
                     </div> 
                 </div>
 
@@ -352,6 +356,16 @@ function aawp_pcbuild_display_parts_cpu($atts) {
             overflow-y: auto;
         }
     }
+    #add_from_filter {
+        padding: 5px 18px;
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        float: right;
+    }
+
 </style>
 
 <script>
@@ -364,9 +378,8 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     const ratingFilterContainer = document.getElementById("rating-filter");
-    const productRows = document.querySelectorAll(".product-row");
+    const productRows = document.querySelectorAll("#pcbuild-table tbody tr");
 
-    // Inject checkboxes
     const ratingOptions = [
         { value: "all", label: "All" },
         { value: "5", label: "★★★★★" },
@@ -375,6 +388,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { value: "unrated", label: "Unrated" }
     ];
 
+    // Inject rating checkboxes
     ratingFilterContainer.innerHTML = "";
     ratingOptions.forEach(opt => {
         const label = document.createElement("label");
@@ -383,10 +397,11 @@ document.addEventListener("DOMContentLoaded", function () {
         input.name = "rating";
         input.value = opt.value;
         if (opt.value === "all") input.checked = true;
+        label.style.display = "block";
+        label.style.margin = "4px 0";
         label.appendChild(input);
         label.insertAdjacentHTML("beforeend", ` ${opt.label}`);
         ratingFilterContainer.appendChild(label);
-        ratingFilterContainer.appendChild(document.createElement("br"));
     });
 
     const ratingFilterInputs = document.querySelectorAll('#rating-filter input[type="checkbox"]');
@@ -395,90 +410,54 @@ document.addEventListener("DOMContentLoaded", function () {
         let visibleIndex = 0;
         productRows.forEach(row => {
             if (row.style.display !== "none") {
-                // Apply zebra striping only to visible rows
                 row.style.backgroundColor = (visibleIndex % 2 === 0) ? '#d4d4d4' : '#ebebeb';
                 visibleIndex++;
             } else {
-                row.style.backgroundColor = ""; // Reset background for hidden rows
+                row.style.backgroundColor = "";
             }
         });
     }
 
     function applyRatingFilter() {
-        const selectedValues = Array.from(ratingFilterInputs)
+        const selected = Array.from(ratingFilterInputs)
             .filter(input => input.checked && input.value !== "all")
             .map(input => input.value);
 
-        const isAllSelected = document.querySelector('#rating-filter input[value="all"]').checked;
+        const isAllChecked = document.querySelector('#rating-filter input[value="all"]').checked;
+
         let visibleCount = 0;
-
-        console.log("Selected Ratings:", selectedValues);
-
         productRows.forEach(row => {
-            const button = row.querySelector(".add-to-builder");
-            const ratingStr = button?.getAttribute("data-rating");
-            const rating = parseFloat(ratingStr);
+            const ratingAttr = row.querySelector(".add-to-builder")?.getAttribute("data-rating");
+            const rating = parseFloat(ratingAttr);
             const isRated = !isNaN(rating);
-            let showRow = false;
+            let visible = false;
 
-            console.log("Product Rating:", ratingStr, "| Parsed:", rating);
-
-            if (isAllSelected) {
-                showRow = true;
-            } else if (selectedValues.includes("unrated") && !isRated) {
-                showRow = true;
+            if (isAllChecked) {
+                visible = true;
+            } else if (selected.includes("unrated") && !isRated) {
+                visible = true;
             } else if (isRated) {
-                for (let val of selectedValues) {
-                    const range = ratingRanges[val];
-                    if (range && typeof range === "object") {
-                        if (rating >= range.min && rating <= range.max) {
-                            showRow = true;
-                            break;
-                        }
+                for (const value of selected) {
+                    const range = ratingRanges[value];
+                    if (range && typeof range === "object" && rating >= range.min && rating <= range.max) {
+                        visible = true;
+                        break;
                     }
                 }
             }
 
-            // Display or hide the row based on the rating filter
-            row.style.display = showRow ? "" : "none";
+            row.style.display = visible ? "" : "none";
 
-            // Render the star rating for each product
-            if (button) {
-                const starsContainer = button.querySelector('.star-rating-container');
-                if (starsContainer) {
-                    starsContainer.innerHTML = ''; // Clear any existing stars
-
-                    if (isRated) {
-                        let fullStars = Math.floor(rating);
-                        let halfStar = (rating % 1 >= 0.25 && rating % 1 < 0.75) ? 1 : 0;
-                        let emptyStars = 5 - fullStars - halfStar;
-
-                        // Full stars
-                        for (let i = 0; i < fullStars; i++) {
-                            starsContainer.innerHTML += '<span class="star-rating">★</span>';
-                        }
-
-                        // Half star
-                        if (halfStar) {
-                            starsContainer.innerHTML += '<span class="star-rating half">★</span>';
-                        }
-
-                        // Empty stars
-                        for (let i = 0; i < emptyStars; i++) {
-                            starsContainer.innerHTML += '<span class="star-rating empty">☆</span>';
-                        }
-                    } else {
-                        starsContainer.innerHTML = '<span class="star-rating empty">No rating</span>';
-                    }
-                }
+            if (visible) {
+                row.style.backgroundColor = (visibleCount % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+                visibleCount++;
+            } else {
+                row.style.backgroundColor = "";
             }
-
         });
-
-        applyZebraStriping(); // Apply zebra striping after filtering
     }
 
-    // Checkbox behavior
+    // 'All' checkbox logic
     document.querySelector('#rating-filter input[value="all"]').addEventListener("change", function () {
         if (this.checked) {
             ratingFilterInputs.forEach(input => {
@@ -488,95 +467,27 @@ document.addEventListener("DOMContentLoaded", function () {
         applyRatingFilter();
     });
 
+    // Other checkboxes logic
     ratingFilterInputs.forEach(input => {
         if (input.value !== "all") {
             input.addEventListener("change", function () {
                 if (this.checked) {
                     document.querySelector('#rating-filter input[value="all"]').checked = false;
                 }
+                const anyChecked = Array.from(ratingFilterInputs)
+                    .some(cb => cb.checked && cb.value !== "all");
+                if (!anyChecked) {
+                    document.querySelector('#rating-filter input[value="all"]').checked = true;
+                }
                 applyRatingFilter();
             });
         }
     });
 
-    applyRatingFilter(); // Initial call
+    applyRatingFilter(); // Initial run
 });
 </script>
 
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-    const ratingCheckboxes = document.querySelectorAll("#rating-filter input[type='checkbox']");
-    const allRatingCheckbox = document.querySelector("#rating-filter input[value='all']");
-    const tableRows = document.querySelectorAll("#pcbuild-table tbody tr");
-
-    // Function to apply zebra striping
-    function applyZebraStripes(rows) {
-        let visibleIndex = 0;
-        rows.forEach(row => {
-            if (row.style.display !== "none") {
-                row.style.backgroundColor = visibleIndex % 2 === 0 ? "#d4d4d4" : "#ebebeb";
-                visibleIndex++;
-            }
-        });
-    }
-
-    function filterRowsByRating() {
-        let selectedRatings = Array.from(ratingCheckboxes)
-            .filter(checkbox => checkbox.checked && checkbox.value !== "all")
-            .map(checkbox => checkbox.value);
-
-        const isAllChecked = allRatingCheckbox.checked || selectedRatings.length === 0;
-
-        tableRows.forEach(row => {
-            const ratingAttr = row.querySelector("[data-rating]")?.getAttribute("data-rating");
-            const rating = ratingAttr ? parseFloat(ratingAttr) : null;
-
-            if (isAllChecked) {
-                row.style.display = "";
-            } else {
-                let showRow = false;
-                if (rating === null || isNaN(rating)) {
-                    showRow = selectedRatings.includes("unrated");
-                } else {
-                    const roundedRating = Math.floor(rating);
-                    showRow = selectedRatings.includes(roundedRating.toString());
-                }
-                row.style.display = showRow ? "" : "none";
-            }
-        });
-
-        applyZebraStripes(tableRows);
-    }
-
-    // Handle checkbox logic
-    ratingCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener("change", () => {
-            if (checkbox.value === "all") {
-                if (checkbox.checked) {
-                    ratingCheckboxes.forEach(cb => {
-                        if (cb !== checkbox) cb.checked = false;
-                    });
-                }
-            } else {
-                allRatingCheckbox.checked = false;
-            }
-
-            // If no specific boxes are checked, re-check "All"
-            const anyChecked = Array.from(ratingCheckboxes).some(cb => cb.checked && cb.value !== "all");
-            if (!anyChecked) {
-                allRatingCheckbox.checked = true;
-            }
-
-            filterRowsByRating();
-        });
-    });
-
-    // Initial filtering on load
-    filterRowsByRating();
-});
-
-</script>
 
     <script>
     // Manufacturer filtering
@@ -1409,41 +1320,56 @@ document.addEventListener("DOMContentLoaded", function () {
     const selectAllBtn = document.getElementById("select_all");
     const clearSelectedBtn = document.getElementById("clear_selected");
     const compareSelectedBtn = document.getElementById("compare_selected");
-    const checkboxes = document.querySelectorAll(".product-checkbox");
-    //const masterCheckbox = document.getElementById("master_checkbox");
+    const checkboxes = document.querySelectorAll(".select-product");
 
-    // Helper: update compare + clear buttons
-    function updateButtonStates() {
-        const anyChecked = [...checkboxes].some(cb => cb.checked);
-        clearSelectedBtn.classList.toggle("disabled", !anyChecked);
-        compareSelectedBtn.classList.toggle("disabled", !anyChecked);
+    // Helper: Enable or disable link by adding/removing 'disabled' class
+    function setLinkState(link, enabled) {
+        if (enabled) {
+            link.classList.remove("disabled");
+        } else {
+            link.classList.add("disabled");
+        }
     }
 
-    // Select All
+    // Update button states based on selected checkboxes
+    function updateButtonStates() {
+        const anyChecked = [...checkboxes].some(cb => cb.checked);
+        setLinkState(clearSelectedBtn, anyChecked);
+        setLinkState(compareSelectedBtn, anyChecked);
+    }
+
+    // Select All click
     selectAllBtn.addEventListener("click", function (e) {
         e.preventDefault();
         checkboxes.forEach(cb => cb.checked = true);
         updateButtonStates();
     });
 
-    // Select None
+    // Clear Selected click
     clearSelectedBtn.addEventListener("click", function (e) {
         e.preventDefault();
+        if (clearSelectedBtn.classList.contains("disabled")) return;
         checkboxes.forEach(cb => cb.checked = false);
         updateButtonStates();
     });
 
-    // Individual checkbox change
+    // Compare Selected click (you can add actual compare logic here later)
+    compareSelectedBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        if (compareSelectedBtn.classList.contains("disabled")) return;
+        alert("Compare feature coming soon!");
+    });
+
+    // Update button states on checkbox change
     checkboxes.forEach(cb => {
         cb.addEventListener("change", updateButtonStates);
     });
 
-    // Initial state
-    updateButtonStates();
+    // Initial state: only Select All is enabled
+    setLinkState(clearSelectedBtn, false);
+    setLinkState(compareSelectedBtn, false);
 });
-
 </script>
-
     
     <?php
     return ob_get_clean();

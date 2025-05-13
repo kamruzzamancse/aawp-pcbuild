@@ -128,6 +128,59 @@ document.querySelectorAll(".add-to-builder").forEach(button => {
     });
 });
 
+
+/* document.getElementById("add_from_filter").onclick = function (e) {
+    e.preventDefault();
+  
+    const selectedCheckboxes = document.querySelectorAll(".select-product:checked");
+    const category = selectedCheckboxes[0]?.dataset.category || '';
+    const productData = [];
+  
+    selectedCheckboxes.forEach(checkbox => {
+      const row = checkbox.closest("tr");
+      if (!row) return;
+  
+      const addButton = row.querySelector(".add-to-builder");
+      if (!addButton) return;
+  
+      const data = {
+        asin: addButton.dataset.asin,
+        title: addButton.dataset.title,
+        image: addButton.dataset.image,
+        base: addButton.dataset.base,
+        promo: addButton.dataset.promo,
+        shipping: addButton.dataset.shipping,
+        tax: addButton.dataset.tax,
+        availability: addButton.dataset.availability,
+        price: addButton.dataset.price,
+        category: addButton.dataset.category,
+        affiliateUrl: addButton.dataset.affiliateUrl,
+        features: addButton.dataset.features,
+        rating: addButton.dataset.rating,
+        socket: addButton.dataset.socket,
+        manufacturer: addButton.dataset.manufacturer,
+        chipset: addButton.dataset.chipset,
+        series: addButton.dataset.series
+      };
+  
+      productData.push(data);
+    });
+  
+    if (productData.length === 0) {
+      alert("Please select at least one product.");
+      return;
+    }
+  
+    localStorage.setItem("pcbuilder_selection", JSON.stringify(productData));
+  
+    if (window.location.pathname.includes("/pcbuildparts/pc-build-parts/")) {
+      updateRow(category, productData); // ✅ Now supports multiple products
+    } else {
+      window.location.href = "/pcbuildparts/pc-build-parts/";
+    }
+  };   */
+
+
 // SCROLL TO TABLE ON PAGINATION
 const params = new URLSearchParams(window.location.search);
 if (params.has('pcbuild_page')) {

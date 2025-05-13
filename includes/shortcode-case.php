@@ -46,6 +46,7 @@ function aawp_pcbuild_display_parts_case($atts) {
     <div style="background-color:#41466c; padding:20px; color:#fff; font-size:24px; font-weight:bold; text-align:center; margin-bottom:40px">
         Choose A <?php echo esc_html($category); ?>
     </div>
+    
     <div style="width:90%; margin:0 auto; font-family:sans-serif;">
         <div class="pcbuilder-container" style="display:flex; gap:20px; margin-top:20px;">
             <!-- Sidebar -->
@@ -135,8 +136,7 @@ function aawp_pcbuild_display_parts_case($atts) {
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div style="font-weight:bold;"><?php echo $total_items; ?> Products</div>
                     <div>
-                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
-                        <button class="add-from-filter">Add From Filter</button>
+                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" />
                     </div>
                 </div>
 

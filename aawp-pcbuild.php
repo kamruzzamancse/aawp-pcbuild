@@ -70,15 +70,6 @@ function aawp_pcbuild_enqueue_styles() {
         true
     );
 
-    // Enqueue Seller Rating Filter JS
-    wp_enqueue_script(
-        'aawp-seller-rating-filter', // unique handle
-        AAWP_PCBUILD_URL . 'assets/js/seller-rating-filter.js',
-        array('jquery'), // dependencies
-        filemtime(AAWP_PCBUILD_PATH . 'assets/js/seller-rating-filter.js'), // dynamic versioning for cache busting
-        true // load in footer
-    );
-
      // Get the uploads base URL
      $upload_dir = wp_get_upload_dir();
 

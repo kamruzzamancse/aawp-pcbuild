@@ -154,8 +154,7 @@ function aawp_pcbuild_display_parts_gpu($atts) {
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div style="font-weight:bold;"><?php echo $total_items; ?> Products</div>
                     <div>
-                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
-                        <button class="add-from-filter">Add From Filter</button>
+                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" />
                     </div>
                 </div>
 
@@ -327,7 +326,7 @@ function aawp_pcbuild_display_parts_gpu($atts) {
         }
     </style>
 
-    <script>
+<script>
 document.addEventListener("DOMContentLoaded", function () {
     const ratingRanges = {
         "5": { min: 4.5, max: 5.0 },
@@ -339,7 +338,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const ratingFilterContainer = document.getElementById("rating-filter");
     const productRows = document.querySelectorAll("#pcbuild-table tbody tr");
 
-    // Define rating filter options
     const ratingOptions = [
         { value: "all", label: "All" },
         { value: "5", label: "★★★★★" },
@@ -366,28 +364,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const ratingFilterInputs = document.querySelectorAll('#rating-filter input[type="checkbox"]');
 
-    function applyZebraStriping() {
-        let visibleIndex = 0;
-        productRows.forEach(row => {
-            if (row.style.display !== "none") {
-                row.style.backgroundColor = (visibleIndex % 2 === 0) ? '#d4d4d4' : '#ebebeb';
-                visibleIndex++;
-            } else {
-                row.style.backgroundColor = ""; // Reset hidden rows
-            }
-        });
-    }
-
     function applyRatingFilter() {
         const selected = Array.from(ratingFilterInputs)
             .filter(input => input.checked && input.value !== "all")
             .map(input => input.value);
 
         const isAllChecked = document.querySelector('#rating-filter input[value="all"]').checked;
-        let visibleCount = 0;
 
-        productRows.forEach((row, index) => {
-            const ratingAttr = row.querySelector(".add-to-builder")?.getAttribute("data-rating");
+        let visibleCount = 0;
+        productRows.forEach(row => {
+            const ratingCell = row.querySelector("td[data-rating]");
+            const ratingAttr = ratingCell?.getAttribute("data-rating");
             const rating = parseFloat(ratingAttr);
             const isRated = !isNaN(rating);
             let visible = false;
@@ -399,7 +386,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (isRated) {
                 for (const value of selected) {
                     const range = ratingRanges[value];
-                    if (range && typeof range === "object" && rating >= range.min && rating <= range.max) {
+                    if (range && rating >= range.min && rating <= range.max) {
                         visible = true;
                         break;
                     }
@@ -408,15 +395,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
             row.style.display = visible ? "" : "none";
 
-            // Zebra striping
-            row.style.backgroundColor = (visibleCount % 2 === 0) ? '#d4d4d4' : '#ebebeb';
             if (visible) {
+                row.style.backgroundColor = (visibleCount % 2 === 0) ? '#d4d4d4' : '#ebebeb';
                 visibleCount++;
+            } else {
+                row.style.backgroundColor = "";
             }
         });
     }
 
-    // Handle 'All' checkbox
+    // 'All' checkbox logic
     document.querySelector('#rating-filter input[value="all"]').addEventListener("change", function () {
         if (this.checked) {
             ratingFilterInputs.forEach(input => {
@@ -426,21 +414,27 @@ document.addEventListener("DOMContentLoaded", function () {
         applyRatingFilter();
     });
 
-    // Handle other checkboxes
+    // Other checkboxes logic
     ratingFilterInputs.forEach(input => {
         if (input.value !== "all") {
             input.addEventListener("change", function () {
                 if (this.checked) {
                     document.querySelector('#rating-filter input[value="all"]').checked = false;
                 }
+                const anyChecked = Array.from(ratingFilterInputs)
+                    .some(cb => cb.checked && cb.value !== "all");
+                if (!anyChecked) {
+                    document.querySelector('#rating-filter input[value="all"]').checked = true;
+                }
                 applyRatingFilter();
             });
         }
     });
 
-    applyRatingFilter(); // Initial render
+    applyRatingFilter(); // Initial run
 });
 </script>
+
 
     <script>
 document.addEventListener("DOMContentLoaded", function () {
