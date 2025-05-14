@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 add_filter('cron_schedules', function($schedules) {
     if (!isset($schedules['aawp_pcbuild_3_hours'])) {
         $schedules['aawp_pcbuild_3_hours'] = [
-            'interval' => 3 * HOUR_IN_SECONDS,
+            'interval' => 12 * HOUR_IN_SECONDS,
             'display'  => __('Every 3 Hours (AAWP PC Builder)')
         ];
     }
