@@ -281,7 +281,7 @@ function aawp_pcbuild_display_parts_gpu($atts) {
                                     data-core-clock="<?php echo esc_attr($core); ?>"
                                     data-boost-clock="<?php echo esc_attr($boost); ?>"
                                     data-color="<?php echo esc_attr($color); ?>"
-                                    data-rating="<?php echo isset($sellerRating) ? esc_attr($ratsellerRatinging) : ''; ?>"
+                                    data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                     <?php _e('Add', 'aawp-pcbuild'); ?>
                                 </button>

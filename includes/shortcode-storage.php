@@ -1072,4 +1072,3 @@ document.addEventListener("DOMContentLoaded", function () {
     return ob_get_clean();
 }
 add_shortcode('pcbuild_parts_storage', 'aawp_pcbuild_display_parts_storage');
-?>

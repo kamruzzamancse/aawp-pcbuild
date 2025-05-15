@@ -1,5 +1,6 @@
 <?php
 function aawp_pcbuild_display_parts_memory($atts) {
+    
     $atts = shortcode_atts(array('category' => 'memory'), $atts);
     $input_category = sanitize_title($atts['category']);
     
@@ -33,6 +34,7 @@ function aawp_pcbuild_display_parts_memory($atts) {
         return '<p class="aawp-error">No products found or error fetching data. Please try again later.</p>';
     }    
 
+    // Pagination setup
     $all_items = $products['SearchResult']['Items'];
     $total_items = count($all_items);
     $items_per_page = 25;
@@ -42,6 +44,7 @@ function aawp_pcbuild_display_parts_memory($atts) {
     $display_items = array_slice($all_items, $start, $items_per_page);
 
     ob_start();
+    //include('parts-header.php');
     ?>
     <div style="background-color:#41466c; padding:20px; color:#fff; font-size:24px; font-weight:bold; text-align:center; margin-bottom:40px">
         Choose A <?php echo esc_html($category); ?>
@@ -1128,11 +1131,8 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-
-
     <?php
+    //include('parts-footer.php');
     return ob_get_clean();
 }
-
 add_shortcode('pcbuild_parts_memory', 'aawp_pcbuild_display_parts_memory');
-?>
