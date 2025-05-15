@@ -25,7 +25,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
     // If no cached products, fetch and cache them
     if ($products === false) {
         $products = aawp_pcbuild_get_products($category);
-        set_transient($transient_key, $products, 3 * HOUR_IN_SECONDS);
+        set_transient($transient_key, $products, 1 * HOUR_IN_SECONDS);
     }    
     
     // If still no products, show error
@@ -43,6 +43,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
     $display_items = array_slice($all_items, $start, $items_per_page);
 
     ob_start();
+    include('parts-header.php');
     ?>
 
     <div style="background-color:#41466c; padding:20px; color:#fff; font-size:24px; font-weight:bold; text-align:center; margin-bottom:40px">
@@ -1372,6 +1373,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
     
     <?php
+    include('parts-footer.php');
     return ob_get_clean();
 }
 add_shortcode('pcbuild_parts_cpu', 'aawp_pcbuild_display_parts_cpu');

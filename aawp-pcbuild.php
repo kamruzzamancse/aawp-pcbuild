@@ -78,6 +78,13 @@ function aawp_pcbuild_enqueue_styles() {
          'associate_tag'  => get_option('aawp_pcbuild_amazon_associate_tag'),
          'uploads_url'    => $upload_dir['baseurl'],
      ));
+
+    wp_enqueue_style(
+        'index-css',
+        get_stylesheet_directory_uri() . '/assets/css/index.css',
+        array(),
+        filemtime(get_stylesheet_directory() . '/assets/css/index.css')
+    );
 }
 add_action('wp_enqueue_scripts', 'aawp_pcbuild_enqueue_styles');
 

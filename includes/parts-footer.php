@@ -105,7 +105,7 @@
 
     <style>
         #main-footer {
-        display: none !important;
+            display: none !important;
         }
 
         .et_pb_section.et_pb_section_0.et_section_regular

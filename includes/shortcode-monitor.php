@@ -23,7 +23,7 @@ function aawp_pcbuild_display_parts_monitor($atts) {
     // If no cached products, fetch and cache them
     if ($products === false) {
         $products = aawp_pcbuild_get_products($category);
-        set_transient($transient_key, $products, 3 * HOUR_IN_SECONDS);
+        set_transient($transient_key, $products, 1 * HOUR_IN_SECONDS);
     }
     
     // If still no products, show error
