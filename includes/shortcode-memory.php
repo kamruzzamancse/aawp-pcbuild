@@ -7,7 +7,7 @@ function aawp_pcbuild_display_parts_memory($atts) {
     // Define the category mapping
     $category_map = [
         'ram' => 'Memory',
-        'memory' => 'Memory',
+        //'memory' => 'Memory',
     ];
     
     $category = $category_map[$input_category] ?? 'Memory';
@@ -222,12 +222,12 @@ function aawp_pcbuild_display_parts_memory($atts) {
                             preg_match('/(DDR\d)/i', $features_string . ' ' . $full_title, $ram_type_match);
                             preg_match('/(\d{3,4})\s?MHz/i', $features_string . ' ' . $full_title, $mhz_match);
 
+                            // Assign safely
+                            $type  = isset($ram_type_match[1]) ? strtoupper($ram_type_match[1]) : '-';
+                            $speed = isset($mhz_match[1]) ? $mhz_match[1] : '-';
+
                             // Combine if both parts are found
-                            $type_speed = (isset($ram_type_match[1]) && isset($mhz_match[1]))
-                                ? strtoupper($ram_type_match[1]) . '-' . $mhz_match[1]
-                                : '-';
-                            $type = $ram_type_match[1];
-                            $speed = $mhz_match[1];
+                            $type_speed = ($type !== '-' && $speed !== '-') ? $type . '-' . $speed : '-';
 
                             // Try to match "2x16GB", "2 x 16GB", etc.
                             preg_match('/(\d)\s?[xX×]\s?(\d+)\s?GB/i', $features_string . ' ' . $full_title, $modules_match);

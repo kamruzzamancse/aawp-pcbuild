@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 function aawp_pcbuild_get_products($category) {
     $category = sanitize_text_field($category);
     $cache_key = 'aawp_pcbuild_cache_' . md5($category);
-    $cache_time = HOUR_IN_SECONDS;
+    $cache_time = 3 * HOUR_IN_SECONDS;
 
     // Check WordPress transient cache
     $cached = get_transient($cache_key);
@@ -137,23 +137,27 @@ function aawp_pcbuild_get_products($category) {
 
     switch ($category) {
         case 'case':
-        case 'pc-case':
-            $keywords = 'desktop computer case ATX RGB tower';
-            break;
+		case 'pc-case':
+			$keywords = 'ATX computer case';
+			break;
         case 'storage':
-            $keywords = '"Internal SSD" OR "M.2 NVMe" OR "Internal HDD 7200RPM" -enclosure -adapter -USB -external';
-            break;
+    		$keywords = 'Internal SSD';
+   			break;
         case 'memory':
         case 'ram':
-            $keywords = 'DDR4 or DDR5 RAM 16GB 3200MHz';
+            $keywords = 'RAM';
             break;
         case 'video card':
-        case 'gpu':
-            $keywords = 'NVIDIA GeForce RTX 3060 or AMD Radeon RX 6600';
-            break;
+		case 'gpu':
+			$keywords = 'graphics card';
+			break;
+		case 'power supply':
+		case 'psu':
+			$keywords = 'power supply unit';
+			break;
         case 'operating system':
-            $keywords = 'Microsoft Windows 11 Home OEM DVD 64-bit -server -NAS -bundle -device';
-            break;
+			$keywords = 'Windows 11';
+			break;
         default:
             $keywords = $category;
             break;
