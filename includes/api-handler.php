@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 function aawp_pcbuild_get_products($category) {
     $category = sanitize_text_field($category);
     $cache_key = 'aawp_pcbuild_cache_' . md5($category);
-    $cache_time = 3 * HOUR_IN_SECONDS;
+    $cache_time = 12 * HOUR_IN_SECONDS;
 
     // Check WordPress transient cache
     $cached = get_transient($cache_key);

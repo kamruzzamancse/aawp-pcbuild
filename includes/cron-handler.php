@@ -4,12 +4,12 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Register custom cron schedule (every 1 hour)
+// Register custom cron schedule (every 12 hours)
 add_filter('cron_schedules', function($schedules) {
-    if (!isset($schedules['aawp_pcbuild_1_hour'])) {
-        $schedules['aawp_pcbuild_1_hour'] = [
-            'interval' => 1 * HOUR_IN_SECONDS,
-            'display'  => __('Every 1 Hour (AAWP PC Builder)')
+    if (!isset($schedules['aawp_pcbuild_12_hours'])) {
+        $schedules['aawp_pcbuild_12_hours'] = [
+            'interval' => 12 * HOUR_IN_SECONDS,
+            'display'  => __('Every 12 Hours (AAWP PC Builder)')
         ];
     }
     return $schedules;
@@ -18,7 +18,7 @@ add_filter('cron_schedules', function($schedules) {
 // Schedule the cron event on plugin activation
 function aawp_pcbuild_schedule_cron() {
     if (!wp_next_scheduled('aawp_pcbuild_cron_hook')) {
-        wp_schedule_event(time(), 'aawp_pcbuild_1_hour', 'aawp_pcbuild_cron_hook');
+        wp_schedule_event(time(), 'aawp_pcbuild_12_hours', 'aawp_pcbuild_cron_hook');
     }
 }
 register_activation_hook(__FILE__, 'aawp_pcbuild_schedule_cron');

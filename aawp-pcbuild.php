@@ -160,21 +160,56 @@ register_activation_hook(__FILE__, 'aawp_pcbuild_activate');
 // ==========================
 // Plugin Deactivation Hook
 // ==========================
-function aawp_pcbuild_deactivate() {
+/* function aawp_pcbuild_deactivate() {
     if (!current_user_can('activate_plugins')) return;
     flush_rewrite_rules();
 }
+register_deactivation_hook(__FILE__, 'aawp_pcbuild_deactivate'); */
+
+function aawp_pcbuild_deactivate() {
+    if (!current_user_can('activate_plugins')) return;
+
+    // Clear rewrite rules and cron
+    flush_rewrite_rules();
+    aawp_pcbuild_clear_cron();
+
+    // Delete all transients set by this plugin
+    global $wpdb;
+    $wpdb->query("
+        DELETE FROM $wpdb->options
+        WHERE option_name LIKE '_transient_aawp_pcbuild_cache_%'
+           OR option_name LIKE '_transient_timeout_aawp_pcbuild_cache_%'
+    ");
+}
 register_deactivation_hook(__FILE__, 'aawp_pcbuild_deactivate');
+
 
 // ==========================
 // Plugin Uninstall Hook
 // ==========================
-function aawp_pcbuild_uninstall() {
+/* function aawp_pcbuild_uninstall() {
     if (!current_user_can('activate_plugins')) return;
 
     delete_option('aawp_pcbuild_amazon_access_key');
     delete_option('aawp_pcbuild_amazon_secret_key');
     delete_option('aawp_pcbuild_amazon_associate_tag');
 }
+register_uninstall_hook(__FILE__, 'aawp_pcbuild_uninstall'); */
+
+function aawp_pcbuild_uninstall() {
+    if (!current_user_can('activate_plugins')) return;
+
+    delete_option('aawp_pcbuild_amazon_access_key');
+    delete_option('aawp_pcbuild_amazon_secret_key');
+    delete_option('aawp_pcbuild_amazon_associate_tag');
+
+    global $wpdb;
+    $wpdb->query("
+        DELETE FROM $wpdb->options
+        WHERE option_name LIKE '_transient_aawp_pcbuild_cache_%'
+           OR option_name LIKE '_transient_timeout_aawp_pcbuild_cache_%'
+    ");
+}
 register_uninstall_hook(__FILE__, 'aawp_pcbuild_uninstall');
+
 

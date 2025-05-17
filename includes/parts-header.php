@@ -33,43 +33,13 @@
             <!-- =====desktop menu====== -->
             <div class="menu">
                 <ul>
-                    <li>Ready To Ship PCs</li>
-                    <li class="coustomPc">
-                        Custom PCs
-                        <!-- <span>&#11206;</span>
-                        <div class="submenu">
-                            <ul>
-                                <li>Small Form Factor</li>
-                                <li>Full Tower</li>
-                                <li>Watercooled</li>
-                                <li>All Desktop</li>
-                                <li>Laptop</li>
-                            </ul>
-                        </div> -->
-                    </li>
-                    <li>Cases</li>
-                    <li>Accessories</li>
+                    <li><a href="/about-us">About Us</a></li>
+                    <li><a href="/contact-us">Contact Us</a></li>
                     <li>
                         <div class="logo">
                             <a href="<?php echo home_url(); ?>"><img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/image/logo2 _finalsava (1).png" alt="logo" width="100" height="60"></a>
                         </div>
                     </li>
-                    <li> Financing</li>
-                    <li class="company">
-                        Company
-                        <!-- <span>&#11206;</span>
-                        <div class="companySubmenu">
-                            <ul>
-                                <li>Contact Us</li>
-                                <li>About Us</li>
-                                <li>Partner Sign Up</li>
-                                <li>Partner Log-in</li>
-                                <li>Warranty</li>
-                            </ul>
-                        </div> -->
-
-                    </li>
-                    <li>Location</li>
                     <li>
                         <div class="iconWarper">
                             <span>

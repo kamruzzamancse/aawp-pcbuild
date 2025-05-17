@@ -25,7 +25,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
     // If no cached products, fetch and cache them
     if ($products === false) {
         $products = aawp_pcbuild_get_products($category);
-        set_transient($transient_key, $products, 1 * HOUR_IN_SECONDS);
+        set_transient($transient_key, $products, 12 * HOUR_IN_SECONDS);
     }    
     
     // If still no products, show error
@@ -36,7 +36,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
     // Pagination setup
     $all_items = $products['SearchResult']['Items'];
     $total_items = count($all_items);
-    $items_per_page = 25;
+    $items_per_page = 100;
     $current_page = isset($_GET['pcbuild_page']) ? max(1, intval($_GET['pcbuild_page'])) : 1;
     $total_pages = ceil($total_items / $items_per_page);
     $start = ($current_page - 1) * $items_per_page;
