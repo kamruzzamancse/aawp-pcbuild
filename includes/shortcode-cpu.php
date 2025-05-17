@@ -43,7 +43,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
     $display_items = array_slice($all_items, $start, $items_per_page);
 
     ob_start();
-    include('parts-header.php');
+    //include('parts-header.php');
     ?>
 
     <div style="background-color:#41466c; padding:20px; color:#fff; font-size:24px; font-weight:bold; text-align:center; margin-bottom:40px">
@@ -1373,7 +1373,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
     
     <?php
-    include('parts-footer.php');
+    //include('parts-footer.php');
     return ob_get_clean();
 }
 add_shortcode('pcbuild_parts_cpu', 'aawp_pcbuild_display_parts_cpu');
