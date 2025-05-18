@@ -490,7 +490,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 
-    <script>
+<script>
     // Manufacturer filtering
     document.addEventListener("DOMContentLoaded", function () {
         const table = document.getElementById("pcbuild-table");
@@ -618,8 +618,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const rows = Array.from(table.querySelectorAll("tbody tr"));
     const seriesSet = new Set();
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+    const checkboxElements = [];
 
-    // Extract unique series values from data attributes in the "Add to Builder" buttons
+    // Extract unique series values
     rows.forEach(row => {
         const btn = row.querySelector(".add-to-builder");
         const series = btn?.getAttribute("data-series")?.trim();
@@ -628,7 +631,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const seriesList = Array.from(seriesSet).sort();
 
-    // Create "All" checkbox for Series Filter
+    // "All Series" checkbox
     const allSeriesCheckboxWrapper = document.createElement("label");
     allSeriesCheckboxWrapper.style.display = "block";
     allSeriesCheckboxWrapper.innerHTML = `
@@ -637,39 +640,48 @@ document.addEventListener("DOMContentLoaded", function () {
     `;
     seriesFilterContainer.appendChild(allSeriesCheckboxWrapper);
 
-    // Create individual checkboxes for Series Filter
-    seriesList.forEach(series => {
+    const allCheckbox = () => seriesFilterContainer.querySelector(".series-checkbox[value='all']");
+
+    // Create individual series checkboxes
+    seriesList.forEach((series, index) => {
         const label = document.createElement("label");
-        label.style.display = "block";
+        label.style.display = index >= VISIBLE_COUNT ? "none" : "block";
         label.innerHTML = `
             <input type="checkbox" class="series-checkbox" value="${series}" checked>
             ${series}
         `;
+        checkboxElements.push(label);
         seriesFilterContainer.appendChild(label);
     });
+
+    // Show more / Show less toggle
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    seriesFilterContainer.appendChild(toggleLink);
 
     const zebraStriping = () => {
         let visibleRows = rows.filter(row => row.style.display !== "none");
         visibleRows.forEach((row, index) => {
             row.style.backgroundColor = index % 2 === 0 ? "#d4d4d4" : "#ebebeb";
         });
-    }
+    };
 
     const checkboxes = () => seriesFilterContainer.querySelectorAll(".series-checkbox");
-
-    const allCheckbox = () => seriesFilterContainer.querySelector(".series-checkbox[value='all']");
 
     function filterRows() {
         const selectedSeries = Array.from(checkboxes())
             .filter(cb => cb.checked && cb.value !== "all")
             .map(cb => cb.value);
 
-        // Filter rows by series selections
         rows.forEach(row => {
             const btn = row.querySelector(".add-to-builder");
             const series = btn?.getAttribute("data-series")?.trim();
 
-            // Apply the filter logic: show rows matching selected series
             if (selectedSeries.length === 0 || selectedSeries.includes(series)) {
                 row.style.display = "";
             } else {
@@ -677,38 +689,48 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        zebraStriping(); // Apply zebra striping after filtering
+        // Hide entire table if nothing is shown
+        const anyVisible = rows.some(row => row.style.display !== "none");
+        table.style.display = anyVisible ? "" : "none";
+
+        zebraStriping();
     }
 
-    // Handle changes for series filter
     seriesFilterContainer.addEventListener("change", function (e) {
         const target = e.target;
 
         if (target.value === "all") {
-            if (target.checked) {
-                checkboxes().forEach(cb => cb.checked = true);
-                table.style.display = ""; // Show table when "All" is checked
-            } else {
-                checkboxes().forEach(cb => cb.checked = false);
-                rows.forEach(row => row.style.display = "none"); // Hide all rows when "All" is unchecked
-                table.style.display = "none"; // Hide the table when "All" is unchecked
+            checkboxes().forEach(cb => cb.checked = target.checked);
+            table.style.display = target.checked ? "" : "none";
+            if (!target.checked) {
+                rows.forEach(row => row.style.display = "none");
             }
         } else {
             allCheckbox().checked = false;
-            table.style.display = ""; // Ensure the table is shown if any individual checkbox is selected
+            table.style.display = "";
         }
 
         filterRows();
     });
 
-    // Initial filter and zebra striping on page load
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+
+        checkboxElements.forEach((el, index) => {
+            el.style.display = expanded || index < VISIBLE_COUNT ? "block" : "none";
+        });
+
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial filtering
     filterRows();
 });
 </script>
 
-
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     const table = document.getElementById("pcbuild-table");
     const filterContainer = document.getElementById("socket-filter");
 
@@ -717,7 +739,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const rows = Array.from(table.querySelectorAll("tbody tr"));
     const socketSet = new Set();
 
-    // Extract unique socket values from data attributes in the "Add to Builder" buttons
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+    const checkboxElements = [];
+
+    // Extract unique socket values from data attributes
     rows.forEach(row => {
         const btn = row.querySelector(".add-to-builder");
         const socket = btn?.getAttribute("data-socket")?.trim();
@@ -726,7 +752,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const socketList = Array.from(socketSet).sort();
 
-    // Add the "All" checkbox
+    // "All" checkbox
     const allCheckboxWrapper = document.createElement("label");
     allCheckboxWrapper.style.display = "block";
     allCheckboxWrapper.innerHTML = `
@@ -735,19 +761,29 @@ document.addEventListener("DOMContentLoaded", function () {
     `;
     filterContainer.appendChild(allCheckboxWrapper);
 
-    // Add checkboxes for each socket type
-    socketList.forEach(socket => {
+    const allCheckbox = () => filterContainer.querySelector(".socket-checkbox[value='all']");
+
+    // Create individual checkboxes
+    socketList.forEach((socket, index) => {
         const label = document.createElement("label");
-        label.style.display = "block";
+        label.style.display = index >= VISIBLE_COUNT ? "none" : "block";
         label.innerHTML = `
             <input type="checkbox" class="socket-checkbox" value="${socket}" checked>
             ${socket}
         `;
+        checkboxElements.push(label);
         filterContainer.appendChild(label);
     });
 
-    const checkboxes = () => filterContainer.querySelectorAll(".socket-checkbox");
-    const allCheckbox = () => filterContainer.querySelector(".socket-checkbox[value='all']");
+    // Show more / Show less link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
 
     function zebraStriping() {
         let visibleRows = rows.filter(row => row.style.display !== "none");
@@ -756,19 +792,18 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    function checkboxes() {
+        return filterContainer.querySelectorAll(".socket-checkbox");
+    }
+
     function filterBySocket() {
         const selected = Array.from(checkboxes())
             .filter(cb => cb.checked && cb.value !== "all")
             .map(cb => cb.value);
 
-        if (allCheckbox().checked) {
-            // "All" is checked, show all rows
+        if (allCheckbox().checked || selected.length === 0) {
             rows.forEach(row => row.style.display = "");
-        } else if (selected.length === 0) {
-            // If no specific checkboxes are selected, hide all rows
-            rows.forEach(row => row.style.display = "none");
         } else {
-            // Filter rows based on selected socket checkboxes
             rows.forEach(row => {
                 const btn = row.querySelector(".add-to-builder");
                 const socket = btn?.getAttribute("data-socket")?.trim();
@@ -776,40 +811,41 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
 
-        zebraStriping(); // Apply zebra striping after filtering
+        zebraStriping();
     }
 
     filterContainer.addEventListener("change", function (e) {
         const target = e.target;
 
         if (target.value === "all") {
-            // If "All" is checked, check all individual checkboxes and uncheck them when "All" is unchecked
-            if (target.checked) {
-                checkboxes().forEach(cb => {
-                    if (cb.value !== "all") cb.checked = true;
-                });
-            } else {
-                checkboxes().forEach(cb => {
-                    if (cb.value !== "all") cb.checked = false;
-                });
-            }
+            checkboxes().forEach(cb => {
+                if (cb.value !== "all") cb.checked = target.checked;
+            });
         } else {
-            // If any other checkbox is selected/deselected, uncheck the "All" checkbox
             allCheckbox().checked = false;
         }
 
         filterBySocket();
     });
 
-    // Initial filter and zebra striping on page load
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+
+        checkboxElements.forEach((el, index) => {
+            el.style.display = expanded || index < VISIBLE_COUNT ? "block" : "none";
+        });
+
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial render
     filterBySocket();
 });
-
 </script>
 
-
 <script>
-    // microarchitecture filtering with zebra striping and "All" checkbox functionality
+    // microarchitecture filtering with zebra striping and "All" checkbox functionality + show more/less
     document.addEventListener("DOMContentLoaded", function () {
         const table = document.getElementById("pcbuild-table");
         const filterContainer = document.getElementById("microarchitecture-filter");
@@ -818,6 +854,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const rows = Array.from(table.querySelectorAll("tbody tr"));
         const microSet = new Set();
+        const VISIBLE_COUNT = 4;
+        let expanded = false;
 
         // Collect all unique microarchitectures
         rows.forEach(row => {
@@ -826,6 +864,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         const microList = Array.from(microSet).sort();
+        const checkboxElements = [];
 
         // Create "All" checkbox
         const allCheckboxWrapper = document.createElement("label");
@@ -837,22 +876,42 @@ document.addEventListener("DOMContentLoaded", function () {
         filterContainer.appendChild(allCheckboxWrapper);
 
         // Create individual checkboxes
-        microList.forEach(micro => {
-            const id = `micro-${micro.replace(/\s+/g, '-').toLowerCase()}`;
+        microList.forEach((micro, index) => {
             const label = document.createElement("label");
-            label.style.display = "block";
+            label.style.display = index >= VISIBLE_COUNT ? "none" : "block";
             label.innerHTML = `
                 <input type="checkbox" class="micro-checkbox" value="${micro}" checked>
                 ${micro}
             `;
             filterContainer.appendChild(label);
+            checkboxElements.push(label);
+        });
+
+        // Show more / Show less toggle link
+        const toggleLink = document.createElement("a");
+        toggleLink.href = "#";
+        toggleLink.textContent = "Show more";
+        toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
+        toggleLink.style.marginTop = "5px";
+        toggleLink.style.fontSize = "14px";
+        toggleLink.style.color = "#0066cc";
+        filterContainer.appendChild(toggleLink);
+
+        toggleLink.addEventListener("click", function (e) {
+            e.preventDefault();
+            expanded = !expanded;
+            checkboxElements.forEach((el, index) => {
+                el.style.display = (index >= VISIBLE_COUNT) ? (expanded ? "block" : "none") : "block";
+            });
+            toggleLink.textContent = expanded ? "Show less" : "Show more";
         });
 
         const checkboxes = () => filterContainer.querySelectorAll(".micro-checkbox");
         const allCheckbox = () => filterContainer.querySelector(".micro-checkbox[value='all']");
 
         function zebraStripe() {
-            rows.forEach((row, index) => {
+            const visibleRows = rows.filter(row => row.style.display !== "none");
+            visibleRows.forEach((row, index) => {
                 row.style.backgroundColor = index % 2 === 0 ? '#d4d4d4' : '#ebebeb';
             });
         }
@@ -871,7 +930,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             }
 
-            // Apply zebra striping after filtering
             zebraStripe();
         }
 
@@ -879,27 +937,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const target = e.target;
 
             if (target.value === "all") {
-                // If "All" checkbox is clicked, select/deselect all checkboxes
-                if (target.checked) {
-                    // If "All" is selected, check all individual checkboxes
-                    checkboxes().forEach(cb => {
-                        cb.checked = true;
-                    });
-                } else {
-                    // If "All" is deselected, uncheck all individual checkboxes
-                    checkboxes().forEach(cb => {
-                        cb.checked = false;
-                    });
-                }
+                checkboxes().forEach(cb => cb.checked = true);
             } else {
-                // If any other checkbox is clicked, uncheck the "All" checkbox
                 allCheckbox().checked = false;
             }
 
             filterByMicro();
         });
 
-        // Initial filter and zebra striping on page load
         filterByMicro();
         zebraStripe();
     });

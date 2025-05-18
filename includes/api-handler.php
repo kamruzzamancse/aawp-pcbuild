@@ -114,7 +114,7 @@ function aawp_pcbuild_get_products($category) {
     return $final_data;
 }
 
-/* function aawp_pcbuild_get_search_index($category) {
+function aawp_pcbuild_get_search_index($category) {
     $category = strtolower($category);
 
     $mapping = [
@@ -167,9 +167,9 @@ function aawp_pcbuild_get_products($category) {
         'search_index' => $mapping[$category] ?? 'Electronics',
         'keywords'     => $keywords,
     ];
-} */
+}
 
-function aawp_pcbuild_get_search_index($category) {
+/* function aawp_pcbuild_get_search_index($category) {
     $category = strtolower($category);
 
     $mapping = [
@@ -227,7 +227,7 @@ function aawp_pcbuild_get_search_index($category) {
         'search_index' => $mapping[$category] ?? 'Electronics',
         'keywords'     => $keywords,
     ];
-}
+} */
 
 
 function getSignatureKey($key, $dateStamp, $regionName, $serviceName) {

@@ -681,6 +681,10 @@ document.addEventListener("DOMContentLoaded", function () {
   display: block;
 }
 
+h3 {
+    padding-bottom: 30px!important;
+}
+
 /* Optional: make rows stack better on very narrow screens */
 @media (max-width: 768px) {
   .cardWarpper .row {

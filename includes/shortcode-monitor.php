@@ -679,7 +679,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
-
 <script>
 // Resolution Filtering for the table
 document.addEventListener("DOMContentLoaded", function () {
@@ -691,10 +690,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const VISIBLE_COUNT = 4;
     let expanded = false;
 
-    // Collect unique resolutions (case-insensitive) from data-resolution attribute
+    // Collect unique resolutions from data-resolution attribute
     tableRows.forEach(row => {
-        const resolution = row.querySelector("button.add-to-builder")?.dataset.resolution || "Unknown";
-        resolutionSet.add(resolution.trim().toLowerCase());
+        const resolution = row.querySelector("button.add-to-builder")?.dataset.resolution?.trim().toLowerCase() || "unknown";
+        resolutionSet.add(resolution);
     });
 
     const resolutions = Array.from(resolutionSet).sort();
@@ -703,7 +702,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // Create and append checkboxes
     resolutions.forEach(resolution => {
         const label = document.createElement("label");
-        const displayName = resolution.charAt(0).toUpperCase() + resolution.slice(1); // Capitalizing first letter
+        const displayName = resolution === "unknown"
+            ? "Unknown"
+            : resolution.charAt(0).toUpperCase() + resolution.slice(1);
         label.innerHTML = `<input type="checkbox" name="resolution" value="${resolution}" checked> ${displayName}`;
         label.style.display = 'block';
         checkboxElements.push(label);
@@ -714,7 +715,7 @@ document.addEventListener("DOMContentLoaded", function () {
         filterContainer.appendChild(el);
     });
 
-    // Toggle link
+    // Toggle link for show more/less
     const toggleLink = document.createElement("a");
     toggleLink.href = "#";
     toggleLink.textContent = "Show more";
@@ -724,26 +725,29 @@ document.addEventListener("DOMContentLoaded", function () {
     toggleLink.style.color = "#0066cc";
     filterContainer.appendChild(toggleLink);
 
-    // Zebra striping
+    // Zebra striping function
     function applyZebraStriping() {
-        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
+            .filter(row => row.style.display !== "none");
         visibleRows.forEach((row, index) => {
             row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
         });
     }
 
+    // Update 'All' checkbox based on individual checkboxes
     function updateAllCheckboxState() {
         const allBoxes = Array.from(document.querySelectorAll("input[name='resolution']"));
         const checkedBoxes = allBoxes.filter(cb => cb.checked);
         allCheckbox.checked = checkedBoxes.length === allBoxes.length;
     }
 
+    // Apply filtering to rows
     function applyResolutionFilter() {
         const selected = Array.from(document.querySelectorAll("input[name='resolution']:checked"))
             .map(cb => cb.value);
 
         tableRows.forEach(row => {
-            const resolution = row.querySelector("button.add-to-builder")?.dataset.resolution.trim().toLowerCase();
+            const resolution = row.querySelector("button.add-to-builder")?.dataset.resolution?.trim().toLowerCase() || "unknown";
             row.style.display = selected.includes(resolution) ? "" : "none";
         });
 
@@ -751,26 +755,28 @@ document.addEventListener("DOMContentLoaded", function () {
         applyZebraStriping();
     }
 
-    // All checkbox logic
+    // 'All' checkbox logic
     allCheckbox.addEventListener("change", function () {
         const allBoxes = document.querySelectorAll("input[name='resolution']");
         allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
         applyResolutionFilter();
     });
 
-    // Individual checkbox logic
+    // Individual checkbox change logic
     filterContainer.addEventListener("change", function (e) {
         if (e.target.name === "resolution") {
             applyResolutionFilter();
         }
     });
 
-    // Show more/less toggle
+    // Toggle 'Show more' / 'Show less'
     toggleLink.addEventListener("click", function (e) {
         e.preventDefault();
         expanded = !expanded;
         checkboxElements.forEach((el, index) => {
-            if (index >= VISIBLE_COUNT) el.style.display = expanded ? "block" : "none";
+            if (index >= VISIBLE_COUNT) {
+                el.style.display = expanded ? "block" : "none";
+            }
         });
         toggleLink.textContent = expanded ? "Show less" : "Show more";
     });
