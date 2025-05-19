@@ -291,6 +291,54 @@ function pcbuild_render_ui_shortcode() {
 }
 </style>
 
+<style>
+/* Wrapper allows horizontal scroll */
+.pcbuild-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Inner content keeps its full width */
+.cardWarpper {
+  min-width: 1100px; /* or wider if needed */
+  display: block;
+}
+
+h3 {
+    padding-bottom: 30px!important;
+}
+
+/* Optional: make rows stack better on very narrow screens */
+@media (max-width: 768px) {
+  .cardWarpper .row {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .cardWarpper .card {
+    min-width: 120px;
+    padding: 8px;
+    box-sizing: border-box;
+  }
+
+  .partsHeader h3 {
+    font-size: 18px;
+    text-align: center;
+  }
+
+  #checkoutWrapper {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  #checkoutAllBtn {
+    width: 100%;
+    font-size: 18px;
+  }
+}
+</style>
+
 <script>
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -667,55 +715,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 </script>
-
-<style>
-/* Wrapper allows horizontal scroll */
-.pcbuild-scroll-wrapper {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Inner content keeps its full width */
-.cardWarpper {
-  min-width: 1100px; /* or wider if needed */
-  display: block;
-}
-
-h3 {
-    padding-bottom: 30px!important;
-}
-
-/* Optional: make rows stack better on very narrow screens */
-@media (max-width: 768px) {
-  .cardWarpper .row {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-  }
-
-  .cardWarpper .card {
-    min-width: 120px;
-    padding: 8px;
-    box-sizing: border-box;
-  }
-
-  .partsHeader h3 {
-    font-size: 18px;
-    text-align: center;
-  }
-
-  #checkoutWrapper {
-    text-align: center;
-    margin-top: 20px;
-  }
-
-  #checkoutAllBtn {
-    width: 100%;
-    font-size: 18px;
-  }
-}
-
-</style>
 
   <?php
   return ob_get_clean();
