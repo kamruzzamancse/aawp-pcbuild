@@ -366,7 +366,6 @@ function aawp_pcbuild_display_parts_cpu($atts) {
         cursor: pointer;
         float: right;
     }
-
 </style>
 
 <script>

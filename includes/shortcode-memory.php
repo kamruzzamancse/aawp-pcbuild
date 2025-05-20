@@ -322,7 +322,7 @@ function aawp_pcbuild_display_parts_memory($atts) {
         </div>
     </div>
 
-    <style>
+    <!-- <style>
         @media (max-width: 768px) {
             .pcbuilder-container {
                 flex-direction: column;
@@ -336,7 +336,35 @@ function aawp_pcbuild_display_parts_memory($atts) {
                 overflow-y: auto;
             }
         }
-    </style>
+    </style> -->
+
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    @media (max-width: 768px) {
+        .pcbuilder-container {
+            display: flex;
+            flex-direction: column;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        .pcbuild-sidebar,
+        .pcbuilder-main {
+            width: 100% !important;
+        }
+
+        .pcbuilder-main {
+            max-height: 80vh; /* Adjust based on your layout */
+            overflow-y: auto;
+        }
+    }
+</style>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {

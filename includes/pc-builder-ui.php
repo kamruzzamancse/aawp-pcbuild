@@ -44,7 +44,7 @@ function pcbuild_render_ui_shortcode() {
                     <div class="pcbuild-scroll-wrapper">
                         <div class="cardWarpper">
                             <!-- Header row that labels each column in the component selection table -->
-                            <div class="row">
+                            <div class="row" id="row-th">
                                 <div class="comp card"><span class="rowHeading">Component</span></div>
                                 <div class="selection card"><span class="rowHeading">Selection</span></div>
                                 <div class="base card"><span class="rowHeading">Base</span></div>
@@ -70,7 +70,7 @@ function pcbuild_render_ui_shortcode() {
                                       <span class="pc-part">Choose a CPU</span>
                                   </button>
                               </div>
-                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                              <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                             </div>
 
                             <!-- Row for CPU Cooler selection with dynamic pricing and vendor details -->
@@ -266,7 +266,7 @@ function pcbuild_render_ui_shortcode() {
   </section>
 
 <style>
-  .selectionBTN span{
+ /*  .selectionBTN span{
     color: #FFFFFF !important;
   }
   .selectionBTN {
@@ -288,19 +288,18 @@ function pcbuild_render_ui_shortcode() {
 .selectionBTN .icon {
     font-size: 20px;
     line-height: 1;
-}
+} */
 </style>
 
 <style>
-/* Wrapper allows horizontal scroll */
-.pcbuild-scroll-wrapper {
+
+/* .pcbuild-scroll-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Inner content keeps its full width */
 .cardWarpper {
-  min-width: 1100px; /* or wider if needed */
+  min-width: 1100px;
   display: block;
 }
 
@@ -308,7 +307,6 @@ h3 {
     padding-bottom: 30px!important;
 }
 
-/* Optional: make rows stack better on very narrow screens */
 @media (max-width: 768px) {
   .cardWarpper .row {
     display: flex;
@@ -336,7 +334,7 @@ h3 {
     width: 100%;
     font-size: 18px;
   }
-}
+} */
 </style>
 
 <script>
@@ -475,7 +473,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Update selected part's UI in the builder list
+  /* // Update selected part's UI in the builder list
   function updateRow(category, data) {
     const rows = document.querySelectorAll(".row");
 
@@ -545,7 +543,98 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
     calculateTotalPrice();
-  }
+  } */
+
+  function updateRow(category, data) {
+    const rows = document.querySelectorAll(".row");
+    const isMobile = window.innerWidth <= 768; // Detect mobile screen
+
+    rows.forEach(row => {
+      const categorySpan = row.querySelector(".componentName");
+      if (categorySpan && categorySpan.textContent.trim().toLowerCase() === category.toLowerCase()) {
+
+        const base = data.base || '';
+        const shipping = data.shipping || '';
+        const availability = data.availability || '';
+        const price = data.price || '';
+        const affiliateUrl = data.affiliateUrl || '#';
+        const title = data.title || '';
+        const image = data.image || '';
+
+        const truncatedTitle = title.length > 70 ? title.slice(0, 70) + "..." : title;
+        const escapedTitle = truncatedTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+        const logoUrl = `${pcbuild_ajax_object.uploads_url}/2025/04/amazon-logo.png`;
+
+        if (isMobile) {
+          // 📱 MOBILE VIEW (Stacked layout in 5 rows)
+          document.getElementById("row-th").style.display = "none";
+          row.innerHTML = `
+            <div class="componentName"><strong>${category}</strong></div>
+            <div class="selection">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <img src="${image}" alt="${escapedTitle}" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+                <div style="flex:1;"><strong style="font-size:14px;">${escapedTitle}</strong></div>
+              </div>
+            </div>
+            <div class="base">Base: ${base}</div>
+            <div class="shipping">Shipping: ${shipping}</div>
+            <div class="availability">Availability: ${availability}</div>
+            <div class="price">Price: ${price}</div>
+            <div class="where">
+              <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+                <img src="${logoUrl}" alt="Buy on Amazon" style="width:80px; height:auto;" />
+              </a>
+            </div>
+            <div class="buy">
+              <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+                <button style="background:#28a745; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Buy</button>
+              </a>
+            </div>
+            <div class="cancel">
+              <button class="remove-from-builder" data-category="${category}" style="background:none; border:none; font-size:30px; font-weight:bold; cursor:pointer; color:#ccc;">&times;</button>
+            </div>
+          `;
+        } else {
+          // 🖥 DESKTOP VIEW (Horizontal row layout)
+          if (row.querySelector(".selection")) {
+            row.querySelector(".selection").innerHTML = `
+              <div class="product-selected" style="display: flex; align-items: center; gap: 12px;">
+                <img src="${image}" alt="${escapedTitle}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
+                <div style="flex: 1;"><strong style="font-size: 14px; display: block;">${escapedTitle}</strong></div>
+              </div>`;
+          }
+
+          if (row.querySelector(".base")) row.querySelector(".base").textContent = base;
+          if (row.querySelector(".shipping")) row.querySelector(".shipping").textContent = shipping;
+          if (row.querySelector(".availability")) row.querySelector(".availability").textContent = availability;
+          if (row.querySelector(".price")) row.querySelector(".price").textContent = price;
+
+          if (row.querySelector(".where")) {
+            row.querySelector(".where").innerHTML = `
+              <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+                <img src="${logoUrl}" alt="Buy on Amazon" style="width:80px; height:auto;" />
+              </a>`;
+          }
+
+          if (row.querySelector(".buy")) {
+            row.querySelector(".buy").innerHTML = `
+              <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+                <button style="background:#28a745; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Buy</button>
+              </a>`;
+          }
+
+          if (row.querySelector(".cancel")) {
+            row.querySelector(".cancel").innerHTML = `
+              <button class="remove-from-builder" data-category="${category}"
+                style="background:none; border:none; font-size:30px; font-weight:bold; cursor:pointer; color:#ccc;">&times;</button>`;
+          }
+        }
+      }
+    });
+
+    calculateTotalPrice();
+}
 
   function calculateTotalPrice() {
     let total = 0;
