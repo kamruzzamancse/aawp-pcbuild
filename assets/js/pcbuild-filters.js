@@ -10,63 +10,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if (partsTotalEl) partsTotalEl.textContent = `$${parseFloat(total).toFixed(2)}`;
 });
   
-// SEARCH FILTER
-document.addEventListener("DOMContentLoaded", function () {
-const searchInput = document.getElementById("pcbuild-search");
-const table = document.getElementById("pcbuild-table");
-
-if (!searchInput || !table) return;
-
-searchInput.addEventListener("input", function () {
-    const searchTerm = this.value.toLowerCase();
-    const rows = table.querySelectorAll("tbody tr");
-
-    rows.forEach(row => {
-        const nameCell = row.querySelector("td:first-child");
-        const nameText = nameCell?.textContent.toLowerCase() || "";
-        row.style.display = nameText.includes(searchTerm) ? "" : "none";
-    });
-});
-
-
-// SEARCH FILTER WITH ZEBRA STRIPE
-/* document.addEventListener("DOMContentLoaded", function () {
-    const searchInput = document.getElementById("pcbuild-search");
-    const table = document.getElementById("pcbuild-table");
-
-    if (!searchInput || !table) return;
-
-    const rows = Array.from(table.querySelectorAll("tbody tr"));
-
-    // Function to apply zebra striping
-    function applyZebraStriping() {
-        const visibleRows = rows.filter(row => row.style.display !== "none");  // Only visible rows
-        visibleRows.forEach((row, index) => {
-            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';  // Apply alternating colors
-        });
-    }
-
-    // Event listener for the search input field
-    searchInput.addEventListener("input", function () {
-        const searchTerm = this.value.toLowerCase();  // Get the search term in lowercase
-
-        rows.forEach(row => {
-            const nameCell = row.querySelector("td:first-child");  // Assuming product name is in the first column
-            const nameText = nameCell ? nameCell.textContent.toLowerCase() : "";  // Get the product name and make it lowercase
-
-            // Display or hide rows based on the search term match
-            row.style.display = nameText.includes(searchTerm) ? "" : "none";  // Show or hide row
-        });
-
-        // Reapply zebra striping after filtering
-        applyZebraStriping();
-    });
-
-    // Initial zebra striping on page load
-    applyZebraStriping();
-}); */
-
-  
 // ADD TO BUILDER FUNCTIONALITY
 document.querySelectorAll(".add-to-builder").forEach(button => {
     button.addEventListener("click", () => {
@@ -100,7 +43,7 @@ document.querySelectorAll(".add-to-builder").forEach(button => {
                 localStorage.setItem('pcbuild_cpu', JSON.stringify(productData));
                 break;
             case 'cpu cooler':
-                localStorage.setItem('selected_cpu_cooler_socket', JSON.stringify(productData.socket));
+                localStorage.setItem('selected_cpu_cooler_socket', productData.socket);
                 break;
             case 'motherboard':
                 localStorage.setItem('selected_motherboard_socket', productData.socket);
@@ -129,58 +72,6 @@ document.querySelectorAll(".add-to-builder").forEach(button => {
 });
 
 
-/* document.getElementById("add_from_filter").onclick = function (e) {
-    e.preventDefault();
-  
-    const selectedCheckboxes = document.querySelectorAll(".select-product:checked");
-    const category = selectedCheckboxes[0]?.dataset.category || '';
-    const productData = [];
-  
-    selectedCheckboxes.forEach(checkbox => {
-      const row = checkbox.closest("tr");
-      if (!row) return;
-  
-      const addButton = row.querySelector(".add-to-builder");
-      if (!addButton) return;
-  
-      const data = {
-        asin: addButton.dataset.asin,
-        title: addButton.dataset.title,
-        image: addButton.dataset.image,
-        base: addButton.dataset.base,
-        promo: addButton.dataset.promo,
-        shipping: addButton.dataset.shipping,
-        tax: addButton.dataset.tax,
-        availability: addButton.dataset.availability,
-        price: addButton.dataset.price,
-        category: addButton.dataset.category,
-        affiliateUrl: addButton.dataset.affiliateUrl,
-        features: addButton.dataset.features,
-        rating: addButton.dataset.rating,
-        socket: addButton.dataset.socket,
-        manufacturer: addButton.dataset.manufacturer,
-        chipset: addButton.dataset.chipset,
-        series: addButton.dataset.series
-      };
-  
-      productData.push(data);
-    });
-  
-    if (productData.length === 0) {
-      alert("Please select at least one product.");
-      return;
-    }
-  
-    localStorage.setItem("pcbuilder_selection", JSON.stringify(productData));
-  
-    if (window.location.pathname.includes("/pcbuildparts/pc-build-parts/")) {
-      updateRow(category, productData); // ✅ Now supports multiple products
-    } else {
-      window.location.href = "/pcbuildparts/pc-build-parts/";
-    }
-  };   */
-
-
 // SCROLL TO TABLE ON PAGINATION
 const params = new URLSearchParams(window.location.search);
 if (params.has('pcbuild_page')) {
@@ -189,7 +80,6 @@ if (params.has('pcbuild_page')) {
         tableElement.scrollIntoView({ behavior: "smooth" });
     }
 }
-});
 
 //MANUFATURER FILTER CHECKBOX
 document.addEventListener('DOMContentLoaded', function () {

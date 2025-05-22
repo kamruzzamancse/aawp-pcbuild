@@ -1057,6 +1057,27 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 </script>
 
+<script>
+// Searching logic for desktop
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("pcbuild-search");
+    const tableRows = document.querySelectorAll("#pcbuild-table tbody tr");
+
+    searchInput.addEventListener("input", function () {
+        const query = this.value.toLowerCase().trim();
+
+        tableRows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            if (text.includes(query)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    });
+});
+</script>
+
         
         <?php
     return ob_get_clean();

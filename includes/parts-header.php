@@ -10,7 +10,7 @@
                 </div>
                 <div class="smLOgo">
                     <div class="logo">
-                        <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/image/logo2 _finalsava (1).png" alt="logo" width="100" height="60">
+                        <a href="<?php echo home_url(); ?>"><img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/image/logo2 _finalsava (1).png" alt="logo" width="100" height="60"></a>
                     </div>
                 </div>
                 <div class="smIcon">
