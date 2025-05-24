@@ -1435,3 +1435,230 @@ button{
   text-decoration: none;
   cursor: default;
 }
+
+/* css adding for category single page  ****************************/
+
+@media (max-width: 768px) {
+  header nav {
+    margin-top: -80px;
+  }
+  .pcbuilder-container {
+      flex-direction: column;
+  }
+  .pcbuild-sidebar,
+  .pcbuilder-main {
+      width: 100% !important;
+  }
+  .pcbuilder-main {
+      max-height: 80vh;
+      overflow-y: auto;
+  }
+}
+
+/* Base table styling */
+#pcbuild-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#pcbuild-table thead {
+    background-color: #f0f0f0;
+}
+
+#pcbuild-table th {
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+}
+
+#pcbuild-table td {
+    padding: 12px 10px;
+    vertical-align: middle;
+}
+
+/* Product row styling */
+#pcbuild-table tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+#pcbuild-table tbody tr:nth-child(even) {
+    background-color: #ebebeb;
+}
+
+#pcbuild-table tbody tr:nth-child(odd) {
+    background-color: #d4d4d4;
+}
+
+/* Product image styling */
+.product-image {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    margin-right: 10px;
+}
+
+/* Product name styling */
+.product-name {
+    font-weight: bold;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Star rating styling */
+.star-rating {
+    color: #f9a825;
+    font-size: 14px;
+    display: block;
+}
+
+/* Add button styling */
+.add-to-builder {
+    background-color: #0070c9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 15px;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+/* Mobile responsive styling - EXACT MATCH to the image */
+@media (max-width: 768px) {
+    /* Reset table layout for mobile - exactly like image */
+    #pcbuild-table tbody tr {
+        display: block;
+        margin-bottom: 10px;
+        border: none;
+        padding: 0;
+    }
+    
+    /* Hide table header on mobile */
+    #pcbuild-table thead {
+        display: none;
+    }
+    
+    /* Product cell - exact match to image layout */
+    #pcbuild-table .product-cell {
+        display: flex;
+        padding: 10px;
+        align-items: center;
+        border-bottom: none;
+    }
+    
+    /* Image container */
+    .image-container {
+        flex: 0 0 60px;
+        margin-right: 10px;
+    }
+    
+    /* Product image */
+    .product-image {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+    }
+    
+    /* Product details container */
+    .product-info {
+        flex: 1;
+    }
+    
+    /* Product name */
+    .product-name {
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: block;
+    }
+    
+    /* Rating stars */
+    .star-rating {
+        margin-bottom: 5px;
+    }
+    
+    /* Specs styling - two column layout in mobile */
+    .specs-container {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+    
+    .spec-group {
+        width: 50%;
+        margin-bottom: 8px;
+    }
+    
+    .spec-label {
+        color: #666;
+        font-size: 12px;
+    }
+    
+    .spec-value {
+        font-size: 14px;
+    }
+    
+    /* Price and action row - exact match to image */
+    .price-action-row {
+        display: flex;
+        padding: 10px;
+        justify-content: space-between;
+        align-items: center;
+        background-color: inherit;
+    }
+    
+    /* Price styling */
+    .price {
+        font-weight: bold;
+        font-size: 16px;
+    }
+    
+    /* Add button container */
+    .action-cell {
+        text-align: right;
+    }
+}
+
+@media (max-width: 768px) {
+    .pcbuild-sidebar-mobile {
+        transform: translateX(-110%);
+        transition: transform 0.3s ease-in-out;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100%;
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px 0 0 8px;
+        z-index: 1000;
+        overflow-y: auto;
+
+    }
+    /* before click height should be 0 */
+    .pcbuild-sidebar-mobile:not(.open) {
+        height: 0;
+    }
+
+    .pcbuild-sidebar-mobile.open {
+        transform: translateX(0);
+    }
+    /* when the sidebar is hidden then their height should be 0 */
+    .pcbuild-sidebar-mobile.hidden {
+        height: 0;
+    }
+}
+
+.pcbuild-sidebar-toggle {
+    background-color: rgb(10, 45, 83);
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+@media (min-width: 768px) {
+    .pcbuild-sidebar-toggle {
+        display: none;
+    }
+}
+

@@ -42,6 +42,7 @@ function aawp_pcbuild_display_parts_case($atts) {
     $display_items = array_slice($all_items, $start, $items_per_page);
 
     ob_start();
+    //include('parts-header.php');
     ?>
     <div style="background-color:#41466c; padding:20px; color:#fff; font-size:24px; font-weight:bold; text-align:center; margin-bottom:40px">
         Choose A <?php echo esc_html($category); ?>
@@ -1058,28 +1059,41 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 <script>
-// Searching logic for desktop
-document.addEventListener("DOMContentLoaded", function () {
-    const searchInput = document.getElementById("pcbuild-search");
-    const tableRows = document.querySelectorAll("#pcbuild-table tbody tr");
+    // Searching logic with zebra striping
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("pcbuild-search");
+        const tableRows = document.querySelectorAll("#pcbuild-table tbody tr");
 
-    searchInput.addEventListener("input", function () {
-        const query = this.value.toLowerCase().trim();
+        function applyZebraStriping() {
+            const visibleRows = Array.from(tableRows).filter(row => row.style.display !== "none");
+            visibleRows.forEach((row, index) => {
+                row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+            });
+        }
 
-        tableRows.forEach(row => {
-            const text = row.innerText.toLowerCase();
-            if (text.includes(query)) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
+        searchInput.addEventListener("input", function () {
+            const query = this.value.toLowerCase().trim();
+
+            tableRows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            applyZebraStriping();
         });
+
+        // Initial stripe in case all are visible initially
+        applyZebraStriping();
     });
-});
 </script>
 
         
-        <?php
+    <?php
+    //include('parts-footer.php');
     return ob_get_clean();
 }
 add_shortcode('pcbuild_parts_case', 'aawp_pcbuild_display_parts_case');

@@ -1148,24 +1148,36 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <script>
-// Searching logic
-document.addEventListener("DOMContentLoaded", function () {
-    const searchInput = document.getElementById("pcbuild-search");
-    const tableRows = document.querySelectorAll("#pcbuild-table tbody tr");
+    // Searching logic with zebra striping
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("pcbuild-search");
+        const tableRows = document.querySelectorAll("#pcbuild-table tbody tr");
 
-    searchInput.addEventListener("input", function () {
-        const query = this.value.toLowerCase().trim();
+        function applyZebraStriping() {
+            const visibleRows = Array.from(tableRows).filter(row => row.style.display !== "none");
+            visibleRows.forEach((row, index) => {
+                row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+            });
+        }
 
-        tableRows.forEach(row => {
-            const text = row.innerText.toLowerCase();
-            if (text.includes(query)) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
+        searchInput.addEventListener("input", function () {
+            const query = this.value.toLowerCase().trim();
+
+            tableRows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            applyZebraStriping();
         });
+
+        // Initial stripe in case all are visible initially
+        applyZebraStriping();
     });
-});
 </script>
 
 

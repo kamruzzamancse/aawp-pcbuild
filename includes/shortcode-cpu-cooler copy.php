@@ -35,22 +35,23 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
     // Pagination
     $all_items = $products['SearchResult']['Items'];
     $total_items = count($all_items);
-    $items_per_page = 100;
+    $items_per_page = 25;
     $current_page = isset($_GET['pcbuild_page']) ? max(1, intval($_GET['pcbuild_page'])) : 1;
     $total_pages = ceil($total_items / $items_per_page);
     $start = ($current_page - 1) * $items_per_page;
     $display_items = array_slice($all_items, $start, $items_per_page);
 
     ob_start();
-	include('parts-header.php');
+    include('parts-header.php');
     ?>
-    <div style="background-color:#41466c; padding:40px; color:#fff; font-size:24px; font-weight:bold; text-align:center; margin-bottom:40px">
+    <div style="background-color:#41466c; padding:20px; color:#fff; font-size:24px; font-weight:bold; text-align:center; margin-bottom:40px">
         Choose A <?php echo esc_html($category); ?>
     </div>
     <div style="width:90%; margin:0 auto; font-family:sans-serif;">
         <div class="pcbuilder-container" style="display:flex; gap:20px; margin-top:20px;">
             <!-- Sidebar -->
-            <div class="pcbuild-sidebar" style="width:250px; background:#f9f9f9; padding:20px; border-radius:8px;">
+            <button class="pcbuild-sidebar-toggle">Filters</button>
+            <div class="pcbuild-sidebar pcbuild-sidebar-mobile" style="width:250px; background:#f9f9f9; padding:20px; border-radius:8px;">
                 <div style="margin-bottom:20px;"><strong>Part</strong> | <strong>List</strong></div>
                 <!-- <div style="margin-bottom:20px;"><label><input type="checkbox" checked disabled /> Compatibility Filter</label></div> -->
                 <div style="margin-bottom:20px;">
@@ -250,24 +251,388 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts) {
         </div>
     </div>
 
-    <style>
-        @media (max-width: 768px) {
-			header nav {
-				margin-top: -80px;
-			}
-            .pcbuilder-container {
-                flex-direction: column;
-            }
-            .pcbuild-sidebar,
-            .pcbuilder-main {
-                width: 100% !important;
-            }
-            .pcbuilder-main {
-                max-height: 80vh; /* Adjust based on your layout */
-                overflow-y: auto;
+<script>
+    // Sidebar Toggle
+    /*document.addEventListener('DOMContentLoaded', function () {
+        const sidebarToggle = document.querySelector('.pcbuild-sidebar-toggle');
+        const sidebar = document.querySelector('.pcbuild-sidebar-mobile');
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+
+            document.removeEventListener('click', handleOutsideClick);
+        }
+
+        function handleOutsideClick(event) {
+            if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                closeSidebar();
             }
         }
-    </style>
+
+        sidebarToggle.addEventListener('click', function (event) {
+            event.stopPropagation();
+            if (sidebar.classList.contains('open')) {
+                
+                closeSidebar();
+
+            } else {
+                // before open i want to hide the sidebar
+                sidebar.classList.add('open');
+                setTimeout(() => {
+                    document.addEventListener('click', handleOutsideClick);
+                }, 0);
+            }
+        });
+
+        sidebar.addEventListener('click', function (event) {
+            event.stopPropagation();
+        });
+    });*/
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.innerWidth <= 768) {
+    const rows = document.querySelectorAll("#pcbuild-table tbody tr");
+    const container = document.createElement("div");
+
+    rows.forEach((row) => {
+      const cells = row.querySelectorAll("td");
+      const imgHTML = cells[0].querySelector("img")?.outerHTML ?? "";
+      const title = cells[0].innerText.trim();
+      const ratingText = cells[0].querySelector(".a-icon-alt")?.textContent || "★★★★☆";
+      const ratingCount = cells[0].innerHTML.match(/\((\d+)\)/)?.[1] || "";
+
+      const rpm = cells[1].innerText.trim();
+      const noise = cells[2].innerText.trim();
+      const radiator = cells[3].innerText.trim();
+      const rating = cells[4].innerText.trim();
+      const price = cells[5].innerText.trim();
+      const btn = cells[6].querySelector("button")?.cloneNode(true);
+
+      const card = document.createElement("div");
+      card.className = "mobile-card";
+      card.innerHTML = `
+        <div class="mobile-card-header">
+          ${imgHTML}
+          <div class="mobile-card-header-title">
+            <strong>${title}</strong>
+            <div class="rating">${rating}</div>
+          </div>
+        </div>
+        <div class="mobile-card-specs-line">
+          <div><strong>Fan RPM</strong><br> ${rpm}</div>
+          <div><strong>Noise</strong><br> ${noise}</div>
+          <div><strong>Radiator</strong><br> ${radiator}</div>
+        </div>
+        <div class="mobile-card-footer">
+          <strong>${price}</strong>
+        </div>
+      `;
+      if (btn) {
+        btn.style.marginLeft = "auto";
+        card.querySelector(".mobile-card-footer").appendChild(btn);
+      }
+
+      container.appendChild(card);
+    });
+
+    const table = document.getElementById("pcbuild-table");
+    table.parentNode.insertBefore(container, table);
+  }
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.innerWidth <= 768) {
+    const table = document.getElementById("pcbuild-table");
+    if (!table) return;
+
+    const rows = table.querySelectorAll("tbody tr");
+    const wrapper = document.createElement("div"); // contains all mobile tables
+
+    rows.forEach((row) => {
+      const compatibleSockets = row.getAttribute("data-compatible-sockets") || "";
+      const cells = row.querySelectorAll("td");
+      const imgHTML = cells[0].querySelector("img")?.outerHTML ?? "";
+      const title = cells[0].innerText.trim();
+      const rpm = cells[1]?.innerText.trim() || "-";
+      const noise = cells[2]?.innerText.trim() || "-";
+      const radiator = cells[3]?.innerText.trim() || "-";
+      const rating = cells[4]?.innerText.trim() || "-";
+      const price = cells[5]?.innerText.trim() || "-";
+      const btn = cells[6]?.querySelector("button")?.cloneNode(true);
+
+      const miniTable = document.createElement("table");
+      miniTable.className = "mobile-product-table";
+      miniTable.setAttribute("data-compatible-sockets", compatibleSockets); // attach to miniTable for reference
+
+      miniTable.innerHTML = `
+        <tbody>
+          <tr>
+            <td colspan="2">${imgHTML}</td>
+          </tr>
+          <tr>
+            <td><strong>Name</strong></td>
+            <td>${title}</td>
+          </tr>
+          <tr>
+            <td><strong>Fan RPM</strong></td>
+            <td>${rpm}</td>
+          </tr>
+          <tr>
+            <td><strong>Noise</strong></td>
+            <td>${noise}</td>
+          </tr>
+          <tr>
+            <td><strong>Radiator</strong></td>
+            <td>${radiator}</td>
+          </tr>
+          <tr>
+            <td><strong>Rating</strong></td>
+            <td>${rating}</td>
+          </tr>
+          <tr>
+            <td><strong>Price</strong></td>
+            <td>${price}</td>
+          </tr>
+        </tbody>
+      `;
+
+      if (btn) {
+        // preserve all data-* attributes
+        const clonedBtn = document.createElement("button");
+        for (const attr of btn.attributes) {
+          clonedBtn.setAttribute(attr.name, attr.value);
+        }
+        clonedBtn.className = btn.className;
+        clonedBtn.innerHTML = btn.innerHTML;
+        clonedBtn.style.cssText = btn.style.cssText;
+
+        const actionRow = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 2;
+        td.style.textAlign = "right";
+        td.appendChild(clonedBtn);
+        actionRow.appendChild(td);
+        miniTable.querySelector("tbody").appendChild(actionRow);
+      }
+
+      wrapper.appendChild(miniTable);
+    });
+
+    // Replace the original table
+    table.parentNode.replaceChild(wrapper, table);
+  }
+});
+</script>
+
+<style>
+@media (max-width: 768px) {
+	
+  #pcbuild-table {
+    display: none;
+  }
+
+  .mobile-card-specs-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .mobile-card-specs-line div {
+    flex: 1 1 30%;
+    color: #333;
+  }
+
+  .mobile-card-specs-line strong {
+    display: inline-block;
+    margin-right: 4px;
+    font-weight: 600;
+    color: #555;
+  }
+
+  .mobile-card {
+    display: flex;
+    flex-direction: column;
+    background: #e0e0e0;
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-family: sans-serif;
+  }
+
+  .mobile-card-header {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .mobile-card-header img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 6px;
+    background: #fff;
+    padding: 4px;
+  }
+
+  .mobile-card-header-title {
+    flex: 1;
+  }
+
+  .mobile-card-header-title strong {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+
+  .rating {
+    color: #f4b400;
+    font-size: 14px;
+  }
+
+  .rating span {
+    color: #444;
+    font-size: 12px;
+    margin-left: 4px;
+  }
+
+  .mobile-card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: 10px;
+    column-gap: 12px;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 12px;
+  }
+
+  .mobile-card-grid div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobile-card-grid span:first-child {
+    font-weight: bold;
+    font-size: 12px;
+    color: #666;
+  }
+
+  .mobile-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .mobile-card-footer strong {
+    font-size: 18px;
+  }
+
+  .mobile-card-footer button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+}
+</style>
+
+<style>
+	@media (max-width: 768px) {
+		header nav {
+			margin-top: -80px;
+		}
+		.pcbuilder-container {
+			flex-direction: column;
+		}
+		.pcbuild-sidebar,
+		.pcbuilder-main {
+			width: 100% !important;
+		}
+		.pcbuilder-main {
+			max-height: 80vh; /* Adjust based on your layout */
+			overflow-y: auto;
+		}
+	}
+	#add_from_filter {
+		padding: 5px 18px;
+		background-color: #28a745;
+		color: #fff;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		float: right;
+	}
+</style>
+
+<style>
+    @media (max-width: 768px) {
+        .pcbuilder-container {
+            flex-direction: column;
+        }
+
+        .pcbuild-sidebar,
+        .pcbuilder-main {
+            width: 100% !important;
+        }
+
+        .pcbuilder-main {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .pcbuild-sidebar-mobile {
+
+            transform: translateX(-110%);
+            transition: transform 0.3s ease-in-out;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100%;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px 0 0 8px;
+            z-index: 1000;
+            overflow-y: auto;
+
+        }
+        /* before click height should be 0 */
+        .pcbuild-sidebar-mobile:not(.open) {
+            height: 0;
+        }
+
+        .pcbuild-sidebar-mobile.open {
+            transform: translateX(0);
+        }
+        /* when the sidebar is hidden then their height should be 0 */
+        .pcbuild-sidebar-mobile.hidden {
+            height: 0;
+        }
+    }
+
+    .pcbuild-sidebar-toggle {
+        background-color: rgb(10, 45, 83);
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    @media (min-width: 768px) {
+        .pcbuild-sidebar-toggle {
+            display: none;
+        }
+    }
+</style>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -281,7 +646,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const ratingFilterContainer = document.getElementById("rating-filter");
     const productRows = document.querySelectorAll("#pcbuild-table tbody tr");
 
-    // Inject checkboxes
+    // Define rating filter options
     const ratingOptions = [
         { value: "all", label: "All" },
         { value: "5", label: "★★★★★" },
@@ -1134,8 +1499,93 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script>
+// Searching logic for desktop
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("pcbuild-search");
+    const tableRows = document.querySelectorAll("#pcbuild-table tbody tr");
+
+    searchInput.addEventListener("input", function () {
+        const query = this.value.toLowerCase().trim();
+
+        tableRows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            if (text.includes(query)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    });
+});
+</script>
+
+<script>
+// Searching logic for mobile
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("pcbuild-search");
+
+    if (window.innerWidth <= 768 && searchInput) {
+        searchInput.addEventListener("input", function () {
+            const query = this.value.toLowerCase().trim();
+            const mobileCards = document.querySelectorAll(".mobile-card");
+
+            mobileCards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(query) ? "" : "none";
+            });
+        });
+    }
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.innerWidth <= 768) {
+    const minSlider = document.getElementById("min-price");
+    const maxSlider = document.getElementById("max-price");
+    const minLabel = document.getElementById("price-min-label");
+    const maxLabel = document.getElementById("price-max-label");
+
+    if (!minSlider || !maxSlider) return;
+
+    function filterMobileCardsByPrice() {
+      const minVal = parseFloat(minSlider.value);
+      const maxVal = parseFloat(maxSlider.value);
+
+      minLabel.textContent = `$${minVal}`;
+      maxLabel.textContent = `$${maxVal}`;
+
+      const mobileCards = document.querySelectorAll(".mobile-card");
+      mobileCards.forEach(card => {
+        const priceText = card.querySelector(".mobile-card-footer strong")?.textContent.replace(/[^0-9.]/g, "") || "0";
+        const price = parseFloat(priceText) || 0;
+        card.style.display = (price >= minVal && price <= maxVal) ? "" : "none";
+      });
+    }
+
+    minSlider.addEventListener("input", () => {
+      if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+        minSlider.value = maxSlider.value;
+      }
+      filterMobileCardsByPrice();
+    });
+
+    maxSlider.addEventListener("input", () => {
+      if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+        maxSlider.value = minSlider.value;
+      }
+      filterMobileCardsByPrice();
+    });
+
+    // Run once on load
+    filterMobileCardsByPrice();
+  }
+});
+</script>
+
     <?php
-	include('parts-footer.php');
+    include('parts-footer.php');
     return ob_get_clean();
 }
 add_shortcode('pcbuild_parts_cpu_cooler', 'aawp_pcbuild_display_parts_cpu_cooler');

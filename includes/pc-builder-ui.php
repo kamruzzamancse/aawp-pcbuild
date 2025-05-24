@@ -70,7 +70,14 @@ function pcbuild_render_ui_shortcode() {
                                       <span class="pc-part">Choose a CPU</span>
                                   </button>
                               </div>
-                              <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                              <?php 
+                              function isMobile() {
+                                return preg_match('/(android|iphone|ipad|mobile)/i', $_SERVER['HTTP_USER_AGENT']);
+                              }
+                              ?>
+                              <?php if (!isMobile()): ?>
+                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                              <?php endif; ?>
                             </div>
 
                             <!-- Row for CPU Cooler selection with dynamic pricing and vendor details -->
@@ -88,7 +95,9 @@ function pcbuild_render_ui_shortcode() {
                                         </a>
                                     </button>
                                 </div>
-                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php if (!isMobile()): ?>
+                                  <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php endif; ?>
                             </div>
 
                             <!-- Row for selecting the motherboard and displaying related data -->
@@ -106,7 +115,9 @@ function pcbuild_render_ui_shortcode() {
                                         </a>
                                     </button>
                                 </div>
-                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php if (!isMobile()): ?>
+                                  <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php endif; ?>
                             </div>
 
                             <!-- Memory selection row including price, promo, tax, etc. -->
@@ -124,7 +135,9 @@ function pcbuild_render_ui_shortcode() {
                                         </a>
                                     </button>
                                 </div>
-                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php if (!isMobile()): ?>
+                                  <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php endif; ?>
                             </div>
 
                             <!-- Storage device selection row with associated info and controls -->
@@ -142,7 +155,9 @@ function pcbuild_render_ui_shortcode() {
                                         </a>
                                     </button>
                                 </div>
-                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php if (!isMobile()): ?>
+                                  <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php endif; ?>
                             </div>
 
                             <!-- Row for choosing a GPU or video card with details like price, tax, and source -->
@@ -160,7 +175,9 @@ function pcbuild_render_ui_shortcode() {
                                         </a>
                                     </button>
                                 </div>
-                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php if (!isMobile()): ?>
+                                  <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php endif; ?>
                             </div>
 
                             <!-- PC case selection row along with its pricing and availability -->
@@ -178,7 +195,9 @@ function pcbuild_render_ui_shortcode() {
                                         </a>
                                     </button>
                                 </div>
-                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php if (!isMobile()): ?>
+                                  <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php endif; ?>
                             </div>
 
                             <!-- Row for selecting a PSU (Power Supply Unit) and its metadata -->
@@ -196,7 +215,9 @@ function pcbuild_render_ui_shortcode() {
                                         </a>
                                     </button>
                                 </div>
-                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php if (!isMobile()): ?>
+                                  <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php endif; ?>
                             </div>
 
                             <!-- Operating System selection row with related information -->
@@ -214,7 +235,9 @@ function pcbuild_render_ui_shortcode() {
                                         </a>
                                     </button>
                                 </div>
-                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php if (!isMobile()): ?>
+                                  <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php endif; ?>
                             </div>
 
                             <!-- Monitor selection row showing pricing, availability, and purchase options -->
@@ -232,7 +255,9 @@ function pcbuild_render_ui_shortcode() {
                                         </a>
                                     </button>
                                 </div>
-                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php if (!isMobile()): ?>
+                                  <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php endif; ?>
                             </div>
 
                         </div>
@@ -265,76 +290,22 @@ function pcbuild_render_ui_shortcode() {
       </div>
   </section>
 
-<style>
- /*  .selectionBTN span{
-    color: #FFFFFF !important;
-  }
-  .selectionBTN {
-    background-color: #2c87c3 !important;
-    color: #FFFFFF !important;
-    padding-top: 5px !important;
-  }
-  .selectionBTN:hover {
-    background-color: #1e5c85 !important;
-  }
-  .selectionBTN {
-    display: flex;
-    align-items: center;
-    justify-content: center; /* Optional, centers contents inside button */
-    gap: 8px; /* space between icon and text */
-    padding: 8px 12px;
-    font-size: 14px;
-}
-.selectionBTN .icon {
-    font-size: 20px;
-    line-height: 1;
-} */
-</style>
-
-<style>
-
-/* .pcbuild-scroll-wrapper {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.cardWarpper {
-  min-width: 1100px;
-  display: block;
-}
-
-h3 {
-    padding-bottom: 30px!important;
-}
-
-@media (max-width: 768px) {
-  .cardWarpper .row {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-  }
-
-  .cardWarpper .card {
-    min-width: 120px;
-    padding: 8px;
-    box-sizing: border-box;
-  }
-
-  .partsHeader h3 {
-    font-size: 18px;
-    text-align: center;
-  }
-
-  #checkoutWrapper {
-    text-align: center;
-    margin-top: 20px;
-  }
-
-  #checkoutAllBtn {
-    width: 100%;
-    font-size: 18px;
-  }
-} */
+<style>	
+	@media (max-width: 768px) {
+		#row-th {
+			display: none !important;
+		}
+		#tab1 {
+			padding: 0 !important;
+		}
+		.partsHeader {
+			padding-top: 15px;
+			padding-bottom: 5px;
+		}
+		.comp {
+			margin-right: 30px!important;
+		}
+	}
 </style>
 
 <script>
@@ -473,78 +444,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  /* // Update selected part's UI in the builder list
-  function updateRow(category, data) {
-    const rows = document.querySelectorAll(".row");
-
-    rows.forEach(row => {
-      const categorySpan = row.querySelector(".componentName");
-      if (categorySpan && categorySpan.textContent.trim().toLowerCase() === category.toLowerCase()) {
-
-        const base = data.base || '';
-        //const promo = data.promo || '';
-        const shipping = data.shipping || '';
-        //const tax = data.tax || '';
-        const availability = data.availability || '';
-        const price = data.price || '';
-        const affiliateUrl = data.affiliateUrl || '#';
-        const title = data.title || '';
-        const image = data.image || '';
-
-        const truncatedTitle = title.length > 70 ? title.slice(0, 70) + "..." : title;
-        const escapedTitle = truncatedTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-        // Update selected image and title
-        if (row.querySelector(".selection")) {
-          row.querySelector(".selection").innerHTML = `
-            <div class="product-selected" style="display: flex; align-items: center; gap: 12px;">
-              <img src="${image}" alt="${escapedTitle}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
-              <div style="flex: 1;">
-                <strong style="font-size: 14px; display: block;">${escapedTitle}</strong>
-              </div>
-            </div>`;
-        }
-
-        // Update pricing, availability, and shipping info
-        if (row.querySelector(".base")) row.querySelector(".base").textContent = base;
-        //if (row.querySelector(".promo")) row.querySelector(".promo").textContent = promo;
-        if (row.querySelector(".shipping")) row.querySelector(".shipping").textContent = shipping;
-        //if (row.querySelector(".tax")) row.querySelector(".tax").textContent = tax;
-        if (row.querySelector(".availability")) row.querySelector(".availability").textContent = availability;
-        if (row.querySelector(".price")) row.querySelector(".price").textContent = price;
-
-        // Update "Buy from Amazon" button
-        if (row.querySelector(".where")) {
-          const logoUrl = `${pcbuild_ajax_object.uploads_url}/2025/04/amazon-logo.png`;
-          row.querySelector(".where").innerHTML = `
-            <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
-              <img src="${logoUrl}" 
-                  alt="Buy on Amazon" style="width:80px; height:auto;" />
-            </a>`;
-        }
-
-        if (row.querySelector(".buy")) {
-          row.querySelector(".buy").innerHTML = `
-            <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
-              <button style="background:#28a745; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
-                Buy
-              </button>
-            </a>`;
-        }
-
-        // Add remove button
-        if (row.querySelector(".cancel")) {
-          row.querySelector(".cancel").innerHTML = `
-            <button class="remove-from-builder" data-category="${category}"
-              style="background:none; border:none; font-size:30px; font-weight:bold; cursor:pointer; color:#ccc; line-height:1;">
-              &times;
-            </button>`;
-        }
-      }
-    });
-    calculateTotalPrice();
-  } */
-
   function updateRow(category, data) {
     const rows = document.querySelectorAll(".row");
     const isMobile = window.innerWidth <= 768; // Detect mobile screen
@@ -567,34 +466,55 @@ document.addEventListener("DOMContentLoaded", function () {
         const logoUrl = `${pcbuild_ajax_object.uploads_url}/2025/04/amazon-logo.png`;
 
         if (isMobile) {
-          // 📱 MOBILE VIEW (Stacked layout in 5 rows)
-          document.getElementById("row-th").style.display = "none";
+		  const specialCases = {
+			"cpu": "CPU",
+			"cpu cooler": "CPU Cooler"
+		  };
+
+		  const formattedCategory = specialCases[category.toLowerCase()] ||
+			category
+			  .split(" ")
+			  .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+			  .join(" ");
+
+		  document.getElementById("row-th").style.display = "none";
+		  document.getElementById("tab1").style.padding = "0";
+          // MOBILE VIEW (Stacked layout in 5 rows)
           row.innerHTML = `
-            <div class="componentName"><strong>${category}</strong></div>
-            <div class="selection">
-              <div style="display:flex; align-items:center; gap:12px;">
-                <img src="${image}" alt="${escapedTitle}" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
-                <div style="flex:1;"><strong style="font-size:14px;">${escapedTitle}</strong></div>
-              </div>
+          <div class="componentName" style="font-size:20px; margin-top: 10px; 20px; margin-bottom: 20px;"><strong>${formattedCategory}</strong></div>
+          <div class="selection" style="margin-bottom: 20px">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <img src="${image}" alt="${escapedTitle}" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+            <div style="flex:1;"><strong style="font-size:14px;">${escapedTitle}</strong></div>
+          </div>
+          </div>
+        
+          <div style="margin-right:18px" class="base"><span style="color: #CCC">Base</span><br>${base}</div>
+          <div style="margin-right:18px" style="gap:12px;" class="shipping"><span style="color: #CCC">Shipping</span><br>${shipping}</div>
+          <div style="margin-right:18px" class="availability"><span style="color: #CCC">Availability</span><br>${availability}</div>
+          <div style="margin-right:18px" class="price"><span style="color: #CCC">Price</span><br>${price}</div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 25px; margin-top: 10px; margin-bottom: 10px;">
+          <div class="where"><span style="color: #CCC">Where</span> <br>
+            <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+            <img src="${logoUrl}" alt="Buy on Amazon" style="width:80px; height:auto;" />
+            </a>
+          </div>
+          <div style="display: flex; gap: 25px;">
+            <div class="buy" style="display: flex; gap: 25px;">
+            <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+              <button style="background:#28a745; color:#fff; border:none; padding:6px 25px; border-radius:6px; cursor:pointer; height:36px;">Buy</button>
+            </a>
             </div>
-            <div class="base">Base: ${base}</div>
-            <div class="shipping">Shipping: ${shipping}</div>
-            <div class="availability">Availability: ${availability}</div>
-            <div class="price">Price: ${price}</div>
-            <div class="where">
-              <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
-                <img src="${logoUrl}" alt="Buy on Amazon" style="width:80px; height:auto;" />
-              </a>
+            <div class="cancel" style="display: flex; gap: 25px;">
+            <button class="remove-from-builder" data-category="${category}" style="background:none; border:1px solid #CCC; font-weight:bold; cursor:pointer; color:#ccc; border-radius:6px; padding:5px 10px; display:inline-flex; align-items:center; gap:5px; height:36px;">
+              <span style="font-size:20px; line-height:1;">&times;</span> Remove
+            </button>
             </div>
-            <div class="buy">
-              <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
-                <button style="background:#28a745; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Buy</button>
-              </a>
-            </div>
-            <div class="cancel">
-              <button class="remove-from-builder" data-category="${category}" style="background:none; border:none; font-size:30px; font-weight:bold; cursor:pointer; color:#ccc;">&times;</button>
-            </div>
-          `;
+          </div>
+          </div>
+        `;
+
         } else {
           // 🖥 DESKTOP VIEW (Horizontal row layout)
           if (row.querySelector(".selection")) {
@@ -679,13 +599,6 @@ document.addEventListener("DOMContentLoaded", function () {
       location.reload(); // Optional: Use more elegant UI clearing
     }
   });
-
-  // Close modal and clear content
- /*  window.closePartModal = function () {
-    partModal.style.display = "none";
-    modalOverlay.style.display = "none";
-    popupContent.innerHTML = '';
-  }; */
   
 });
 </script>

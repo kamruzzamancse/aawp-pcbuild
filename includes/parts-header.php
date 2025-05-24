@@ -1,5 +1,5 @@
-<header>
-        <nav>
+<header class="header">
+        <nav class="nav">
             <!-- ====small device menu===== -->
             <div class="smMenu">
                 <div class="hmburgMenu">

@@ -282,10 +282,6 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             $rating_count = display_rating_and_count($sellerRating, $sellerCount);
                         ?>
                         <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 16px">
-                           
-                            <td style="padding:10px; text-align:center;">
-                            <input type="checkbox" class="select-product" data-category="<?php echo esc_attr($category); ?>">
-                            </td>
                             <td style="font-weight:800; padding:10px; display:flex; align-items:center; gap:10px;" title="<?php echo $raw_title; ?>">
                                 <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>" style="width:125px; height:125px; object-fit:cover; border-radius:4px;" />
                                 <?php echo $title; ?>
@@ -356,15 +352,6 @@ function aawp_pcbuild_display_parts_cpu($atts) {
             max-height: 80vh; /* Adjust based on your layout */
             overflow-y: auto;
         }
-    }
-    #add_from_filter {
-        padding: 5px 18px;
-        background-color: #28a745;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        float: right;
     }
 </style>
 
@@ -1417,24 +1404,36 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 <script>
-// Searching logic
-document.addEventListener("DOMContentLoaded", function () {
-    const searchInput = document.getElementById("pcbuild-search");
-    const tableRows = document.querySelectorAll("#pcbuild-table tbody tr");
+    // Searching logic with zebra striping
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("pcbuild-search");
+        const tableRows = document.querySelectorAll("#pcbuild-table tbody tr");
 
-    searchInput.addEventListener("input", function () {
-        const query = this.value.toLowerCase().trim();
+        function applyZebraStriping() {
+            const visibleRows = Array.from(tableRows).filter(row => row.style.display !== "none");
+            visibleRows.forEach((row, index) => {
+                row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+            });
+        }
 
-        tableRows.forEach(row => {
-            const text = row.innerText.toLowerCase();
-            if (text.includes(query)) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
+        searchInput.addEventListener("input", function () {
+            const query = this.value.toLowerCase().trim();
+
+            tableRows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            applyZebraStriping();
         });
+
+        // Initial stripe in case all are visible initially
+        applyZebraStriping();
     });
-});
 </script>
     
     <?php
