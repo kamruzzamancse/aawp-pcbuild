@@ -51,16 +51,17 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts)
     </div>
     <div style="width:90%; margin:0 auto; font-family:sans-serif;">
         <div class="pcbuilder-container" style="display:flex; gap:20px; margin-top:20px">
+            
             <!-- Sidebar -->
 
             <button class="pcbuild-sidebar-toggle">Filters</button>
 
             <div class="pcbuild-sidebar pcbuild-sidebar-mobile" style="width:250px; background:#f9f9f9; padding:20px; border-radius:8px;">
-                <div style=" margin-bottom:20px;"><strong>Part</strong> | <strong>List</strong></div>
-            <div style="margin-bottom:20px;">
-                <div>PARTS: <strong id="parts_count"></strong></div>
-                <div>TOTAL: <strong id="parts_total_price"></strong></div>
-            </div>
+                <div style="margin-bottom:20px;"><strong>Part</strong> | <strong>List</strong></div>
+                <div style="margin-bottom:20px;">
+                    <div>PARTS: <strong id="parts_count"></strong></div>
+                    <div>TOTAL: <strong id="parts_total_price"></strong></div>
+                </div>
             <div class="filter-group">
                 <div class="filter-header">
                     <strong>PRICE</strong>
@@ -136,7 +137,6 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts)
             <div>
                 <input type="text" id="pcbuild-search" placeholder="Search..."
                     style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
-                <!-- <button class="add-from-filter">Add From Filter</button> -->
             </div>
         </div>
 
@@ -220,36 +220,36 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts)
                     <tr class="product-row" style="background-color: <?php echo $row_bg; ?>;" data-compatible-sockets="<?php echo esc_attr(implode(',', $compatible_sockets)); ?>">
                         <!-- Regular desktop view -->
                         <?php if(true): // Always show desktop version, it will be hidden via CSS on mobile ?>
-                        <td style="padding: 10px 0 10px 10px; width: 150px!important" title="<?php echo $raw_title; ?>">
-                            <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>" style="width:125px; height:125px; border-radius:4px;" />
-                        </td>
-                        <td style="font-weight:800;"><?php echo $title; ?></td>
-                        <td style="padding:10px;"><?php echo esc_html($fan_rpm); ?></td>
-                        <td style="padding:10px;"><?php echo esc_html($noise_level); ?></td>
-                        <td style="padding:10px;"><?php echo ($radiator !== '-') ? esc_html($radiator) . ' mm' : '-'; ?></td>
-                        <td style="padding:10px;" data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>">
-                            <?php echo $rating_count; ?>
-                        </td>
-                        <td style="padding:10px;"><?php echo esc_html($price); ?></td>
-                        <td style="padding:10px;">
-                            <button class="add-to-builder" data-asin="<?php echo esc_attr($asin); ?>"
-                                data-title="<?php echo esc_attr($full_title); ?>"
-                                data-image="<?php echo esc_url($image); ?>" 
-                                data-base="<?php echo esc_attr($base_price); ?>"
-                                data-shipping="FREE" 
-                                data-availability="<?php echo esc_attr($availability); ?>"
-                                data-price="<?php echo esc_attr($base_price); ?>"
-                                data-category="<?php echo esc_attr($category); ?>"
-                                data-affiliate-url="<?php echo esc_url($product_url); ?>"
-                                data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
-                                data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
-                                data-socket="<?php echo isset($socket) ? esc_attr($socket) : ''; ?>"
-                                data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
-                                data-color="<?php echo esc_attr($color); ?>"
-                                data-height="<?php echo esc_attr($height_mm); ?>">
-                                <?php _e('Add', 'aawp-pcbuild'); ?>
-                            </button>
-                        </td>
+                            <td style="padding: 10px 0 10px 10px; width: 150px!important" title="<?php echo $raw_title; ?>">
+                                <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>" style="width:125px; height:125px; border-radius:4px;" />
+                            </td>
+                            <td style="font-weight:800;"><?php echo $title; ?></td>
+                            <td style="padding:10px;"><?php echo esc_html($fan_rpm); ?></td>
+                            <td style="padding:10px;"><?php echo esc_html($noise_level); ?></td>
+                            <td style="padding:10px;"><?php echo ($radiator !== '-') ? esc_html($radiator) . ' mm' : '-'; ?></td>
+                            <td style="padding:10px;" data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>">
+                                <?php echo $rating_count; ?>
+                            </td>
+                            <td style="padding:10px;"><?php echo esc_html($price); ?></td>
+                            <td style="padding:10px;">
+                                <button class="add-to-builder" data-asin="<?php echo esc_attr($asin); ?>"
+                                    data-title="<?php echo esc_attr($full_title); ?>"
+                                    data-image="<?php echo esc_url($image); ?>" 
+                                    data-base="<?php echo esc_attr($base_price); ?>"
+                                    data-shipping="FREE" 
+                                    data-availability="<?php echo esc_attr($availability); ?>"
+                                    data-price="<?php echo esc_attr($base_price); ?>"
+                                    data-category="<?php echo esc_attr($category); ?>"
+                                    data-affiliate-url="<?php echo esc_url($product_url); ?>"
+                                    data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+                                    data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
+                                    data-socket="<?php echo isset($socket) ? esc_attr($socket) : ''; ?>"
+                                    data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
+                                    data-color="<?php echo esc_attr($color); ?>"
+                                    data-height="<?php echo esc_attr($height_mm); ?>">
+                                    <?php _e('Add', 'aawp-pcbuild'); ?>
+                                </button>
+                            </td>
                         <?php endif; ?>
                         
                         <!-- Mobile view structure - will be shown via CSS media queries -->
@@ -283,7 +283,8 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts)
                         <td class="price-action-row mobile-only" style="display:none;">
                             <div class="price"><?php echo esc_html($price); ?></div>
                             <div class="action-cell">
-                                <button class="add-to-builder" data-asin="<?php echo esc_attr($asin); ?>"
+                                <button class="add-to-builder" 
+                                    data-asin="<?php echo esc_attr($asin); ?>"
                                     data-title="<?php echo esc_attr($full_title); ?>"
                                     data-image="<?php echo esc_url($image); ?>" 
                                     data-base="<?php echo esc_attr($base_price); ?>"
@@ -1187,6 +1188,39 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts)
 </script>
 
 <script>
+    // Searching logic with zebra striping
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("pcbuild-search");
+        const tableRows = document.querySelectorAll("#pcbuild-table tbody tr");
+
+        function applyZebraStriping() {
+            const visibleRows = Array.from(tableRows).filter(row => row.style.display !== "none");
+            visibleRows.forEach((row, index) => {
+                row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+            });
+        }
+
+        searchInput.addEventListener("input", function () {
+            const query = this.value.toLowerCase().trim();
+
+            tableRows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            applyZebraStriping();
+        });
+
+        // Initial stripe in case all are visible initially
+        applyZebraStriping();
+    });
+</script>
+
+<script>
     // Filters toggle
     document.addEventListener('DOMContentLoaded', function () {
         const sidebarToggle = document.querySelector('.pcbuild-sidebar-toggle');
@@ -1269,39 +1303,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize mobile view setup
     setupMobileView();
 });
-</script>
-
-<script>
-    // Searching logic with zebra striping
-    document.addEventListener("DOMContentLoaded", function () {
-        const searchInput = document.getElementById("pcbuild-search");
-        const tableRows = document.querySelectorAll("#pcbuild-table tbody tr");
-
-        function applyZebraStriping() {
-            const visibleRows = Array.from(tableRows).filter(row => row.style.display !== "none");
-            visibleRows.forEach((row, index) => {
-                row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
-            });
-        }
-
-        searchInput.addEventListener("input", function () {
-            const query = this.value.toLowerCase().trim();
-
-            tableRows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                if (text.includes(query)) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-
-            applyZebraStriping();
-        });
-
-        // Initial stripe in case all are visible initially
-        applyZebraStriping();
-    });
 </script>
 
     <?php

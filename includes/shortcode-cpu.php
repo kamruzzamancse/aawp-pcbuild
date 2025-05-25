@@ -51,15 +51,17 @@ function aawp_pcbuild_display_parts_cpu($atts) {
     </div>
     <div style="width:90%; margin:0 auto; font-family:sans-serif;">
         <div class="pcbuilder-container" style="display:flex; gap:20px; margin-top:20px;">
+            
             <!-- Sidebar -->
-            <div class="pcbuild-sidebar" style="width:250px; background:#f9f9f9; padding:20px; border-radius:8px;">
+
+            <button class="pcbuild-sidebar-toggle">Filters</button>
+
+            <div class="pcbuild-sidebar pcbuild-sidebar-mobile" style="width:250px; background:#f9f9f9; padding:20px; border-radius:8px;">
                 <div style="margin-bottom:20px;"><strong>Part</strong> | <strong>List</strong></div>
-                <div style="margin-bottom:20px;"><label><input type="checkbox" checked disabled /> Compatibility Filter</label></div>
                 <div style="margin-bottom:20px;">
                     <div>PARTS: <strong id="parts_count"></strong></div>
                     <div>TOTAL: <strong id="parts_total_price"></strong></div>
                 </div>
-                <!-- <div style="margin-bottom:20px;">ESTIMATED WATTAGE: <strong style="color:#007bff;">120W</strong></div> -->
                 <div class="filter-group">
                     <div class="filter-header">
                         <strong>PRICE</strong>
@@ -159,30 +161,26 @@ function aawp_pcbuild_display_parts_cpu($atts) {
 
             </div>
 
-            <!-- Main Table Section -->
+            <!-- Main Section -->
             <div class="pcbuilder-main" style="flex:1;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div style="font-weight:bold;"><?php echo $total_items; ?> 
-                        Products <br><br>
-                        <a href="#" id="select_all">Select All</a>&nbsp;&nbsp;
-                        <a href="#" id="clear_selected" class="disabled">Select None</a>&nbsp;&nbsp;
-                        <a href="#" id="compare_selected" class="disabled">Compare Selected</a>
-                    </div>
+                    <div id="total_products" style="font-weight:bold;"><?php echo $total_items; ?> Products</div>
                     <div>
-                        <input type="text" id="pcbuild-search" placeholder="Search..." style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
-                        <a href="#" id="add_from_filter">Add From Filter</a>
-                    </div> 
+                        <input type="text" id="pcbuild-search" placeholder="Search..."
+                            style="padding:6px 10px; border-radius:6px; border:1px solid #ccc; margin-bottom: 15px" /><br>
+                    </div>
                 </div>
 
-                <table id="pcbuild-table" style="width:100%; border-collapse:collapse;">
-                    <thead style="background:#f0f0f0;">
+                <table id="pcbuild-table">
+                    <thead>
                         <tr>
-                            <th>&nbsp;</th>
-                            <th class="sortable-header" data-key="name">
-                                <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Name
-                                </span>
+                            <th data-key="image">
                             </th>
+                            <th class="sortable-header" data-key="name">
+                                <span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Name</span>
+                            </th>
+
+                      
                             <th class="sortable-header" data-key="core_count">
                                 <span class="sort-header-label">
                                     <span class="sort-arrow">&#9654;</span> Core Count
@@ -216,6 +214,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             <th style="padding:10px;">Action</th>
                         </tr>
                     </thead>
+
                     <?php include('rating-count.php'); ?>
                     <tbody>
                         <?php foreach ($display_items as $index => $item):
@@ -281,11 +280,17 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             $series = $series_match[0] ?? '-';
                             $rating_count = display_rating_and_count($sellerRating, $sellerCount);
                         ?>
-                        <tr style="background-color: <?php echo $row_bg; ?>; border-bottom:1px solid #DDD; font-size: 16px">
-                            <td style="font-weight:800; padding:10px; display:flex; align-items:center; gap:10px;" title="<?php echo $raw_title; ?>">
-                                <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>" style="width:125px; height:125px; object-fit:cover; border-radius:4px;" />
-                                <?php echo $title; ?>
+
+                    <!-- Mobile-responsive row structure to match the image exactly -->
+                    <tr class="product-row" style="background-color: <?php echo $row_bg; ?>">
+                        <!-- Regular desktop view -->
+                        <?php if(true): // Always show desktop version, it will be hidden via CSS on mobile ?>
+                            <td style="padding: 10px 0 10px 10px; width: 150px!important" title="<?php echo $raw_title; ?>">
+                                <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>" style="width:125px; height:125px; border-radius:4px;" />
                             </td>
+                            <td style="font-weight:800;"><?php echo $title; ?></td>
+
+
                             <td style="padding:10px;"><?php echo $core_count; ?></td>
                             <td style="padding:10px;"><?php echo $base_clock !== '-' ? $base_clock . ' GHz' : '-'; ?></td>
                             <td style="padding:10px;"><?php echo $boost_clock !== '-' ? $boost_clock . ' GHz' : '-'; ?></td>
@@ -315,45 +320,88 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                                     <?php _e('Add', 'aawp-pcbuild'); ?>
                                 </button>
                             </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        <?php endif; ?>
+                         
+                        <!-- Mobile view structure - will be shown via CSS media queries -->
+                        <td class="product-cell mobile-only" style="display:none;">
+                            <div class="image-container">
+                                <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>" class="product-image">
+                            </div>
+                            <div class="product-info">
+                                <div class="product-name"><?php echo $title; ?></div>
+                                <div class="star-rating"><span class="review-count"><?php echo $rating_count; ?></span></div>
+                    
+                                <!-- Specs container - exactly matching the image layout -->
+                                <div class="specs-container">
+                                    <div class="spec-group">
+                                        <div class="spec-label">Core Count</div>
+                                        <div class="spec-value"><?php echo esc_html($core_count); ?></div>
+                                    </div>
+                                    <div class="spec-group">
+                                        <div class="spec-label">Base Clock</div>
+                                        <div class="spec-value"><?php echo $base_clock !== '-' ? $base_clock . ' GHz' : '-'; ?></div>
+                                    </div>
+                                    <div class="spec-group">
+                                        <div class="spec-label">Boost Clock</div>
+                                        <div class="spec-value"><?php echo $boost_clock !== '-' ? $boost_clock . ' GHz' : '-'; ?></div>
+                                    </div>
+                                    <div class="spec-group">
+                                        <div class="spec-label">Microarchitecture</div>
+                                        <div class="spec-value"><?php echo esc_html($microarch); ?></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <!-- Price and Add button row for mobile -->
+                        <td class="price-action-row mobile-only" style="display:none;">
+                            <div class="price"><?php echo esc_html($price); ?></div>
+                            <div class="action-cell">
+                            <button class="add-to-builder"
+                                data-asin="<?php echo esc_attr($asin); ?>"
+                                data-title="<?php echo esc_attr($full_title); ?>"
+                                data-image="<?php echo esc_url($image); ?>"
+                                data-base="<?php echo esc_attr($base_price); ?>"
+                                data-shipping="FREE"
+                                data-availability="<?php echo esc_attr($availability ?? 'Unavailable'); ?>"
+                                data-price="<?php echo esc_attr($base_price); ?>"
+                                data-category="<?php echo esc_attr($category); ?>"
+                                data-affiliate-url="<?php echo esc_url($product_url ?? '#'); ?>"
+                                data-features="<?php echo esc_attr(is_array($features) ? implode(', ', $features) : ''); ?>"
+                                data-rating="<?php echo esc_attr($sellerRating ?? ''); ?>"
+                                data-socket="<?php echo esc_attr($socket ?? ''); ?>"
+                                data-manufacturer="<?php echo esc_attr($manufacturer ?? ''); ?>"
+                                data-chipset="<?php echo esc_attr($chipset ?? ''); ?>"
+                                data-series="<?php echo esc_attr($series ?? ''); ?>">
+                                <?php echo esc_html__('Add', 'aawp-pcbuild'); ?>
+                            </button>
 
-                <!-- Pagination UI -->
-                <?php if ($total_pages > 1): ?>
-                    <div style="margin-top: 20px; text-align: center;">
-                        <?php for ($i = 1; $i <= $total_pages; $i++):
-                            $url = add_query_arg('pcbuild_page', $i);
-                            $is_active = ($i === $current_page);
-                        ?>
-                            <a href="<?php echo esc_url($url); ?>"
-                                style="margin: 0 5px; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; text-decoration: none;
-                                <?php echo $is_active ? 'background-color: #007bff; color: white;' : 'color: #007bff;'; ?>">
-                                <?php echo $i; ?>
-                            </a>
-                        <?php endfor; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+
+            <!-- Pagination UI -->
+            <?php if ($total_pages > 1): ?>
+                <div style="margin-top: 20px; text-align: center;">
+                    <?php for ($i = 1; $i <= $total_pages; $i++):
+                        $url = add_query_arg('pcbuild_page', $i);
+                        $is_active = ($i === $current_page);
+                    ?>
+                        <a href="<?php echo esc_url($url); ?>"
+                            style="margin: 0 5px; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; text-decoration: none;
+                            <?php echo $is_active ? 'background-color: #007bff; color: white;' : 'color: #007bff;'; ?>">
+                            <?php echo $i; ?>
+                        </a>
+                    <?php endfor; ?>
+                </div>
+            <?php endif; ?>
+
         </div>
     </div>
-
-<style>
-    @media (max-width: 768px) {
-        .pcbuilder-container {
-            flex-direction: column;
-        }
-        .pcbuild-sidebar,
-        .pcbuilder-main {
-            width: 100% !important;
-        }
-        .pcbuilder-main {
-            max-height: 80vh; /* Adjust based on your layout */
-            overflow-y: auto;
-        }
-    }
-</style>
+</div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -1434,6 +1482,91 @@ document.addEventListener("DOMContentLoaded", function () {
         // Initial stripe in case all are visible initially
         applyZebraStriping();
     });
+</script>
+
+<script>
+    // Filters toggle
+    document.addEventListener('DOMContentLoaded', function () {
+        const sidebarToggle = document.querySelector('.pcbuild-sidebar-toggle');
+        const sidebar = document.querySelector('.pcbuild-sidebar-mobile');
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+
+            document.removeEventListener('click', handleOutsideClick);
+        }
+
+        function handleOutsideClick(event) {
+            if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                closeSidebar();
+            }
+        }
+
+        sidebarToggle.addEventListener('click', function (event) {
+            event.stopPropagation();
+            if (sidebar.classList.contains('open')) {
+                
+                closeSidebar();
+
+            } else {
+                // before open i want to hide the sidebar
+                sidebar.classList.add('open');
+                setTimeout(() => {
+                    document.addEventListener('click', handleOutsideClick);
+                }, 0);
+            }
+        });
+
+        sidebar.addEventListener('click', function (event) {
+            event.stopPropagation();
+        });
+    });
+</script>
+
+<!-- Add this JavaScript to transform the table for mobile views -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function setupMobileView() {
+        // Get all product rows
+        const rows = document.querySelectorAll('#pcbuild-table tbody tr');
+        
+        // Function to check if we're on mobile
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+        
+        // Function to set up the correct view
+        function updateView() {
+            const mobile = isMobile();
+            
+            // Show/hide appropriate elements based on view
+            document.querySelectorAll('.mobile-only').forEach(el => {
+                el.style.display = mobile ? 'flex' : 'none';
+            });
+            
+            // Handle the desktop view elements
+            const desktopCells = document.querySelectorAll('#pcbuild-table tr > td:not(.mobile-only)');
+            desktopCells.forEach(cell => {
+                cell.style.display = mobile ? 'none' : '';
+            });
+            
+            // Show/hide thead based on view
+            const thead = document.querySelector('#pcbuild-table thead');
+            if (thead) {
+                thead.style.display = mobile ? 'none' : '';
+            }
+        }
+        
+        // Set initial view
+        updateView();
+        
+        // Update view on resize
+        window.addEventListener('resize', updateView);
+    }
+    
+    // Initialize mobile view setup
+    setupMobileView();
+});
 </script>
     
     <?php
