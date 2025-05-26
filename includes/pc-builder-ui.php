@@ -290,6 +290,57 @@ function pcbuild_render_ui_shortcode() {
       </div>
   </section>
 
+<style>
+  @media screen and (max-width: 900px) {
+  .row {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    border-bottom: 1px solid #444;
+  }
+
+  .row .card {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .row .selection,
+  .row .base,
+  .row .shipping,
+  .row .availability,
+  .row .price,
+  .row .where,
+  .row .buy,
+  .row .cancel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  #row-th {
+    display: none !important;
+  }
+
+  .componentName {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  .selection img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-right: 12px;
+  }
+
+  .selection strong {
+    font-size: 14px;
+  }
+}
+</style>
+
 <style>	
 	@media (max-width: 768px) {
 		#row-th {
@@ -444,7 +495,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  function updateRow(category, data) {
+  /* function updateRow(category, data) {
     const rows = document.querySelectorAll(".row");
     const isMobile = window.innerWidth <= 768; // Detect mobile screen
 
@@ -551,6 +602,121 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         }
       }
+    });
+
+    calculateTotalPrice();
+} */
+
+function updateRow(category, data) {
+    const rows = document.querySelectorAll(".row");
+
+    // Updated mobile detection to support landscape
+    const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent) || (window.innerWidth <= 900 && window.innerHeight <= 500);
+
+    rows.forEach(row => {
+        const categorySpan = row.querySelector(".componentName");
+        if (categorySpan && categorySpan.textContent.trim().toLowerCase() === category.toLowerCase()) {
+
+            const base = data.base || '';
+            const shipping = data.shipping || '';
+            const availability = data.availability || '';
+            const price = data.price || '';
+            const affiliateUrl = data.affiliateUrl || '#';
+            const title = data.title || '';
+            const image = data.image || '';
+
+            const truncatedTitle = title.length > 70 ? title.slice(0, 70) + "..." : title;
+            const escapedTitle = truncatedTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+            const logoUrl = `${pcbuild_ajax_object.uploads_url}/2025/04/amazon-logo.png`;
+
+            if (isMobile) {
+                const specialCases = {
+                    "cpu": "CPU",
+                    "cpu cooler": "CPU Cooler"
+                };
+
+                const formattedCategory = specialCases[category.toLowerCase()] ||
+                    category
+                        .split(" ")
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                        .join(" ");
+
+                document.getElementById("row-th").style.display = "none";
+                document.getElementById("tab1").style.padding = "0";
+
+                // MOBILE LAYOUT
+                row.innerHTML = `
+                <div class="componentName" style="font-size:20px; margin-top: 10px; 20px; margin-bottom: 20px;"><strong>${formattedCategory}</strong></div>
+                <div class="selection" style="margin-bottom: 20px">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <img src="${image}" alt="${escapedTitle}" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+                        <div style="flex:1;"><strong style="font-size:14px;">${escapedTitle}</strong></div>
+                    </div>
+                </div>
+
+                <div style="margin-right:18px" class="base"><span style="color: #CCC">Base</span><br>${base}</div>
+                <div style="margin-right:18px" style="gap:12px;" class="shipping"><span style="color: #CCC">Shipping</span><br>${shipping}</div>
+                <div style="margin-right:18px" class="availability"><span style="color: #CCC">Availability</span><br>${availability}</div>
+                <div style="margin-right:18px" class="price"><span style="color: #CCC">Price</span><br>${price}</div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 25px; margin-top: 10px; margin-bottom: 10px;">
+                    <div class="where"><span style="color: #CCC">Where</span> <br>
+                        <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+                        <img src="${logoUrl}" alt="Buy on Amazon" style="width:80px; height:auto;" />
+                        </a>
+                    </div>
+                    <div style="display: flex; gap: 25px;">
+                        <div class="buy" style="display: flex; gap: 25px;">
+                        <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+                            <button style="background:#28a745; color:#fff; border:none; padding:6px 25px; border-radius:6px; cursor:pointer; height:36px;">Buy</button>
+                        </a>
+                        </div>
+                        <div class="cancel" style="display: flex; gap: 25px;">
+                        <button class="remove-from-builder" data-category="${category}" style="background:none; border:1px solid #CCC; font-weight:bold; cursor:pointer; color:#ccc; border-radius:6px; padding:5px 10px; display:inline-flex; align-items:center; gap:5px; height:36px;">
+                            <span style="font-size:20px; line-height:1;">&times;</span> Remove
+                        </button>
+                        </div>
+                    </div>
+                </div>
+                `;
+
+            } else {
+                // DESKTOP LAYOUT
+                if (row.querySelector(".selection")) {
+                    row.querySelector(".selection").innerHTML = `
+                        <div class="product-selected" style="display: flex; align-items: center; gap: 12px;">
+                            <img src="${image}" alt="${escapedTitle}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
+                            <div style="flex: 1;"><strong style="font-size: 14px; display: block;">${escapedTitle}</strong></div>
+                        </div>`;
+                }
+
+                if (row.querySelector(".base")) row.querySelector(".base").textContent = base;
+                if (row.querySelector(".shipping")) row.querySelector(".shipping").textContent = shipping;
+                if (row.querySelector(".availability")) row.querySelector(".availability").textContent = availability;
+                if (row.querySelector(".price")) row.querySelector(".price").textContent = price;
+
+                if (row.querySelector(".where")) {
+                    row.querySelector(".where").innerHTML = `
+                        <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+                            <img src="${logoUrl}" alt="Buy on Amazon" style="width:80px; height:auto;" />
+                        </a>`;
+                }
+
+                if (row.querySelector(".buy")) {
+                    row.querySelector(".buy").innerHTML = `
+                        <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+                            <button style="background:#28a745; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Buy</button>
+                        </a>`;
+                }
+
+                if (row.querySelector(".cancel")) {
+                    row.querySelector(".cancel").innerHTML = `
+                        <button class="remove-from-builder" data-category="${category}"
+                            style="background:none; border:none; font-size:30px; font-weight:bold; cursor:pointer; color:#ccc;">&times;</button>`;
+                }
+            }
+        }
     });
 
     calculateTotalPrice();

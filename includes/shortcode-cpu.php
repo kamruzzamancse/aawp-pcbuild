@@ -178,9 +178,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             </th>
                             <th class="sortable-header" data-key="name">
                                 <span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Name</span>
-                            </th>
-
-                      
+                            </th>                      
                             <th class="sortable-header" data-key="core_count">
                                 <span class="sort-header-label">
                                     <span class="sort-arrow">&#9654;</span> Core Count
@@ -289,8 +287,6 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                                 <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>" style="width:125px; height:125px; border-radius:4px;" />
                             </td>
                             <td style="font-weight:800;"><?php echo $title; ?></td>
-
-
                             <td style="padding:10px;"><?php echo $core_count; ?></td>
                             <td style="padding:10px;"><?php echo $base_clock !== '-' ? $base_clock . ' GHz' : '-'; ?></td>
                             <td style="padding:10px;"><?php echo $boost_clock !== '-' ? $boost_clock . ' GHz' : '-'; ?></td>
@@ -303,9 +299,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                                     data-title="<?php echo esc_attr($full_title); ?>"
                                     data-image="<?php echo esc_url($image); ?>"
                                     data-base="<?php echo esc_attr($base_price); ?>"
-                                    data-promo=""
                                     data-shipping="FREE"
-                                    data-tax=""
                                     data-availability="<?php echo esc_attr($availability); ?>"
                                     data-price="<?php echo esc_attr($base_price); ?>"
                                     data-category="<?php echo esc_attr($category); ?>"
@@ -314,6 +308,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                                     data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
                                     data-socket="<?php echo isset($socket) ? esc_attr($socket) : ''; ?>"
                                     data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
+                                    data-microarchitecture="<?php echo esc_attr($microarch); ?>"
                                     data-chipset="<?php echo isset($chipset) ? esc_attr($chipset) : ''; ?>"
                                     data-series="<?php echo isset($series) ? esc_attr($series) : ''; ?>"
                                     style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
@@ -357,25 +352,25 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                         <td class="price-action-row mobile-only" style="display:none;">
                             <div class="price"><?php echo esc_html($price); ?></div>
                             <div class="action-cell">
-                            <button class="add-to-builder"
-                                data-asin="<?php echo esc_attr($asin); ?>"
-                                data-title="<?php echo esc_attr($full_title); ?>"
-                                data-image="<?php echo esc_url($image); ?>"
-                                data-base="<?php echo esc_attr($base_price); ?>"
-                                data-shipping="FREE"
-                                data-availability="<?php echo esc_attr($availability ?? 'Unavailable'); ?>"
-                                data-price="<?php echo esc_attr($base_price); ?>"
-                                data-category="<?php echo esc_attr($category); ?>"
-                                data-affiliate-url="<?php echo esc_url($product_url ?? '#'); ?>"
-                                data-features="<?php echo esc_attr(is_array($features) ? implode(', ', $features) : ''); ?>"
-                                data-rating="<?php echo esc_attr($sellerRating ?? ''); ?>"
-                                data-socket="<?php echo esc_attr($socket ?? ''); ?>"
-                                data-manufacturer="<?php echo esc_attr($manufacturer ?? ''); ?>"
-                                data-chipset="<?php echo esc_attr($chipset ?? ''); ?>"
-                                data-series="<?php echo esc_attr($series ?? ''); ?>">
-                                <?php echo esc_html__('Add', 'aawp-pcbuild'); ?>
-                            </button>
-
+                                <button class="add-to-builder"
+                                    data-asin="<?php echo esc_attr($asin); ?>"
+                                    data-title="<?php echo esc_attr($full_title); ?>"
+                                    data-image="<?php echo esc_url($image); ?>"
+                                    data-base="<?php echo esc_attr($base_price); ?>"
+                                    data-shipping="FREE"
+                                    data-availability="<?php echo esc_attr($availability); ?>"
+                                    data-price="<?php echo esc_attr($base_price); ?>"
+                                    data-category="<?php echo esc_attr($category); ?>"
+                                    data-affiliate-url="<?php echo esc_url($product_url); ?>"
+                                    data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+                                    data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
+                                    data-socket="<?php echo isset($socket) ? esc_attr($socket) : ''; ?>"
+                                    data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
+                                    data-microarchitecture="<?php echo esc_attr($microarch); ?>"
+                                    data-chipset="<?php echo isset($chipset) ? esc_attr($chipset) : ''; ?>"
+                                    data-series="<?php echo isset($series) ? esc_attr($series) : ''; ?>">
+                                    <?php echo esc_html__('Add', 'aawp-pcbuild'); ?>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -522,7 +517,6 @@ document.addEventListener("DOMContentLoaded", function () {
     applyRatingFilter(); // Initial run
 });
 </script>
-
 
 <script>
     // Manufacturer filtering
@@ -879,109 +873,110 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 <script>
-    // microarchitecture filtering with zebra striping and "All" checkbox functionality + show more/less
-    document.addEventListener("DOMContentLoaded", function () {
-        const table = document.getElementById("pcbuild-table");
-        const filterContainer = document.getElementById("microarchitecture-filter");
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("microarchitecture-filter");
+    const microSet = new Set();
 
-        if (!table || !filterContainer) return;
+    const VISIBLE_COUNT = 4; // How many to show initially
+    let expanded = false;
 
-        const rows = Array.from(table.querySelectorAll("tbody tr"));
-        const microSet = new Set();
-        const VISIBLE_COUNT = 4;
-        let expanded = false;
-
-        // Collect all unique microarchitectures
-        rows.forEach(row => {
-            const microText = row.querySelector("td:nth-child(5)")?.textContent.trim();
-            if (microText) microSet.add(microText);
-        });
-
-        const microList = Array.from(microSet).sort();
-        const checkboxElements = [];
-
-        // Create "All" checkbox
-        const allCheckboxWrapper = document.createElement("label");
-        allCheckboxWrapper.style.display = "block";
-        allCheckboxWrapper.innerHTML = `
-            <input type="checkbox" class="micro-checkbox" value="all" checked>
-            All
-        `;
-        filterContainer.appendChild(allCheckboxWrapper);
-
-        // Create individual checkboxes
-        microList.forEach((micro, index) => {
-            const label = document.createElement("label");
-            label.style.display = index >= VISIBLE_COUNT ? "none" : "block";
-            label.innerHTML = `
-                <input type="checkbox" class="micro-checkbox" value="${micro}" checked>
-                ${micro}
-            `;
-            filterContainer.appendChild(label);
-            checkboxElements.push(label);
-        });
-
-        // Show more / Show less toggle link
-        const toggleLink = document.createElement("a");
-        toggleLink.href = "#";
-        toggleLink.textContent = "Show more";
-        toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
-        toggleLink.style.marginTop = "5px";
-        toggleLink.style.fontSize = "14px";
-        toggleLink.style.color = "#0066cc";
-        filterContainer.appendChild(toggleLink);
-
-        toggleLink.addEventListener("click", function (e) {
-            e.preventDefault();
-            expanded = !expanded;
-            checkboxElements.forEach((el, index) => {
-                el.style.display = (index >= VISIBLE_COUNT) ? (expanded ? "block" : "none") : "block";
-            });
-            toggleLink.textContent = expanded ? "Show less" : "Show more";
-        });
-
-        const checkboxes = () => filterContainer.querySelectorAll(".micro-checkbox");
-        const allCheckbox = () => filterContainer.querySelector(".micro-checkbox[value='all']");
-
-        function zebraStripe() {
-            const visibleRows = rows.filter(row => row.style.display !== "none");
-            visibleRows.forEach((row, index) => {
-                row.style.backgroundColor = index % 2 === 0 ? '#d4d4d4' : '#ebebeb';
-            });
-        }
-
-        function filterByMicro() {
-            const selected = Array.from(checkboxes())
-                .filter(cb => cb.checked && cb.value !== "all")
-                .map(cb => cb.value);
-
-            if (allCheckbox().checked || selected.length === 0) {
-                rows.forEach(row => row.style.display = "");
-            } else {
-                rows.forEach(row => {
-                    const microText = row.querySelector("td:nth-child(5)")?.textContent.trim();
-                    row.style.display = selected.includes(microText) ? "" : "none";
-                });
-            }
-
-            zebraStripe();
-        }
-
-        filterContainer.addEventListener("change", function (e) {
-            const target = e.target;
-
-            if (target.value === "all") {
-                checkboxes().forEach(cb => cb.checked = true);
-            } else {
-                allCheckbox().checked = false;
-            }
-
-            filterByMicro();
-        });
-
-        filterByMicro();
-        zebraStripe();
+    // Collect unique microarchitectures
+    tableRows.forEach(row => {
+        const micro = row.querySelector("td:nth-child(6)")?.textContent.trim();
+        if (micro) microSet.add(micro);
     });
+
+    const micros = Array.from(microSet).sort();
+    const checkboxElements = [];
+
+    // Create "All" checkbox
+    const allLabel = document.createElement("label");
+    allLabel.innerHTML = `<input type="checkbox" class="micro-checkbox" value="all" checked> All`;
+    allLabel.style.display = "block";
+    filterContainer.appendChild(allLabel);
+
+    // Create microarchitecture checkboxes
+    micros.forEach((micro, index) => {
+        const label = document.createElement("label");
+        label.innerHTML = `<input type="checkbox" class="micro-checkbox" value="${micro}" checked> ${micro}`;
+        label.style.display = index >= VISIBLE_COUNT ? "none" : "block";
+        filterContainer.appendChild(label);
+        checkboxElements.push(label);
+    });
+
+    // Show more/less toggle
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+        checkboxElements.forEach((el, index) => {
+            el.style.display = index >= VISIBLE_COUNT ? (expanded ? "block" : "none") : "block";
+        });
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Helpers
+    const checkboxes = () => filterContainer.querySelectorAll(".micro-checkbox");
+    const allCheckbox = () => filterContainer.querySelector(".micro-checkbox[value='all']");
+
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function applyMicroFilter() {
+        const selected = Array.from(checkboxes())
+            .filter(cb => cb.checked && cb.value !== "all")
+            .map(cb => cb.value);
+
+        if (allCheckbox().checked || selected.length === 0) {
+            tableRows.forEach(row => row.style.display = "");
+        } else {
+            tableRows.forEach(row => {
+                const micro = row.querySelector("td:nth-child(6)")?.textContent.trim();
+                row.style.display = selected.includes(micro) ? "" : "none";
+            });
+        }
+
+        applyZebraStriping();
+    }
+
+    // Handle checkbox changes
+    filterContainer.addEventListener("change", function (e) {
+        const target = e.target;
+
+        const allBox = allCheckbox();
+        const allBoxes = Array.from(checkboxes());
+        const individualBoxes = allBoxes.filter(cb => cb.value !== "all");
+
+        if (target.value === "all") {
+            // Master switch logic
+            const checked = target.checked;
+            individualBoxes.forEach(cb => cb.checked = checked);
+        } else {
+            // Individual toggles remove "All" if any is unchecked
+            allBox.checked = individualBoxes.every(cb => cb.checked);
+        }
+
+        applyMicroFilter();
+    });
+
+
+    // Initial filter
+    applyMicroFilter();
+});
 </script>
 
 

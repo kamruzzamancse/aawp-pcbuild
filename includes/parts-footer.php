@@ -3,7 +3,7 @@
     <footer id="footer">
         <div class="footer-warper">
             <div class="footer-logo">
-                <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/image/logo2 _finalsava (1).png" alt="">
+                <img src="<?php echo get_stylesheet_directory_uri(); ?>/assets/image/logo2 _finalsava (1).png" alt="PC Build Parts Logo" width="100" height="60">
             </div>
             <div class="footer-contact">
                 <address class="address">
