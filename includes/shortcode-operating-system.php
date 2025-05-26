@@ -624,10 +624,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getColumnIndex(key) {
         const mapping = {
-            name: 1,
-            mode: 2,
-            rating: 3,
-            price: 4
+            name: 2,
+            mode: 3,
+            rating: 4,
+            price: 5
         };
         return mapping[key];
     }

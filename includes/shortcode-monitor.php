@@ -1128,14 +1128,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSort = { key: null, direction: 'asc' };
 
     const columnMap = {
-        'name': 1,
-        'screen-size': 2,
-        'resolution': 3,
-        'refresh-rate': 4,
-        'panel-type': 5,
-        'aspect-ratio': 6,
-        'rating': 7,
-        'price': 8
+        'name': 2,
+        'screen-size': 3,
+        'resolution': 4,
+        'refresh-rate': 5,
+        'panel-type': 6,
+        'aspect-ratio': 7,
+        'rating': 8,
+        'price': 9
     };
 
     headers.forEach(header => {

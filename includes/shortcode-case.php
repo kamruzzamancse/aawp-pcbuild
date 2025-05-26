@@ -1117,13 +1117,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         function getColumnIndex(key) {
             const mapping = {
-                name: 1,
-                type: 2,
-                color: 3,
-                power_supply: 4,
-                side_panel: 5,
-                rating: 6,
-                price: 7
+                name: 2,
+                type: 3,
+                color: 4,
+                power_supply: 5,
+                side_panel: 6,
+                rating: 7,
+                price: 8
                 // Column 8 (Action) is not sortable
             };
             return mapping[key];

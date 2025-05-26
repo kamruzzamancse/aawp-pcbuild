@@ -1100,15 +1100,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
         function getColumnIndex(key) {
             const mapping = {
-                name: 1,
-                capacity: 2,
-                price_per_gb: 3,
-                type: 4,
-                cache: 5,
-                form_factor: 6,
-                interface: 7,
-                rating: 8,
-                price: 9
+                name: 2,
+                capacity: 3,
+                price_per_gb: 4,
+                type: 5,
+                cache: 6,
+                form_factor: 7,
+                interface: 8,
+                rating: 9,
+                price: 10
                 // Note: Column 10 is 'Action' (Add to Builder), not sortable
             };
             return mapping[key];

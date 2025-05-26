@@ -169,67 +169,6 @@ function aawp_pcbuild_get_search_index($category) {
     ];
 }
 
-/* function aawp_pcbuild_get_search_index($category) {
-    $category = strtolower($category);
-
-    $mapping = [
-        'cpu'              => 'Computers',
-        'cpu cooler'       => 'Computers',
-        'motherboard'      => 'Computers',
-        'memory'           => 'Computers',
-        'ram'              => 'Computers',
-        'storage'          => 'Computers',
-        'video card'       => 'Computers',
-        'gpu'              => 'Computers',
-        'case'             => 'Computers',
-        'pc-case'          => 'Computers',
-        'power supply'     => 'Computers',
-        'operating system' => 'Software',
-        'monitor'          => 'Electronics',
-        'keyboard'         => 'Electronics',
-        'mouse'            => 'Electronics',
-    ];
-
-    switch ($category) {
-        case 'case':
-        case 'pc-case':
-            $keywords = 'ATX computer case RGB';
-            break;
-        case 'storage':
-            $keywords = 'Internal SSD M.2 NVMe';
-            break;
-        case 'memory':
-        case 'ram':
-            $keywords = 'DDR4 RAM 3200MHz';
-            break;
-        case 'video card':
-        case 'gpu':
-            $keywords = 'GeForce RTX 3060';
-            break;
-        case 'cpu cooler':
-            $keywords = 'CPU cooler fan heatsink';
-            break;
-        case 'motherboard':
-            $keywords = 'ATX motherboard LGA1700';
-            break;
-        case 'power supply':
-            $keywords = 'ATX PSU 650W 80 Plus';
-            break;
-        case 'operating system':
-            $keywords = 'Windows 11 Home OEM';
-            break;
-        default:
-            $keywords = $category;
-            break;
-    }
-
-    return [
-        'search_index' => $mapping[$category] ?? 'Electronics',
-        'keywords'     => $keywords,
-    ];
-} */
-
-
 function getSignatureKey($key, $dateStamp, $regionName, $serviceName) {
     $kSecret  = 'AWS4' . $key;
     $kDate    = hash_hmac('sha256', $dateStamp, $kSecret, true);

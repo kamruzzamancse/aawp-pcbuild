@@ -1160,14 +1160,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
         function getColumnIndex(key) {
             const mapping = {
-                name: 1,
-                socket: 2,
-                form_factor: 3,
-                memory_max: 4,
-                memory_slots: 5,
-                color: 6,
-                rating: 7,
-                price: 8
+                name: 2,
+                socket: 3,
+                form_factor: 4,
+                memory_max: 5,
+                memory_slots: 6,
+                color: 7,
+                rating: 8,
+                price: 9
             };
             return mapping[key];
         }

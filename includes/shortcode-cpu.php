@@ -225,7 +225,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
                             $raw_image = esc_url($image);
                             $price = $item['Offers']['Listings'][0]['Price']['DisplayAmount'] ?? 'N/A';
                             $base_price = $price;
-                            $availability = $item['Offers']['Listings'][0]['Availability']['Message'] ?? 'In Stock';
+                            $availability = $item['Offers']['Listings'][0]['Availability']['Message'] ?? '—';
                             $product_url = $item['DetailPageURL'] ?? '#';
                             $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
                             $features_string = implode(' ', $features);

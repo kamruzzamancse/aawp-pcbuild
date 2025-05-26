@@ -1019,14 +1019,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getColumnIndex(key) {
         const mapping = {
-            name: 1,
-            type_speed: 2,
-            modules: 3,
-            price_per_gb: 4,
-            color: 5,
-            cas_latency: 6,
-            rating: 7,
-            price: 8
+            name: 2,
+            type_speed: 3,
+            modules: 4,
+            price_per_gb: 5,
+            color: 6,
+            cas_latency: 7,
+            rating: 8,
+            price: 9
         };
         return mapping[key];
     }
