@@ -33,7 +33,7 @@ function aawp_pcbuild_get_products($category) {
 
     $search_data = aawp_pcbuild_get_search_index($category);
     $all_items = [];
-    $max_pages = 50; // 10 items per page, 5 pages = 50 items
+    $max_pages = 10;
 
     for ($page = 1; $page <= $max_pages; $page++) {
         $request_payload = [
