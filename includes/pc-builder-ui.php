@@ -289,7 +289,6 @@ function pcbuild_render_ui_shortcode() {
 
       </div>
   </section>
-
 <style>
   @media screen and (max-width: 900px) {
   .row {
@@ -495,232 +494,135 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  /* function updateRow(category, data) {
-    const rows = document.querySelectorAll(".row");
-    const isMobile = window.innerWidth <= 768; // Detect mobile screen
+  function updateRow(category, data) {
+  const rows = document.querySelectorAll(".row");
 
-    rows.forEach(row => {
-      const categorySpan = row.querySelector(".componentName");
-      if (categorySpan && categorySpan.textContent.trim().toLowerCase() === category.toLowerCase()) {
+  // Improved mobile detection with landscape support
+  const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent) ||
+    (window.innerWidth <= 900 && window.innerHeight <= 500) ||
+    (screen.orientation && screen.orientation.type.includes("landscape") && window.innerHeight < 500);
 
-        const base = data.base || '';
-        const shipping = data.shipping || '';
-        const availability = data.availability || '';
-        const price = data.price || '';
-        const affiliateUrl = data.affiliateUrl || '#';
-        const title = data.title || '';
-        const image = data.image || '';
+  rows.forEach(row => {
+    const categorySpan = row.querySelector(".componentName");
+    if (categorySpan && categorySpan.textContent.trim().toLowerCase() === category.toLowerCase()) {
 
-        const truncatedTitle = title.length > 70 ? title.slice(0, 70) + "..." : title;
-        const escapedTitle = truncatedTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const base = data.base || '';
+      const shipping = data.shipping || '';
+      const availability = data.availability || '';
+      const price = data.price || '';
+      const affiliateUrl = data.affiliateUrl || '#';
+      const title = data.title || '';
+      const image = data.image || '';
 
-        const logoUrl = `${pcbuild_ajax_object.uploads_url}/2025/04/amazon-logo.png`;
+      const truncatedTitle = title.length > 70 ? title.slice(0, 70) + "..." : title;
+      const escapedTitle = truncatedTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-        if (isMobile) {
-		  const specialCases = {
+      const logoUrl = `${pcbuild_ajax_object.uploads_url}/2025/04/amazon-logo.png`;
+
+      if (isMobile) {
+		const specialCases = {
 			"cpu": "CPU",
 			"cpu cooler": "CPU Cooler"
-		  };
+		};
 
-		  const formattedCategory = specialCases[category.toLowerCase()] ||
+		const formattedCategory = specialCases[category.toLowerCase()] ||
 			category
-			  .split(" ")
-			  .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-			  .join(" ");
+				.split(" ")
+				.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+				.join(" ");
 
-		  document.getElementById("row-th").style.display = "none";
-		  document.getElementById("tab1").style.padding = "0";
-          // MOBILE VIEW (Stacked layout in 5 rows)
-          row.innerHTML = `
-          <div class="componentName" style="font-size:20px; margin-top: 10px; 20px; margin-bottom: 20px;"><strong>${formattedCategory}</strong></div>
-          <div class="selection" style="margin-bottom: 20px">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <img src="${image}" alt="${escapedTitle}" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
-            <div style="flex:1;"><strong style="font-size:14px;">${escapedTitle}</strong></div>
-          </div>
-          </div>
-        
-          <div style="margin-right:18px" class="base"><span style="color: #CCC">Base</span><br>${base}</div>
-          <div style="margin-right:18px" style="gap:12px;" class="shipping"><span style="color: #CCC">Shipping</span><br>${shipping}</div>
-          <div style="margin-right:18px" class="availability"><span style="color: #CCC">Availability</span><br>${availability}</div>
-          <div style="margin-right:18px" class="price"><span style="color: #CCC">Price</span><br>${price}</div>
+		document.getElementById("row-th").style.display = "none";
+		document.getElementById("tab1").style.padding = "0";
 
-          <div style="display: flex; justify-content: space-between; align-items: center; gap: 25px; margin-top: 10px; margin-bottom: 10px;">
-          <div class="where"><span style="color: #CCC">Where</span> <br>
+		// MOBILE LAYOUT: Each label-value in its own row, label left, value right
+		row.innerHTML = `
+		<div class="componentName" style="font-size:20px; margin-top: 10px; margin-bottom: 20px;">
+		  <strong>${formattedCategory}</strong>
+		</div>
+
+		<div class="selection" style="margin-bottom: 20px;">
+		  <div style="display:flex; align-items:center; gap:12px;">
+			<img src="${image}" alt="${escapedTitle}" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+			<div style="flex:1;"><strong style="font-size:14px;">${escapedTitle}</strong></div>
+		  </div>
+		</div>
+
+		<div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+		  <span style="color: #CCC;">Base</span>
+		  <span>${base}</span>
+		</div>
+		<div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+		  <span style="color: #CCC;">Shipping</span>
+		  <span>${shipping}</span>
+		</div>
+		<div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+		  <span style="color: #CCC;">Availability</span>
+		  <span>${availability}</span>
+		</div>
+		<div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+		  <span style="color: #CCC;">Price</span>
+		  <span>${price}</span>
+		</div>
+		<div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+		  <span style="color: #CCC;">Where</span>
+		  <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener" style="display: inline-flex; align-items: center;">
+			<img src="${logoUrl}" alt="Buy on Amazon" style="width:80px; height:auto;" />
+		  </a>
+		</div>
+		<div style="display: flex; justify-content: space-between; margin-top: 10px; margin-bottom: 10px;">
+		  <div class="buy" style="flex: 1;">
+			<a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
+			  <button style="background:#28a745; color:#fff; border:none; padding:6px 25px; border-radius:6px; cursor:pointer; height:36px; width: 100%;">Buy</button>
+			</a>
+		  </div>
+		  <div class="cancel" style="flex: 1; margin-left: 10px;">
+			<button class="remove-from-builder" data-category="${category}" style="background:none; border:1px solid #CCC; font-weight:bold; cursor:pointer; color:#ccc; border-radius:6px; padding:5px 10px; height:36px; width: 100%;">
+			  <span style="font-size:20px; line-height:1;">&times;</span> Remove
+			</button>
+		  </div>
+		</div>
+		`;
+	} else {
+        // DESKTOP LAYOUT
+        if (row.querySelector(".selection")) {
+          row.querySelector(".selection").innerHTML = `
+            <div class="product-selected" style="display: flex; align-items: center; gap: 12px;">
+              <img src="${image}" alt="${escapedTitle}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
+              <div style="flex: 1;"><strong style="font-size: 14px; display: block;">${escapedTitle}</strong></div>
+            </div>`;
+        }
+
+        if (row.querySelector(".base")) row.querySelector(".base").textContent = base;
+        if (row.querySelector(".shipping")) row.querySelector(".shipping").textContent = shipping;
+        if (row.querySelector(".availability")) row.querySelector(".availability").textContent = availability;
+        if (row.querySelector(".price")) row.querySelector(".price").textContent = price;
+
+        if (row.querySelector(".where")) {
+          row.querySelector(".where").innerHTML = `
             <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
-            <img src="${logoUrl}" alt="Buy on Amazon" style="width:80px; height:auto;" />
-            </a>
-          </div>
-          <div style="display: flex; gap: 25px;">
-            <div class="buy" style="display: flex; gap: 25px;">
+              <img src="${logoUrl}" alt="Buy on Amazon" style="width:80px; height:auto;" />
+            </a>`;
+        }
+
+        if (row.querySelector(".buy")) {
+          row.querySelector(".buy").innerHTML = `
             <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
-              <button style="background:#28a745; color:#fff; border:none; padding:6px 25px; border-radius:6px; cursor:pointer; height:36px;">Buy</button>
-            </a>
-            </div>
-            <div class="cancel" style="display: flex; gap: 25px;">
-            <button class="remove-from-builder" data-category="${category}" style="background:none; border:1px solid #CCC; font-weight:bold; cursor:pointer; color:#ccc; border-radius:6px; padding:5px 10px; display:inline-flex; align-items:center; gap:5px; height:36px;">
-              <span style="font-size:20px; line-height:1;">&times;</span> Remove
-            </button>
-            </div>
-          </div>
-          </div>
-        `;
+              <button style="background:#28a745; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Buy</button>
+            </a>`;
+        }
 
-        } else {
-          // 🖥 DESKTOP VIEW (Horizontal row layout)
-          if (row.querySelector(".selection")) {
-            row.querySelector(".selection").innerHTML = `
-              <div class="product-selected" style="display: flex; align-items: center; gap: 12px;">
-                <img src="${image}" alt="${escapedTitle}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
-                <div style="flex: 1;"><strong style="font-size: 14px; display: block;">${escapedTitle}</strong></div>
-              </div>`;
-          }
-
-          if (row.querySelector(".base")) row.querySelector(".base").textContent = base;
-          if (row.querySelector(".shipping")) row.querySelector(".shipping").textContent = shipping;
-          if (row.querySelector(".availability")) row.querySelector(".availability").textContent = availability;
-          if (row.querySelector(".price")) row.querySelector(".price").textContent = price;
-
-          if (row.querySelector(".where")) {
-            row.querySelector(".where").innerHTML = `
-              <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
-                <img src="${logoUrl}" alt="Buy on Amazon" style="width:80px; height:auto;" />
-              </a>`;
-          }
-
-          if (row.querySelector(".buy")) {
-            row.querySelector(".buy").innerHTML = `
-              <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
-                <button style="background:#28a745; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Buy</button>
-              </a>`;
-          }
-
-          if (row.querySelector(".cancel")) {
-            row.querySelector(".cancel").innerHTML = `
-              <button class="remove-from-builder" data-category="${category}"
-                style="background:none; border:none; font-size:30px; font-weight:bold; cursor:pointer; color:#ccc;">&times;</button>`;
-          }
+        if (row.querySelector(".cancel")) {
+          row.querySelector(".cancel").innerHTML = `
+            <button class="remove-from-builder" data-category="${category}"
+              style="background:none; border:none; font-size:30px; font-weight:bold; cursor:pointer; color:#ccc;">&times;</button>`;
         }
       }
-    });
+    }
+  });
 
-    calculateTotalPrice();
-} */
-
-function updateRow(category, data) {
-    const rows = document.querySelectorAll(".row");
-
-    // Updated mobile detection to support landscape
-    const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent) || (window.innerWidth <= 900 && window.innerHeight <= 500);
-
-    rows.forEach(row => {
-        const categorySpan = row.querySelector(".componentName");
-        if (categorySpan && categorySpan.textContent.trim().toLowerCase() === category.toLowerCase()) {
-
-            const base = data.base || '';
-            const shipping = data.shipping || '';
-            const availability = data.availability || '';
-            const price = data.price || '';
-            const affiliateUrl = data.affiliateUrl || '#';
-            const title = data.title || '';
-            const image = data.image || '';
-
-            const truncatedTitle = title.length > 70 ? title.slice(0, 70) + "..." : title;
-            const escapedTitle = truncatedTitle.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-            const logoUrl = `${pcbuild_ajax_object.uploads_url}/2025/04/amazon-logo.png`;
-
-            if (isMobile) {
-                const specialCases = {
-                    "cpu": "CPU",
-                    "cpu cooler": "CPU Cooler"
-                };
-
-                const formattedCategory = specialCases[category.toLowerCase()] ||
-                    category
-                        .split(" ")
-                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                        .join(" ");
-
-                document.getElementById("row-th").style.display = "none";
-                document.getElementById("tab1").style.padding = "0";
-
-                // MOBILE LAYOUT
-                row.innerHTML = `
-                <div class="componentName" style="font-size:20px; margin-top: 10px; 20px; margin-bottom: 20px;"><strong>${formattedCategory}</strong></div>
-                <div class="selection" style="margin-bottom: 20px">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <img src="${image}" alt="${escapedTitle}" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
-                        <div style="flex:1;"><strong style="font-size:14px;">${escapedTitle}</strong></div>
-                    </div>
-                </div>
-
-                <div style="margin-right:18px" class="base"><span style="color: #CCC">Base</span><br>${base}</div>
-                <div style="margin-right:18px" style="gap:12px;" class="shipping"><span style="color: #CCC">Shipping</span><br>${shipping}</div>
-                <div style="margin-right:18px" class="availability"><span style="color: #CCC">Availability</span><br>${availability}</div>
-                <div style="margin-right:18px" class="price"><span style="color: #CCC">Price</span><br>${price}</div>
-
-                <div style="display: flex; justify-content: space-between; align-items: center; gap: 25px; margin-top: 10px; margin-bottom: 10px;">
-                    <div class="where"><span style="color: #CCC">Where</span> <br>
-                        <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
-                        <img src="${logoUrl}" alt="Buy on Amazon" style="width:80px; height:auto;" />
-                        </a>
-                    </div>
-                    <div style="display: flex; gap: 25px;">
-                        <div class="buy" style="display: flex; gap: 25px;">
-                        <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
-                            <button style="background:#28a745; color:#fff; border:none; padding:6px 25px; border-radius:6px; cursor:pointer; height:36px;">Buy</button>
-                        </a>
-                        </div>
-                        <div class="cancel" style="display: flex; gap: 25px;">
-                        <button class="remove-from-builder" data-category="${category}" style="background:none; border:1px solid #CCC; font-weight:bold; cursor:pointer; color:#ccc; border-radius:6px; padding:5px 10px; display:inline-flex; align-items:center; gap:5px; height:36px;">
-                            <span style="font-size:20px; line-height:1;">&times;</span> Remove
-                        </button>
-                        </div>
-                    </div>
-                </div>
-                `;
-
-            } else {
-                // DESKTOP LAYOUT
-                if (row.querySelector(".selection")) {
-                    row.querySelector(".selection").innerHTML = `
-                        <div class="product-selected" style="display: flex; align-items: center; gap: 12px;">
-                            <img src="${image}" alt="${escapedTitle}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
-                            <div style="flex: 1;"><strong style="font-size: 14px; display: block;">${escapedTitle}</strong></div>
-                        </div>`;
-                }
-
-                if (row.querySelector(".base")) row.querySelector(".base").textContent = base;
-                if (row.querySelector(".shipping")) row.querySelector(".shipping").textContent = shipping;
-                if (row.querySelector(".availability")) row.querySelector(".availability").textContent = availability;
-                if (row.querySelector(".price")) row.querySelector(".price").textContent = price;
-
-                if (row.querySelector(".where")) {
-                    row.querySelector(".where").innerHTML = `
-                        <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
-                            <img src="${logoUrl}" alt="Buy on Amazon" style="width:80px; height:auto;" />
-                        </a>`;
-                }
-
-                if (row.querySelector(".buy")) {
-                    row.querySelector(".buy").innerHTML = `
-                        <a href="${affiliateUrl}" target="_blank" rel="nofollow noopener">
-                            <button style="background:#28a745; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">Buy</button>
-                        </a>`;
-                }
-
-                if (row.querySelector(".cancel")) {
-                    row.querySelector(".cancel").innerHTML = `
-                        <button class="remove-from-builder" data-category="${category}"
-                            style="background:none; border:none; font-size:30px; font-weight:bold; cursor:pointer; color:#ccc;">&times;</button>`;
-                }
-            }
-        }
-    });
-
-    calculateTotalPrice();
+  calculateTotalPrice();
 }
+
 
   function calculateTotalPrice() {
     let total = 0;
@@ -888,5 +790,3 @@ function updateRow(category, data) {
   return ob_get_clean();
 }
 add_shortcode('pcbuild_ui', 'pcbuild_render_ui_shortcode');
-
-  

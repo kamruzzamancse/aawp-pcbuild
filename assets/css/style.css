@@ -1589,8 +1589,9 @@ button{
     }
     
     .spec-label {
-        color: #666;
-        font-size: 12px;
+		font-weight: 700!important;
+        color: #000;
+        font-size: 14px!important;
     }
     
     .spec-value {

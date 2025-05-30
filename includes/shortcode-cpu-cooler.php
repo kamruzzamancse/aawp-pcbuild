@@ -327,6 +327,14 @@ function aawp_pcbuild_display_parts_cpu_cooler($atts)
     </div>
 </div>
 
+<style>
+    .spec-label {
+    font-weight: 700!important;
+    color: #000;
+    font-size: 14px!important;
+}
+</style>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const ratingRanges = {
