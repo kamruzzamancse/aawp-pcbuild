@@ -1491,7 +1491,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
   const sidebarToggle = document.querySelector('.pcbuild-sidebar-toggle');
   const sidebar = document.querySelector('.pcbuild-sidebar-mobile');
 

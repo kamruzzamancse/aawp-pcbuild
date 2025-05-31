@@ -314,13 +314,16 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
                                          <div class="spec-label">Microarchitecture</div>
                                          <div class="spec-value"><?php echo esc_html($microarch); ?></div>
                                      </div>
+                                     <div class="spec-group">
+                                        <div class="spec-label">Price</div>
+                                        <div class="spec-value"><?php echo esc_html($price); ?></div>
+                                    </div>
                                  </div>
                              </div>
                          </td>
                          
                          <!-- Price and Add button row for mobile -->
                          <td class="price-action-row mobile-only" style="display:none;">
-                             <div class="price"><?php echo esc_html($price); ?></div>
                              <div class="action-cell">
                                 <button class="add-to-builder"
                                     data-asin="<?php echo esc_attr($asin); ?>"
@@ -365,21 +368,13 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
         </div>
     </div>
 
-    <style>
-        @media (max-width: 768px) {
-            .pcbuilder-container {
-                flex-direction: column;
-            }
-            .pcbuild-sidebar,
-            .pcbuilder-main {
-                width: 100% !important;
-            }
-            .pcbuilder-main {
-                max-height: 80vh; /* Adjust based on your layout */
-                overflow-y: auto;
-            }
-        }
-    </style>
+<style>
+    .spec-label {
+    font-weight: 700!important;
+    color: #000;
+    font-size: 14px!important;
+}
+</style>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -1288,92 +1283,83 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 <script>
-    // Filters toggle
-    document.addEventListener('DOMContentLoaded', function () {
-        const sidebarToggle = document.querySelector('.pcbuild-sidebar-toggle');
-        const sidebar = document.querySelector('.pcbuild-sidebar-mobile');
-
-        function closeSidebar() {
-            sidebar.classList.remove('open');
-
-            document.removeEventListener('click', handleOutsideClick);
-        }
-
-        function handleOutsideClick(event) {
-            if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
-                closeSidebar();
-            }
-        }
-
-        sidebarToggle.addEventListener('click', function (event) {
-            event.stopPropagation();
-            if (sidebar.classList.contains('open')) {
-                
-                closeSidebar();
-
-            } else {
-                // before open i want to hide the sidebar
-                sidebar.classList.add('open');
-                setTimeout(() => {
-                    document.addEventListener('click', handleOutsideClick);
-                }, 0);
-            }
-        });
-
-        sidebar.addEventListener('click', function (event) {
-            event.stopPropagation();
-        });
-    });
-</script>
-
-<!-- Add this JavaScript to transform the table for mobile views -->
-<script>
 document.addEventListener('DOMContentLoaded', function() {
-    function setupMobileView() {
-        // Get all product rows
-        const rows = document.querySelectorAll('#pcbuild-table tbody tr');
-        
-        // Function to check if we're on mobile
-        function isMobile() {
-            return window.innerWidth <= 768;
-        }
-        
-        // Function to set up the correct view
-        function updateView() {
-            const mobile = isMobile();
-            
-            // Show/hide appropriate elements based on view
-            document.querySelectorAll('.mobile-only').forEach(el => {
-                el.style.display = mobile ? 'flex' : 'none';
-            });
-            
-            // Handle the desktop view elements
-            const desktopCells = document.querySelectorAll('#pcbuild-table tr > td:not(.mobile-only)');
-            desktopCells.forEach(cell => {
-                cell.style.display = mobile ? 'none' : '';
-            });
-            
-            // Show/hide thead based on view
-            const thead = document.querySelector('#pcbuild-table thead');
-            if (thead) {
-                thead.style.display = mobile ? 'none' : '';
-            }
-        }
-        
-        // Set initial view
-        updateView();
-        
-        // Update view on resize
-        window.addEventListener('resize', updateView);
+  const sidebarToggle = document.querySelector('.pcbuild-sidebar-toggle');
+  const sidebar = document.querySelector('.pcbuild-sidebar-mobile');
+
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    document.removeEventListener('click', handleOutsideClick);
+  }
+
+  function handleOutsideClick(event) {
+    if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+      closeSidebar();
     }
-    
-    // Initialize mobile view setup
-    setupMobileView();
+  }
+
+  sidebarToggle.addEventListener('click', function (event) {
+    event.stopPropagation();
+    if (sidebar.classList.contains('open')) {
+      closeSidebar();
+    } else {
+      sidebar.classList.add('open');
+      setTimeout(() => {
+        document.addEventListener('click', handleOutsideClick);
+      }, 0);
+    }
+  });
+
+  sidebar.addEventListener('click', function (event) {
+    event.stopPropagation();
+  });
+
+  // Add classes for android or ios devices to body for further CSS if needed
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  if (/android/i.test(ua)) {
+    document.body.classList.add('android-mobile');
+  } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+    document.body.classList.add('ios-mobile');
+  }
+
+  // Mobile/desktop table view toggle
+  function setupMobileView() {
+    const rows = document.querySelectorAll('#pcbuild-table tbody tr');
+
+    function isMobile() {
+      const ua = navigator.userAgent;
+      return (/Mobi|Android|iPhone|iPad|iPod/i.test(ua)) || window.innerWidth <= 768;
+    }
+
+    function updateView() {
+      const mobile = isMobile();
+
+      document.querySelectorAll('.mobile-only').forEach(el => {
+        el.style.display = mobile ? 'flex' : 'none';
+      });
+
+      rows.forEach(row => {
+        row.querySelectorAll('td:not(.mobile-only)').forEach(td => {
+          td.style.display = mobile ? 'none' : '';
+        });
+      });
+
+      const thead = document.querySelector('#pcbuild-table thead');
+      if (thead) {
+        thead.style.display = mobile ? 'none' : '';
+      }
+    }
+
+    updateView();
+    window.addEventListener('resize', updateView);
+  }
+
+  setupMobileView();
 });
 </script>
 
     <?php
-     //include('parts-footer.php');
+    //include('parts-footer.php');
     return ob_get_clean();
 }
 add_shortcode('pcbuild_parts_motherboard', 'aawp_pcbuild_display_parts_motherboard');
