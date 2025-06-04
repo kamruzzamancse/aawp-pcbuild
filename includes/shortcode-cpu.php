@@ -410,6 +410,7 @@ function aawp_pcbuild_display_parts_cpu($atts) {
 </style>
 
 <script>
+// SELLER FILTERING
 document.addEventListener("DOMContentLoaded", function () {
     const ratingRanges = {
         "5": { min: 4.5, max: 5.0 },
@@ -1244,7 +1245,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 <script>
-    //PRICE RANGE SLIDER FILTER
+    //PRICE FILTERING
     document.addEventListener("DOMContentLoaded", function () {
         const table = document.getElementById("pcbuild-table");
         const sliderContainer = document.getElementById("price-slider");

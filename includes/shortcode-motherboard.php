@@ -504,7 +504,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // 1. Collect unique Colors
         tableRows.forEach(row => {
-            const color = row.querySelector("td:nth-child(6)")?.textContent.trim() || "Unknown"; // 6th column = Color
+            const color = row.querySelector("td:nth-child(7)")?.textContent.trim() || "Unknown"; // 6th column = Color
             colorSet.add(color.toLowerCase());
         });
 
@@ -559,7 +559,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .map(cb => cb.value);
 
             tableRows.forEach(row => {
-                const color = row.querySelector("td:nth-child(6)")?.textContent.trim().toLowerCase();
+                const color = row.querySelector("td:nth-child(7)")?.textContent.trim().toLowerCase();
                 const show = selected.includes(color);
                 row.style.display = show ? "" : "none";
             });
@@ -616,7 +616,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Get Memory Slots values (5th column — adjust if needed)
             const memorySlotsValues = rows.map(row => {
-                const slotsText = row.querySelector("td:nth-child(5)")?.textContent.replace(/[^\d]/g, '') || "0";
+                const slotsText = row.querySelector("td:nth-child(6)")?.textContent.replace(/[^\d]/g, '') || "0";
                 return parseInt(slotsText, 10) || 0;
             });
 
@@ -648,7 +648,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 maxLabel.textContent = `${maxVal}`;
 
                 rows.forEach(row => {
-                    const slotsText = row.querySelector("td:nth-child(5)")?.textContent.replace(/[^\d]/g, '') || "0";
+                    const slotsText = row.querySelector("td:nth-child(6)")?.textContent.replace(/[^\d]/g, '') || "0";
                     const slotsValue = parseInt(slotsText, 10) || 0;
 
                     row.style.display = (slotsValue >= minVal && slotsValue <= maxVal) ? "" : "none";
@@ -694,7 +694,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Get Memory Max values (4th column — adjust if needed)
     const memoryMaxValues = rows.map(row => {
-        const memoryText = row.querySelector("td:nth-child(4)")?.textContent.replace(/[^\d]/g, '') || "0";
+        const memoryText = row.querySelector("td:nth-child(5)")?.textContent.replace(/[^\d]/g, '') || "0";
         return parseInt(memoryText, 10) || 0;
     });
 
@@ -726,7 +726,7 @@ document.addEventListener("DOMContentLoaded", function () {
         maxLabel.textContent = `${maxVal} GB`;
 
         rows.forEach(row => {
-            const memoryText = row.querySelector("td:nth-child(4)")?.textContent.replace(/[^\d]/g, '') || "0";
+            const memoryText = row.querySelector("td:nth-child(5)")?.textContent.replace(/[^\d]/g, '') || "0";
             const memoryValue = parseInt(memoryText, 10) || 0;
 
             row.style.display = (memoryValue >= minVal && memoryValue <= maxVal) ? "" : "none";
@@ -772,7 +772,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 1. Collect unique Form Factors
     tableRows.forEach(row => {
-        const formFactor = row.querySelector("td:nth-child(3)")?.textContent.trim() || "Unknown"; // 3rd column = Form Factor
+        const formFactor = row.querySelector("td:nth-child(4)")?.textContent.trim() || "Unknown"; // 3rd column = Form Factor
         formFactorSet.add(formFactor.toLowerCase());
     });
 
@@ -827,7 +827,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .map(cb => cb.value);
 
         tableRows.forEach(row => {
-            const formFactor = row.querySelector("td:nth-child(3)")?.textContent.trim().toLowerCase();
+            const formFactor = row.querySelector("td:nth-child(4)")?.textContent.trim().toLowerCase();
             const show = selected.includes(formFactor);
             row.style.display = show ? "" : "none";
         });
