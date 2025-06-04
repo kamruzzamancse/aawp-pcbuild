@@ -15,8 +15,9 @@ function pcbuild_render_ui_shortcode() {
         'buy',
         'cancel'
     ];
-    ?>
-    <!-- Start of the PC Builder section which contains the UI for selecting and reviewing PC components -->
+  ?>
+
+  <!-- Start of the PC Builder section which contains the UI for selecting and reviewing PC components -->
   <section id="buildOverview">
 
           <!-- Header section that includes tabs for navigating between component selection and overview -->
@@ -259,6 +260,47 @@ function pcbuild_render_ui_shortcode() {
                                   <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                                 <?php endif; ?>
                             </div>
+                            
+                            <div class="category-row">
+                              <div class="category-label">Expansion Cards /<br> Networking</div>
+                              <div class="category-items">
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/sound-cards'); ?>">
+                                    <span class="componentName">Sound Cards</span>
+                                </a>
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/wired-network-adapters'); ?>">
+                                    <span class="componentName">Wired Network Adapters</span>
+                                </a>
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/wireless-network-adapters'); ?>">
+                                    <span class="componentName">Wireless Network Adapters</span>
+                                </a>
+                              </div>
+                            </div>
+
+                            <div style="width: 100%;"></div>
+
+                            <div class="category-row">
+                              <div class="category-label">Peripherals</div>
+                              <div class="category-items">
+                                <a href="#">Headphones</a>
+                                <a href="#">Keyboards</a>
+                                <a href="#">Mice</a>
+                                <a href="#">Speakers</a>
+                                <a href="#">Webcams</a>
+                              </div>
+                            </div>
+
+                            <div class="category-row">
+                              <div class="category-label">Accessories / Other</div>
+                              <div class="category-items">
+                                <a href="#">Case Accessories</a>
+                                <a href="#">Case Fans</a>
+                                <a href="#">Fan Controllers</a>
+                                <a href="#">Thermal Compound</a>
+                                <a href="#">External Storage</a>
+                                <a href="#">Optical Drives</a>
+                                <a href="#">UPS Systems</a>
+                              </div>
+                            </div>
 
                         </div>
                     </div>
@@ -289,6 +331,69 @@ function pcbuild_render_ui_shortcode() {
 
       </div>
   </section>
+
+<style>
+ .category-row {
+  display: grid;
+  grid-template-columns: 180px auto;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #ccc;
+  width: 100%;
+}
+
+.category-row:not(:first-child) {
+  display: block;
+  clear: both;
+}
+
+.category-label {
+  font-weight: bold;
+  color: #0f9d8e;
+  white-space: nowrap;
+  padding-left: 4px;
+  display: inline-block;
+  width: 180px;
+  vertical-align: middle;
+}
+
+.category-items {
+  display: inline-block;
+  vertical-align: middle;
+  color: #003399;
+  font-size: 14px;
+}
+
+.category-items a {
+  margin-right: 20px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.category-items a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .category-row {
+    display: block !important;
+    clear: none;
+    margin-top: 20px;
+  }
+  .category-label {
+    width: 100%;
+    margin-bottom: 6px;
+    padding-left: 0;
+  }
+  .category-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+</style>
+
 <style>
   @media screen and (max-width: 900px) {
   .row {

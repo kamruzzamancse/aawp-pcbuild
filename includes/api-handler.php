@@ -114,7 +114,7 @@ function aawp_pcbuild_get_products($category) {
     return $final_data;
 }
 
-function aawp_pcbuild_get_search_index($category) {
+/* function aawp_pcbuild_get_search_index($category) {
     $category = strtolower($category);
 
     $mapping = [
@@ -167,7 +167,132 @@ function aawp_pcbuild_get_search_index($category) {
         'search_index' => $mapping[$category] ?? 'Electronics',
         'keywords'     => $keywords,
     ];
+} */
+
+function aawp_pcbuild_get_search_index($category) {
+    $category = strtolower($category);
+
+    $mapping = [
+        'cpu'                  => 'Computers',
+        'cpu cooler'           => 'Computers',
+        'motherboard'          => 'Computers',
+        'memory'               => 'Computers',
+        'ram'                  => 'Computers',
+        'storage'              => 'Computers',
+        'video card'           => 'Computers',
+        'gpu'                  => 'Computers',
+        'case'                 => 'Computers',
+        'pc-case'              => 'Computers',
+        'power supply'         => 'Computers',
+        'operating system'     => 'Software',
+        'monitor'              => 'Electronics',
+        'keyboard'             => 'Electronics',
+        'mouse'                => 'Electronics',
+
+        // New categories from Expansion Cards / Networking
+        'sound cards'          => 'Electronics',
+        'wired network adapters'    => 'Electronics',
+        'wireless network adapters' => 'Electronics',
+
+        // Peripherals
+        'headphones'           => 'Electronics',
+        'keyboards'            => 'Electronics',
+        'mice'                 => 'Electronics',
+        'speakers'             => 'Electronics',
+        'webcams'              => 'Electronics',
+
+        // Accessories / Other
+        'case accessories'     => 'Computers',
+        'case fans'            => 'Computers',
+        'fan controllers'      => 'Computers',
+        'thermal compound'     => 'Computers',
+        'external storage'     => 'Computers',
+        'optical drives'       => 'Computers',
+        'ups systems'          => 'Electronics',
+    ];
+
+    switch ($category) {
+        case 'case':
+        case 'pc-case':
+            $keywords = 'ATX computer case';
+            break;
+        case 'storage':
+            $keywords = 'Internal SSD';
+            break;
+        case 'memory':
+        case 'ram':
+            $keywords = 'RAM';
+            break;
+        case 'video card':
+        case 'gpu':
+            $keywords = 'graphics card';
+            break;
+        case 'power supply':
+        case 'psu':
+            $keywords = 'power supply unit';
+            break;
+        case 'operating system':
+            $keywords = 'Windows 11';
+            break;
+
+        // Added keywords for new categories
+        case 'sound cards':
+            $keywords = 'sound card audio';
+            break;
+        case 'wired network adapters':
+            $keywords = 'ethernet network adapter';
+            break;
+        case 'wireless network adapters':
+            $keywords = 'wifi network adapter';
+            break;
+        case 'headphones':
+            $keywords = 'headphones headset';
+            break;
+        case 'keyboards':
+            $keywords = 'computer keyboard mechanical keyboard';
+            break;
+        case 'mice':
+            $keywords = 'computer mouse wireless mouse';
+            break;
+        case 'speakers':
+            $keywords = 'computer speakers audio speakers';
+            break;
+        case 'webcams':
+            $keywords = 'webcam HD camera';
+            break;
+        case 'case accessories':
+            $keywords = 'pc case accessories';
+            break;
+        case 'case fans':
+            $keywords = 'pc case fans cooling fans';
+            break;
+        case 'fan controllers':
+            $keywords = 'fan controller pc cooling';
+            break;
+        case 'thermal compound':
+            $keywords = 'thermal paste cpu cooler';
+            break;
+        case 'external storage':
+            $keywords = 'external hard drive';
+            break;
+        case 'optical drives':
+            $keywords = 'dvd cd burner drive';
+            break;
+        case 'ups systems':
+            $keywords = 'uninterruptible power supply';
+            break;
+
+        default:
+            $keywords = $category;
+            break;
+    }
+
+    return [
+        'search_index' => $mapping[$category] ?? 'Electronics',
+        'keywords'     => $keywords,
+    ];
 }
+
 
 function getSignatureKey($key, $dateStamp, $regionName, $serviceName) {
     $kSecret  = 'AWS4' . $key;
