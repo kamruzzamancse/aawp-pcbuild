@@ -1,5 +1,6 @@
 <?php
 function aawp_pcbuild_display_parts_motherboard($atts) {
+
     $atts = shortcode_atts(array('category' => 'motherboard'), $atts);
     $input_category = sanitize_title($atts['category']);
 
@@ -299,20 +300,24 @@ function aawp_pcbuild_display_parts_motherboard($atts) {
                                  <!-- Specs container - exactly matching the image layout -->
                                  <div class="specs-container">
                                      <div class="spec-group">
-                                         <div class="spec-label">Core Count</div>
-                                         <div class="spec-value"><?php echo esc_html($core_count); ?></div>
+                                         <div class="spec-label">Socket</div>
+                                         <div class="spec-value"><?php echo esc_html($socket); ?></div>
                                      </div>
                                      <div class="spec-group">
-                                         <div class="spec-label">Base Clock</div>
-                                         <div class="spec-value"><?php echo $base_clock !== '-' ? $base_clock . ' GHz' : '-'; ?></div>
+                                         <div class="spec-label">Form Factor</div>
+                                         <div class="spec-value"><?php echo esc_html($form_factor); ?></div>
                                      </div>
                                      <div class="spec-group">
-                                         <div class="spec-label">Boost Clock</div>
-                                         <div class="spec-value"><?php echo $boost_clock !== '-' ? $boost_clock . ' GHz' : '-'; ?></div>
+                                         <div class="spec-label">Memory Max</div>
+                                         <div class="spec-value"><?php echo esc_html($memory_max); ?></div>
                                      </div>
                                      <div class="spec-group">
-                                         <div class="spec-label">Microarchitecture</div>
-                                         <div class="spec-value"><?php echo esc_html($microarch); ?></div>
+                                         <div class="spec-label">Memory Slots</div>
+                                         <div class="spec-value"><?php echo esc_html($memory_slots); ?></div>
+                                     </div>
+                                     <div class="spec-group">
+                                         <div class="spec-label">Color</div>
+                                         <div class="spec-value"><?php echo esc_html($color); ?></div>
                                      </div>
                                      <div class="spec-group">
                                         <div class="spec-label">Price</div>
