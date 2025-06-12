@@ -260,6 +260,27 @@ function pcbuild_render_ui_shortcode() {
                                   <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                                 <?php endif; ?>
                             </div>
+
+                            <!-- Sound Card selection row showing pricing, availability, and purchase options -->
+                            <div class="row" style="display:none">
+                                <div class="comp card">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/sound-card'); ?>">
+                                        <span class="componentName">Sound Cards</span>
+                                    </a>
+                                </div>
+                                <div class="selection card">
+                                    <button class="selectionBTN">
+                                        <span style='font-size:20px;'>&#43;</span>
+                                        <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/sound-card'); ?>">
+                                            <span>Choose A Sound Card</span>
+                                        </a>
+                                    </button>
+                                </div>
+                                <?php if (!isMobile()): ?>
+                                    <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php endif; ?>
+                            </div>
+
                             
                             <div class="category-row">
                               <div class="category-label">Expansion Cards /<br> Networking</div>
@@ -600,6 +621,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   function updateRow(category, data) {
+  
   const rows = document.querySelectorAll(".row");
 
   // Improved mobile detection with landscape support
