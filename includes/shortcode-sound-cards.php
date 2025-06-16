@@ -130,6 +130,26 @@ function aawp_pcbuild_display_parts_sound_cards($atts) {
                         </div>
                     </div>
                 </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>CHIPSET</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="chipset-filter">
+                        <label><input type="checkbox" id="chipset-all" checked> All</label><br/>
+                        <!-- Dynamic checkboxes will be injected here -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>INTERFACE</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="interface-filter">
+                        <label><input type="checkbox" id="interface-all" checked> All</label><br/>
+                        <!-- Dynamic checkboxes will be injected here -->
+                    </div>
+                </div>
 
             </div>
 
@@ -182,8 +202,6 @@ function aawp_pcbuild_display_parts_sound_cards($atts) {
                         $title_features = $item['ItemInfo']['Title']['DisplayValue'] ?? ''; // Title value
                         $features = $item['ItemInfo']['Features']['DisplayValues'] ?? []; // Feature values
                         $all_specs = array_merge([$title_features], $features);  // Merging Title and Features for spec extraction
-                        echo print_r($all_specs);
-                        break;
 
                         // Define a list of known chipset names to match
                         $known_chipsets = [
@@ -348,6 +366,210 @@ function aawp_pcbuild_display_parts_sound_cards($atts) {
             </div>
         </div>
     </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("interface-filter");
+    const interfaceSet = new Set();
+
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Collect unique interfaces
+    tableRows.forEach(row => {
+        const iface = row.querySelector("button.add-to-builder")?.dataset.interface || "-";
+        interfaceSet.add(iface.trim());
+    });
+
+    const interfaces = Array.from(interfaceSet).sort();
+    const checkboxElements = [];
+
+    // Create checkbox inputs
+    interfaces.forEach(iface => {
+        const label = document.createElement("label");
+        label.innerHTML = `<input type="checkbox" name="interface" value="${iface}" checked> ${iface}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    // Add checkboxes to DOM
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) {
+            el.style.display = 'none';
+        }
+        filterContainer.appendChild(el);
+    });
+
+    // Show more / Show less toggle
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    function applyZebraStriping() {
+        const visibleRows = Array.from(tableRows).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    const allCheckbox = document.getElementById("interface-all");
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='interface']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyInterfaceFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='interface']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const iface = row.querySelector("button.add-to-builder")?.dataset.interface?.trim();
+            row.style.display = selected.includes(iface) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='interface']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyInterfaceFilter();
+    });
+
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "interface") {
+            applyInterfaceFilter();
+        }
+    });
+
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) {
+                el.style.display = expanded ? "block" : "none";
+            }
+        });
+
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    applyInterfaceFilter();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("chipset-filter");
+    const chipsetSet = new Set();
+
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Collect unique chipsets
+    tableRows.forEach(row => {
+        const chipset = row.querySelector("button.add-to-builder")?.dataset.chipset || "-";
+        chipsetSet.add(chipset.trim());
+    });
+
+    const chipsets = Array.from(chipsetSet).sort();
+    const checkboxElements = [];
+
+    // Create checkbox inputs
+    chipsets.forEach(chipset => {
+        const label = document.createElement("label");
+        label.innerHTML = `<input type="checkbox" name="chipset" value="${chipset}" checked> ${chipset}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    // Add checkboxes to DOM
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) {
+            el.style.display = 'none';
+        }
+        filterContainer.appendChild(el);
+    });
+
+    // Show more / Show less toggle
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    function applyZebraStriping() {
+        const visibleRows = Array.from(tableRows).filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    const allCheckbox = document.getElementById("chipset-all");
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='chipset']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+    }
+
+    function applyChipsetFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='chipset']:checked"))
+            .map(cb => cb.value);
+
+        tableRows.forEach(row => {
+            const chipset = row.querySelector("button.add-to-builder")?.dataset.chipset?.trim();
+            row.style.display = selected.includes(chipset) ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    allCheckbox.addEventListener("change", function () {
+        const allBoxes = document.querySelectorAll("input[name='chipset']");
+        allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+        applyChipsetFilter();
+    });
+
+    filterContainer.addEventListener("change", function (e) {
+        if (e.target.name === "chipset") {
+            applyChipsetFilter();
+        }
+    });
+
+    toggleLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        expanded = !expanded;
+
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) {
+                el.style.display = expanded ? "block" : "none";
+            }
+        });
+
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    applyChipsetFilter();
+});
+</script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {

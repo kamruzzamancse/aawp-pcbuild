@@ -1,15 +1,15 @@
 <?php
-function aawp_pcbuild_display_parts_wired_network($atts) {
-    
-    $atts = shortcode_atts(array('category' => 'wired-network'), $atts);
+function aawp_pcbuild_display_parts_headphones($atts) {
+
+    $atts = shortcode_atts(array('category' => 'headphones'), $atts);
     $input_category = sanitize_title($atts['category']);
     
     // Define the category mapping
     $category_map = [
-        'wired-network' => 'wired network adapters',
+        'headphones' => 'headphones',
     ];
     
-    $category = $category_map[$input_category] ?? 'wired network adapters';
+    $category = $category_map[$input_category] ?? 'headphones'; // Default to 'headphones' if not found in the map
     
     // Create the transient cache key
     $transient_key = 'aawp_pcbuild_cache_' . md5($category);
@@ -98,10 +98,10 @@ function aawp_pcbuild_display_parts_wired_network($atts) {
             </div>
             <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
                 <div class="filter-header">
-                    <strong>INTERFACE</strong>
+                    <strong>TYPE</strong>
                     <button class="filter-toggle">−</button>
                 </div>
-                <div class="filter-options" id="interface-filter">
+                <div class="filter-options" id="type-filter">
                     <!-- Filters will be injected here -->
                 </div>
             </div>
@@ -109,10 +109,31 @@ function aawp_pcbuild_display_parts_wired_network($atts) {
 
             <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
                 <div class="filter-header">
-                    <strong>PORTS</strong>
+                    <strong>MICROPHONE</strong>
                     <button class="filter-toggle">−</button>
                 </div>
-                <div class="filter-options" id="ports-filter">
+                <div class="filter-options" id="microphone-filter">
+                    <!-- Filters will be injected here -->
+                </div>
+            </div>
+
+
+            <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                <div class="filter-header">
+                    <strong>WIRELESS</strong>
+                    <button class="filter-toggle">−</button>
+                </div>
+                <div class="filter-options" id="wireless-filter">
+                    <!-- Filters will be injected here -->
+                </div>
+            </div>
+
+            <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                <div class="filter-header">
+                    <strong>ENCLOSURE TYPE</strong>
+                    <button class="filter-toggle">−</button>
+                </div>
+                <div class="filter-options" id="enclosure-type-filter">
                     <!-- Filters will be injected here -->
                 </div>
             </div>
@@ -123,9 +144,21 @@ function aawp_pcbuild_display_parts_wired_network($atts) {
                     <button class="filter-toggle">−</button>
                 </div>
                 <div class="filter-options" id="color-filter">
+                    <!-- No <label> for "All" here -->
+                </div>
+            </div>
+
+            <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                <div class="filter-header">
+                    <strong>ACTIVE NOISE CANCELLATION</strong>
+                    <button class="filter-toggle">−</button>
+                </div>
+                <div class="filter-options" id="anc-filter">
                     <!-- Filters will be injected here -->
                 </div>
             </div>
+
+
 
 
 
@@ -149,11 +182,31 @@ function aawp_pcbuild_display_parts_wired_network($atts) {
                         <th class="sortable-header" data-key="name">
                             <span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Name</span>
                         </th>
-                        <th class="sortable-header" data-key="core_count">
+                        <th class="sortable-header" data-key="type">
                             <span class="sort-header-label">
-                                <span class="sort-arrow">&#9654;</span> Interface
+                                <span class="sort-arrow">&#9654;</span> Type
                             </span>
                         </th>
+                        <th class="sortable-header" data-key="frequency_response">
+                            <span class="sort-header-label">Frequency Response</span>
+                            <span class="sort-arrow">&#9654;</span>
+                        </th>
+
+                        <th class="sortable-header" data-key="microphone">
+                            <span class="sort-header-label">Microphone</span>
+                            <span class="sort-arrow">&#9654;</span>
+                        </th>
+
+                        <th class="sortable-header" data-key="wireless">
+                            <span class="sort-header-label">Wireless</span>
+                            <span class="sort-arrow">&#9654;</span>
+                        </th>
+
+                        <th class="sortable-header" colspan="2" data-key="enclosure_type">
+                            <span class="sort-header-label">Enclosure Type</span>
+                            <span class="sort-arrow">&#9654;</span>
+                        </th>
+
                         <th class="sortable-header" data-key="color">
                             <span class="sort-header-label">Color</span>
                             <span class="sort-arrow">&#9654;</span>
@@ -170,7 +223,7 @@ function aawp_pcbuild_display_parts_wired_network($atts) {
                                 <span class="sort-arrow">&#9654;</span> Price
                             </span>
                         </th>
-                        <th style="padding:10px;" colspan="2">Action</th>
+                        <th style="padding:10px;">Action</th>
                     </tr>
                 </thead>
 
@@ -190,79 +243,61 @@ function aawp_pcbuild_display_parts_wired_network($atts) {
     $base_price = $price;
     $availability = $item['Offers']['Listings'][0]['Availability']['Message'] ?? '—';
     $product_url = $item['DetailPageURL'] ?? '#';
+
     $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
     $features_string = implode(' ', $features);
+
+    // ✅ ANC extraction
+    $anc = (stripos($features_string, 'noise cancellation') !== false || stripos($features_string, 'ANC') !== false) ? 'Yes' : 'No';
+
     $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
     $color = $item['ItemInfo']['ProductInfo']['Color']['DisplayValue'] ?? '-';
 
-    // Detect Interface (USB, PCIe, etc.)
-    $interface = '-';
+    // Feature-specific values
+    $type = 'Over-Ear'; // fallback
+    $frequency_response = '-';
+    $microphone = 'No';
+    $wireless = 'No';
+    $enclosure_type = '-';
+
     foreach ($features as $feature) {
-        if (preg_match('/(USB[\s\-]?(2\.0|3\.0|C)|PCI[\s\-]?[Ee]?)/i', $feature, $match)) {
-            $interface = strtoupper(trim($match[0]));
-            break;
+        if (preg_match('/\b(20\s?Hz\s?–?\s?40\s?kHz|\d{1,3}\s?Hz\s?[-–]\s?\d{2,4}\s?kHz?)\b/i', $feature, $match)) {
+            $frequency_response = $match[0];
+        }
+        if (stripos($feature, 'microphone') !== false || stripos($feature, 'mic') !== false) {
+            $microphone = 'Yes';
+        }
+        if (stripos($feature, 'wireless') !== false || stripos($feature, 'bluetooth') !== false) {
+            $wireless = 'Yes';
+        }
+        if (stripos($feature, 'closed-back') !== false || stripos($feature, 'open-back') !== false) {
+            $enclosure_type = ucfirst(explode(' ', $feature)[0]);
         }
     }
 
-    $ports = '-';
-    $port_candidates = [];
-    
-    foreach ($features as $feature) {
-        if (preg_match_all('~(?:(\d+)\s*[xX]\s*)?(\d+(\.\d+)?)(?:\s*)(Gbps|Gb/s|Mbps|Mb/s)~i', $feature, $matches, PREG_SET_ORDER)) {
-            foreach ($matches as $m) {
-                $count = !empty($m[1]) ? (int)$m[1] : 1;
-                $speed = (float)$m[2];
-                $unit = strtolower($m[4]);
-    
-                // Normalize to Gb/s
-                if (strpos($unit, 'mb') === 0 && $speed >= 1000) {
-                    $speed /= 1000;
-                    $unit = 'Gb/s';
-                } elseif (strpos($unit, 'mb') !== false) {
-                    // Keep as Mb/s for speeds below 1000
-                    $unit = 'Mb/s';
-                } else {
-                    $unit = 'Gb/s';
-                }
-    
-                // Normalize for sorting (convert all to Mbps)
-                $normalized_mbps = $unit === 'Gb/s' ? $speed * 1000 : $speed;
-    
-                $port_candidates[] = [
-                    'label' => "{$count} × " . rtrim(rtrim(number_format($speed, 2), '0'), '.') . " {$unit}",
-                    'sort' => $normalized_mbps
-                ];
-            }
-        }
-    }
-    
-    // Use only the top speed port
-    if (!empty($port_candidates)) {
-        usort($port_candidates, fn($a, $b) => $b['sort'] <=> $a['sort']);
-        $ports = $port_candidates[0]['label']; // The best one
-    }
-    
-    $sellerCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? 'Unknown';
-    $sellerRating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? 'Unknown';
+    // Seller info
+    $sellerCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? '0';
+    $sellerRating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? '0';
     $rating_count = display_rating_and_count($sellerRating, $sellerCount);
 ?>
                     <tr class="product-row" style="background-color: <?php echo $row_bg; ?>">
-                        <td style="padding: 10px 0 10px 10px; width: 150px!important" title="<?php echo $raw_title; ?>">
+                        <td style="padding: 10px;">
                             <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>"
                                 style="width:125px; height:125px; border-radius:4px;" />
                         </td>
                         <td style="font-weight:800;"><?php echo $title; ?></td>
-                        <td class="interface-cell" style="padding:10px;"><?php echo esc_html($interface); ?></td>
-                        <td class="color-cell" style="padding:10px;"><?php echo esc_html($color); ?></td>
-                        <td style="padding:10px;"
-                            data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>">
-                            <?php echo $rating_count; ?></td>
-                        <td class="price-cell" style="padding:10px;"><?php echo esc_html($price); ?></td>
-                        <td class="ports-cell" style="padding:0; margin:0; border:0; width:0; font-size:0;">
-                            <span style="display:none;"><?php echo esc_html($ports); ?></span>
+                        <td class="type-cell"><?php echo esc_html($type); ?></td>
+                        <td><?php echo esc_html($frequency_response); ?></td>
+                        <td class="microphone-cell"><?php echo esc_html($microphone); ?></td>
+                        <td class="wireless-cell"><?php echo esc_html($wireless); ?></td>
+                        <td class="enclosure-type-cell"><?php echo esc_html($enclosure_type); ?></td>
+                        <td class="anc-cell" style="padding:0; margin:0; border:0; width:0; font-size:0;">
+                            <span style="display:none;"><?php echo esc_html($anc); ?></span>
                         </td>
-
-                        <td style="padding:10px;">
+                        <td class="color-cell"><?php echo esc_html($color); ?></td>
+                        <td data-rating="<?php echo esc_attr($sellerRating); ?>"><?php echo $rating_count; ?></td>
+                        <td class="price-cell"><?php echo esc_html($price); ?></td>
+                        <td colspan="2">
                             <button class="add-to-builder" data-asin="<?php echo esc_attr($asin); ?>"
                                 data-title="<?php echo esc_attr($full_title); ?>"
                                 data-image="<?php echo esc_url($image); ?>"
@@ -272,7 +307,7 @@ function aawp_pcbuild_display_parts_wired_network($atts) {
                                 data-category="<?php echo esc_attr($category); ?>"
                                 data-affiliate-url="<?php echo esc_url($product_url); ?>"
                                 data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
-                                data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
+                                data-rating="<?php echo esc_attr($sellerRating); ?>"
                                 data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
                                 style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                 <?php _e('Add', 'aawp-pcbuild'); ?>
@@ -281,6 +316,10 @@ function aawp_pcbuild_display_parts_wired_network($atts) {
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
+
+
+
+
 
             </table>
 
@@ -579,6 +618,507 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 
+
+
+<script>
+// TYPE filtering
+document.addEventListener("DOMContentLoaded", function() {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("type-filter");
+    const typeSet = new Set();
+
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Step 1: Get unique type values
+    tableRows.forEach(row => {
+        const type = row.querySelector(".type-cell")?.textContent.trim() || '-';
+        typeSet.add(type);
+    });
+
+    const types = Array.from(typeSet).sort();
+    const checkboxElements = [];
+
+    // Step 2: Build checkboxes
+    types.forEach(type => {
+        const label = document.createElement("label");
+        label.innerHTML =
+            `<input type="checkbox" name="type" value="${type}" checked> ${type}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    // Step 3: Render checkboxes
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) {
+            el.style.display = 'none';
+        }
+        filterContainer.appendChild(el);
+    });
+
+    // Step 4: Add Show More/Show Less link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Step 5: Add "All" checkbox
+    const allCheckbox = document.createElement("label");
+    allCheckbox.innerHTML = `<input type="checkbox" id="type-all" checked> All`;
+    filterContainer.insertBefore(allCheckbox, filterContainer.firstChild);
+
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
+            .filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+        });
+    }
+
+    function applyTypeFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='type']:checked"))
+            .map(cb => cb.value);
+        const isAll = document.getElementById("type-all").checked;
+
+        tableRows.forEach(row => {
+            const type = row.querySelector(".type-cell")?.textContent.trim() || '-';
+            const show = isAll || selected.includes(type);
+            row.style.display = show ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='type']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        document.getElementById("type-all").checked = (checkedBoxes.length === allBoxes.length);
+    }
+
+    document.getElementById("type-all").addEventListener("change", function() {
+        const allBoxes = document.querySelectorAll("input[name='type']");
+        allBoxes.forEach(cb => cb.checked = this.checked);
+        applyTypeFilter();
+    });
+
+    filterContainer.addEventListener("change", function(e) {
+        if (e.target.name === "type") {
+            applyTypeFilter();
+        }
+    });
+
+    toggleLink.addEventListener("click", function(e) {
+        e.preventDefault();
+        expanded = !expanded;
+
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) {
+                el.style.display = expanded ? "block" : "none";
+            }
+        });
+
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial apply
+    applyTypeFilter();
+});
+</script>
+
+
+
+<script>
+// MICROPHONE filtering
+document.addEventListener("DOMContentLoaded", function() {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("microphone-filter");
+    const micSet = new Set();
+
+    // Step 1: Get unique microphone values
+    tableRows.forEach(row => {
+        const mic = row.querySelector(".microphone-cell")?.textContent.trim() || '-';
+        micSet.add(mic);
+    });
+
+    const mics = Array.from(micSet).sort();
+    const checkboxElements = [];
+
+    // Step 2: Build checkboxes
+    mics.forEach(mic => {
+        const label = document.createElement("label");
+        label.innerHTML =
+            `<input type="checkbox" name="microphone" value="${mic}" checked> ${mic}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    // Step 3: Render checkboxes
+    checkboxElements.forEach(el => {
+        filterContainer.appendChild(el);
+    });
+
+    // Step 4: Add "All" checkbox
+    const allCheckbox = document.createElement("label");
+    allCheckbox.innerHTML = `<input type="checkbox" id="microphone-all" checked> All`;
+    filterContainer.insertBefore(allCheckbox, filterContainer.firstChild);
+
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
+            .filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+        });
+    }
+
+    function applyMicrophoneFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='microphone']:checked"))
+            .map(cb => cb.value);
+        const isAll = document.getElementById("microphone-all").checked;
+
+        tableRows.forEach(row => {
+            const mic = row.querySelector(".microphone-cell")?.textContent.trim() || '-';
+            const show = isAll || selected.includes(mic);
+            row.style.display = show ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='microphone']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        document.getElementById("microphone-all").checked = (checkedBoxes.length === allBoxes.length);
+    }
+
+    document.getElementById("microphone-all").addEventListener("change", function() {
+        const allBoxes = document.querySelectorAll("input[name='microphone']");
+        allBoxes.forEach(cb => cb.checked = this.checked);
+        applyMicrophoneFilter();
+    });
+
+    filterContainer.addEventListener("change", function(e) {
+        if (e.target.name === "microphone") {
+            applyMicrophoneFilter();
+        }
+    });
+
+    // Initial apply
+    applyMicrophoneFilter();
+});
+</script>
+
+
+
+<script>
+// WIRELESS filtering
+document.addEventListener("DOMContentLoaded", function() {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("wireless-filter");
+    const wirelessSet = new Set();
+
+    // Step 1: Extract unique wireless values (Yes/No)
+    tableRows.forEach(row => {
+        const wireless = row.querySelector(".wireless-cell")?.textContent.trim() || '-';
+        wirelessSet.add(wireless);
+    });
+
+    const options = Array.from(wirelessSet).sort();
+    const checkboxElements = [];
+
+    // Step 2: Create checkboxes
+    options.forEach(option => {
+        const label = document.createElement("label");
+        label.innerHTML = `
+            <input type="checkbox" name="wireless" value="${option}" checked> ${option}
+        `;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    // Step 3: Render checkboxes
+    checkboxElements.forEach(el => {
+        filterContainer.appendChild(el);
+    });
+
+    // Step 4: Add "All" checkbox
+    const allCheckbox = document.createElement("label");
+    allCheckbox.innerHTML = `<input type="checkbox" id="wireless-all" checked> All`;
+    filterContainer.insertBefore(allCheckbox, filterContainer.firstChild);
+
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
+            .filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+        });
+    }
+
+    function applyWirelessFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='wireless']:checked"))
+            .map(cb => cb.value);
+        const isAll = document.getElementById("wireless-all").checked;
+
+        tableRows.forEach(row => {
+            const wireless = row.querySelector(".wireless-cell")?.textContent.trim() || '-';
+            const show = isAll || selected.includes(wireless);
+            row.style.display = show ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='wireless']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        document.getElementById("wireless-all").checked = (checkedBoxes.length === allBoxes.length);
+    }
+
+    document.getElementById("wireless-all").addEventListener("change", function() {
+        const allBoxes = document.querySelectorAll("input[name='wireless']");
+        allBoxes.forEach(cb => cb.checked = this.checked);
+        applyWirelessFilter();
+    });
+
+    filterContainer.addEventListener("change", function(e) {
+        if (e.target.name === "wireless") {
+            applyWirelessFilter();
+        }
+    });
+
+    // Initial filter
+    applyWirelessFilter();
+});
+</script>
+
+
+<script>
+// ENCLOSURE TYPE filtering
+document.addEventListener("DOMContentLoaded", function() {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("enclosure-type-filter");
+    const enclosureSet = new Set();
+
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Step 1: Get unique enclosure values
+    tableRows.forEach(row => {
+        const enclosure = row.querySelector(".enclosure-type-cell")?.textContent.trim() || '-';
+        enclosureSet.add(enclosure);
+    });
+
+    const enclosures = Array.from(enclosureSet).sort();
+    const checkboxElements = [];
+
+    // Step 2: Create checkboxes
+    enclosures.forEach(type => {
+        const label = document.createElement("label");
+        label.innerHTML =
+            `<input type="checkbox" name="enclosure-type" value="${type}" checked> ${type}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    // Step 3: Render checkboxes
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Step 4: Show More/Show Less link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Step 5: Add "All" checkbox
+    const allCheckbox = document.createElement("label");
+    allCheckbox.innerHTML = `<input type="checkbox" id="enclosure-type-all" checked> All`;
+    filterContainer.insertBefore(allCheckbox, filterContainer.firstChild);
+
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
+            .filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+        });
+    }
+
+    // Filter function
+    function applyEnclosureFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='enclosure-type']:checked"))
+            .map(cb => cb.value);
+        const isAll = document.getElementById("enclosure-type-all").checked;
+
+        tableRows.forEach(row => {
+            const enclosure = row.querySelector(".enclosure-type-cell")?.textContent.trim() || '-';
+            const show = isAll || selected.includes(enclosure);
+            row.style.display = show ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // Sync "All" checkbox state
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='enclosure-type']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        document.getElementById("enclosure-type-all").checked = (checkedBoxes.length === allBoxes.length);
+    }
+
+    // Handle "All" checkbox toggle
+    document.getElementById("enclosure-type-all").addEventListener("change", function() {
+        const allBoxes = document.querySelectorAll("input[name='enclosure-type']");
+        allBoxes.forEach(cb => cb.checked = this.checked);
+        applyEnclosureFilter();
+    });
+
+    // Listen for changes on individual checkboxes
+    filterContainer.addEventListener("change", function(e) {
+        if (e.target.name === "enclosure-type") {
+            applyEnclosureFilter();
+        }
+    });
+
+    // Show more / less toggle
+    toggleLink.addEventListener("click", function(e) {
+        e.preventDefault();
+        expanded = !expanded;
+
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) {
+                el.style.display = expanded ? "block" : "none";
+            }
+        });
+
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // ✅ Reset filter on page reload
+    window.addEventListener("pageshow", function() {
+        document.querySelectorAll("input[name='enclosure-type']").forEach(cb => cb.checked = true);
+        document.getElementById("enclosure-type-all").checked = true;
+        applyEnclosureFilter();
+    });
+
+    // Initial run
+    applyEnclosureFilter();
+});
+</script>
+
+
+<script>
+// ACTIVE NOISE CANCELLATION filtering
+document.addEventListener("DOMContentLoaded", function() {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("anc-filter");
+    const ancSet = new Set();
+
+    // Step 1: Extract ANC values from .anc-cell
+    tableRows.forEach(row => {
+        const anc = row.querySelector(".anc-cell")?.textContent.trim() || '-';
+        ancSet.add(anc);
+    });
+
+    const ancOptions = Array.from(ancSet).sort();
+    const checkboxElements = [];
+
+    // Step 2: Create checkboxes
+    ancOptions.forEach(anc => {
+        const label = document.createElement("label");
+        label.innerHTML = `
+            <input type="checkbox" name="anc" value="${anc}" checked> ${anc}
+        `;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    // Step 3: Render checkboxes
+    checkboxElements.forEach(el => {
+        filterContainer.appendChild(el);
+    });
+
+    // Step 4: Add "All" checkbox
+    const allCheckbox = document.createElement("label");
+    allCheckbox.innerHTML = `<input type="checkbox" id="anc-all" checked> All`;
+    filterContainer.insertBefore(allCheckbox, filterContainer.firstChild);
+
+    // Zebra striping
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
+            .filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+        });
+    }
+
+    // Filter logic
+    function applyANCFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='anc']:checked"))
+            .map(cb => cb.value);
+        const isAll = document.getElementById("anc-all").checked;
+
+        tableRows.forEach(row => {
+            const anc = row.querySelector(".anc-cell")?.textContent.trim() || '-';
+            const show = isAll || selected.includes(anc);
+            row.style.display = show ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // Sync "All" checkbox
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='anc']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        document.getElementById("anc-all").checked = (checkedBoxes.length === allBoxes.length);
+    }
+
+    document.getElementById("anc-all").addEventListener("change", function() {
+        document.querySelectorAll("input[name='anc']").forEach(cb => cb.checked = this.checked);
+        applyANCFilter();
+    });
+
+    filterContainer.addEventListener("change", function(e) {
+        if (e.target.name === "anc") {
+            applyANCFilter();
+        }
+    });
+
+    // Reset filters on page reload
+    window.addEventListener("pageshow", function() {
+        document.querySelectorAll("input[name='anc']").forEach(cb => cb.checked = true);
+        document.getElementById("anc-all").checked = true;
+        applyANCFilter();
+    });
+
+    // Initial apply
+    applyANCFilter();
+});
+</script>
+
+
+
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const table = document.getElementById("pcbuild-table");
@@ -698,6 +1238,14 @@ document.addEventListener("DOMContentLoaded", function() {
     filterRows();
 });
 </script>
+
+
+
+
+
+
+
+
 
 <script>
 // PRICE FILTERING
@@ -910,238 +1458,13 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 
-<script>
-// Interface filtering
-document.addEventListener("DOMContentLoaded", function() {
-    const table = document.getElementById("pcbuild-table");
-    const tableRows = table.querySelectorAll("tbody tr");
-    const filterContainer = document.getElementById("interface-filter");
-    const interfaceSet = new Set();
 
-    const VISIBLE_COUNT = 4;
-    let expanded = false;
 
-    // Step 1: Collect all unique interface types from table
-    tableRows.forEach(row => {
-        const iface = row.querySelector(".interface-cell")?.textContent.trim() || '-';
-        interfaceSet.add(iface);
-    });
 
-    const interfaces = Array.from(interfaceSet).sort(); // Sort alphabetically
-    const checkboxElements = [];
 
-    // Step 2: Create checkboxes
-    interfaces.forEach(iface => {
-        const label = document.createElement("label");
-        label.innerHTML =
-            `<input type="checkbox" name="interface" value="${iface}" checked> ${iface}`;
-        label.style.display = 'block';
-        checkboxElements.push(label);
-    });
 
-    // Step 3: Render checkboxes
-    checkboxElements.forEach((el, index) => {
-        if (index >= VISIBLE_COUNT) {
-            el.style.display = 'none';
-        }
-        filterContainer.appendChild(el);
-    });
 
-    // Step 4: Add Show More/Show Less
-    const toggleLink = document.createElement("a");
-    toggleLink.href = "#";
-    toggleLink.textContent = "Show more";
-    toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
-    toggleLink.style.marginTop = "5px";
-    toggleLink.style.fontSize = "14px";
-    toggleLink.style.color = "#0066cc";
-    filterContainer.appendChild(toggleLink);
 
-    // Step 5: Create "All" Checkbox
-    const allCheckbox = document.createElement("label");
-    allCheckbox.innerHTML = `<input type="checkbox" id="interface-all" checked> All`;
-    filterContainer.insertBefore(allCheckbox, filterContainer.firstChild);
-
-    // Zebra stripe helper
-    function applyZebraStriping() {
-        const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
-            .filter(row => row.style.display !== "none");
-        visibleRows.forEach((row, index) => {
-            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
-        });
-    }
-
-    // Step 6: Apply interface filtering
-    function applyInterfaceFilter() {
-        const selected = Array.from(document.querySelectorAll("input[name='interface']:checked"))
-            .map(cb => cb.value);
-        const isAll = document.getElementById("interface-all").checked;
-
-        tableRows.forEach(row => {
-            const iface = row.querySelector(".interface-cell")?.textContent.trim() || '-';
-            const show = isAll || selected.includes(iface);
-            row.style.display = show ? "" : "none";
-        });
-
-        updateAllCheckboxState();
-        applyZebraStriping();
-    }
-
-    // Update "All" checkbox
-    function updateAllCheckboxState() {
-        const allBoxes = Array.from(document.querySelectorAll("input[name='interface']"));
-        const checkedBoxes = allBoxes.filter(cb => cb.checked);
-        document.getElementById("interface-all").checked = (checkedBoxes.length === allBoxes.length);
-    }
-
-    // "All" toggle
-    document.getElementById("interface-all").addEventListener("change", function() {
-        const allBoxes = document.querySelectorAll("input[name='interface']");
-        allBoxes.forEach(cb => cb.checked = this.checked);
-        applyInterfaceFilter();
-    });
-
-    // Individual interface checkbox change
-    filterContainer.addEventListener("change", function(e) {
-        if (e.target.name === "interface") {
-            applyInterfaceFilter();
-        }
-    });
-
-    // Show more / less logic
-    toggleLink.addEventListener("click", function(e) {
-        e.preventDefault();
-        expanded = !expanded;
-
-        checkboxElements.forEach((el, index) => {
-            if (index >= VISIBLE_COUNT) {
-                el.style.display = expanded ? "block" : "none";
-            }
-        });
-
-        toggleLink.textContent = expanded ? "Show less" : "Show more";
-    });
-
-    // Initial filter
-    applyInterfaceFilter();
-});
-</script>
-
-<script>
-// PORTS filtering
-document.addEventListener("DOMContentLoaded", function() {
-    const table = document.getElementById("pcbuild-table");
-    const tableRows = table.querySelectorAll("tbody tr");
-    const filterContainer = document.getElementById("ports-filter");
-    const portsSet = new Set();
-
-    const VISIBLE_COUNT = 4;
-    let expanded = false;
-
-    // Step 1: Collect all unique ports values
-    tableRows.forEach(row => {
-        const port = row.querySelector(".ports-cell")?.textContent.trim() || '-';
-        portsSet.add(port);
-    });
-
-    const ports = Array.from(portsSet).sort();
-    const checkboxElements = [];
-
-    // Step 2: Build checkboxes
-    ports.forEach(port => {
-        const label = document.createElement("label");
-        label.innerHTML =
-            `<input type="checkbox" name="ports" value="${port}" checked> ${port}`;
-        label.style.display = 'block';
-        checkboxElements.push(label);
-    });
-
-    // Step 3: Render checkboxes
-    checkboxElements.forEach((el, index) => {
-        if (index >= VISIBLE_COUNT) {
-            el.style.display = 'none';
-        }
-        filterContainer.appendChild(el);
-    });
-
-    // Step 4: Add Show More/Show Less link
-    const toggleLink = document.createElement("a");
-    toggleLink.href = "#";
-    toggleLink.textContent = "Show more";
-    toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
-    toggleLink.style.marginTop = "5px";
-    toggleLink.style.fontSize = "14px";
-    toggleLink.style.color = "#0066cc";
-    filterContainer.appendChild(toggleLink);
-
-    // Step 5: Create "All" checkbox
-    const allCheckbox = document.createElement("label");
-    allCheckbox.innerHTML = `<input type="checkbox" id="ports-all" checked> All`;
-    filterContainer.insertBefore(allCheckbox, filterContainer.firstChild);
-
-    function applyZebraStriping() {
-        const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
-            .filter(row => row.style.display !== "none");
-        visibleRows.forEach((row, index) => {
-            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
-        });
-    }
-
-    // Step 6: Filtering logic
-    function applyPortsFilter() {
-        const selected = Array.from(document.querySelectorAll("input[name='ports']:checked"))
-            .map(cb => cb.value);
-        const isAll = document.getElementById("ports-all").checked;
-
-        tableRows.forEach(row => {
-            const port = row.querySelector(".ports-cell")?.textContent.trim() || '-';
-            const show = isAll || selected.includes(port);
-            row.style.display = show ? "" : "none";
-        });
-
-        updateAllCheckboxState();
-        applyZebraStriping();
-    }
-
-    // "All" state updater
-    function updateAllCheckboxState() {
-        const allBoxes = Array.from(document.querySelectorAll("input[name='ports']"));
-        const checkedBoxes = allBoxes.filter(cb => cb.checked);
-        document.getElementById("ports-all").checked = (checkedBoxes.length === allBoxes.length);
-    }
-
-    // Handle "All" checkbox
-    document.getElementById("ports-all").addEventListener("change", function() {
-        const allBoxes = document.querySelectorAll("input[name='ports']");
-        allBoxes.forEach(cb => cb.checked = this.checked);
-        applyPortsFilter();
-    });
-
-    // Handle individual port checkbox
-    filterContainer.addEventListener("change", function(e) {
-        if (e.target.name === "ports") {
-            applyPortsFilter();
-        }
-    });
-
-    // Show more / less toggling
-    toggleLink.addEventListener("click", function(e) {
-        e.preventDefault();
-        expanded = !expanded;
-
-        checkboxElements.forEach((el, index) => {
-            if (index >= VISIBLE_COUNT) {
-                el.style.display = expanded ? "block" : "none";
-            }
-        });
-
-        toggleLink.textContent = expanded ? "Show less" : "Show more";
-    });
-
-    // Initial apply
-    applyPortsFilter();
-});
-</script>
 
 <script>
 // COLOR filtering
@@ -1367,4 +1690,4 @@ document.addEventListener('DOMContentLoaded', function() {
     //include('parts-footer.php');
     return ob_get_clean();
 }
-add_shortcode('pcbuild_wired_network', 'aawp_pcbuild_display_parts_wired_network');
+add_shortcode('pcbuild_headphones', 'aawp_pcbuild_display_parts_headphones');

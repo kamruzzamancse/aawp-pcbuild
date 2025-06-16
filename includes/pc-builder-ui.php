@@ -302,6 +302,26 @@ function pcbuild_render_ui_shortcode() {
                                 <?php endif; ?>
                             </div>
 
+                            <!-- Wireless Network Adapters selection row -->
+                            <div id="wireless-network-adapter-row" class="row" >
+                                <div class="comp card">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/wireless-network-adapters'); ?>">
+                                        <span class="componentName">Wireless Network Adapters</span>
+                                    </a>
+                                </div>
+                                <div class="selection card">
+                                    <button class="selectionBTN">
+                                        <span style='font-size:20px;'>&#43;</span>
+                                        <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/wireless-network-adapters'); ?>">
+                                            <span>Choose A Wireless Network Adapter</span>
+                                        </a>
+                                    </button>
+                                </div>
+                                <?php if (!isMobile()): ?>
+                                    <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php endif; ?>
+                            </div>
+
                             <div class="category-row">
                               <div class="category-label">Expansion Cards /<br> Networking</div>
                               <div class="category-items">
@@ -322,13 +342,24 @@ function pcbuild_render_ui_shortcode() {
                             <div class="category-row">
                               <div class="category-label">Peripherals</div>
                               <div class="category-items">
-                                <a href="#">Headphones</a>
-                                <a href="#">Keyboards</a>
-                                <a href="#">Mice</a>
-                                <a href="#">Speakers</a>
-                                <a href="#">Webcams</a>
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/headphones'); ?>">
+                                  <span class="componentName">Headphones</span>
+                                </a>
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/keyboards'); ?>">
+                                  <span class="componentName">Keyboards</span>
+                                </a>
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/mice'); ?>">
+                                  <span class="componentName">Mice</span>
+                                </a>
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/speakers'); ?>">
+                                  <span class="componentName">Speakers</span>
+                                </a>
+                                <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/webcams'); ?>">
+                                  <span class="componentName">Webcams</span>
+                                </a>
                               </div>
                             </div>
+
 
                             <div class="category-row">
                               <div class="category-label">Accessories / Other</div>
