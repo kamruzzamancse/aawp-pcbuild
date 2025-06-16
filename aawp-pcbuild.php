@@ -37,6 +37,7 @@ require_once AAWP_PCBUILD_PATH . 'includes/shortcode-power-supply.php';
 require_once AAWP_PCBUILD_PATH . 'includes/shortcode-operating-system.php';
 require_once AAWP_PCBUILD_PATH . 'includes/shortcode-monitor.php';
 require_once AAWP_PCBUILD_PATH . 'includes/shortcode-sound-cards.php';
+require_once AAWP_PCBUILD_PATH . 'includes/shortcode-wired-network.php';
 require_once AAWP_PCBUILD_PATH . 'includes/admin-settings.php';
 require_once AAWP_PCBUILD_PATH . 'includes/pc-builder-ui.php';
 

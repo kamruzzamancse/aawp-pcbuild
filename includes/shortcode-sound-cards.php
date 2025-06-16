@@ -90,7 +90,44 @@ function aawp_pcbuild_display_parts_sound_cards($atts) {
                         <button class="filter-toggle">−</button>
                     </div>
                     <div class="filter-options" id="channels-filter">
-                        <!-- Filters will be injected here -->
+                        <label><input type="checkbox" id="channel-all" checked> All</label><br/>
+                        <!-- Dynamic checkboxes will be injected here -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+                    <div class="filter-header">
+                        <strong>DIGITAL AUDIO</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="digital-audio-filter">
+                        <label><input type="checkbox" id="digital-audio-all" checked> All</label><br/>
+                        <!-- Dynamic checkboxes will be injected here -->
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top: 20px;"> 
+                    <div class="filter-header">
+                        <strong>SIGNAL-TO-NOISE RATIO</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="snr-filter" style="display: block;">
+                        <div id="snr-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="snr-min-label">0 dB</span>
+                            <span id="snr-max-label">0 dB</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-bottom: 20px; margin-top: 20px;">
+                    <div class="filter-header">
+                        <strong>SAMPLE RATE</strong>
+                        <button class="filter-toggle">−</button>
+                    </div>
+                    <div class="filter-options" id="sample-rate-filter" style="display: block;">
+                        <div id="sample-rate-slider" style="margin-top: 15px;"></div>
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                            <span id="sample-rate-min-label">0 kHz</span>
+                            <span id="sample-rate-max-label">0 kHz</span>
+                        </div>
                     </div>
                 </div>
 
@@ -145,6 +182,8 @@ function aawp_pcbuild_display_parts_sound_cards($atts) {
                         $title_features = $item['ItemInfo']['Title']['DisplayValue'] ?? ''; // Title value
                         $features = $item['ItemInfo']['Features']['DisplayValues'] ?? []; // Feature values
                         $all_specs = array_merge([$title_features], $features);  // Merging Title and Features for spec extraction
+                        echo print_r($all_specs);
+                        break;
 
                         // Define a list of known chipset names to match
                         $known_chipsets = [
@@ -207,12 +246,40 @@ function aawp_pcbuild_display_parts_sound_cards($atts) {
                             
                             // Logic for extracting "Interface" value (e.g., PCIe, USB, HDMI)
                             elseif (strpos($spec_lower, 'interface') !== false) {
-                                foreach ($known_interfaces as $interface_name) {
-                                    if (strpos($spec_lower, $interface_name) !== false) {
-                                        $interface = esc_html($interface_name);  // Capture the interface type (e.g., PCIe, USB)
-                                        break;  // Break as soon as a known interface is found
+                                // Define known interface types to detect
+                                $known_interfaces = [
+                                    'pcie' => 'PCIe',
+                                    'pci' => 'PCI',
+                                    'usb-c' => 'USB-C',
+                                    'usb' => 'USB',
+                                    'thunderbolt' => 'Thunderbolt',
+                                    'firewire' => 'FireWire',
+                                    'hdmi' => 'HDMI',
+                                    'optical' => 'Optical',
+                                    'sata' => 'SATA',
+                                ];
+
+                                // Default value
+                                $interface = '-';
+
+                                foreach ($all_specs as $spec) {
+                                    $spec_lower = strtolower($spec);
+
+                                    // Search for each known interface
+                                    foreach ($known_interfaces as $key => $label) {
+                                        if (strpos($spec_lower, $key) !== false) {
+                                            $interface = esc_html($label);
+                                            break 2; // Break both loops after first match
+                                        }
+                                    }
+
+                                    // Fallback: try to match patterns like "Interface: PCIe"
+                                    if (preg_match('/interface[:\s\-]+([a-z0-9\-]+)/i', $spec, $matches)) {
+                                        $interface = esc_html(strtoupper($matches[1]));
+                                        break;
                                     }
                                 }
+
                             }
                         }
                         $rating_count = display_rating_and_count($sellerRating, $sellerCount);
@@ -283,44 +350,204 @@ function aawp_pcbuild_display_parts_sound_cards($atts) {
     </div>
 
 <script>
-    // Channels filtering
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const sliderContainer = document.getElementById("sample-rate-slider");
+    const minLabel = document.getElementById("sample-rate-min-label");
+    const maxLabel = document.getElementById("sample-rate-max-label");
+
+    if (!table || !sliderContainer) return;
+
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+    const sampleRates = rows.map(row => {
+        const rateText = row.querySelector("button.add-to-builder")?.dataset.sampleRate || "0";
+        const cleaned = rateText.replace(/[^\d.]/g, ""); // Remove kHz and whitespace
+        const value = parseFloat(cleaned);
+        return isNaN(value) ? 0 : value;
+    });
+
+    const minRate = Math.floor(Math.min(...sampleRates));
+    const maxRate = Math.ceil(Math.max(...sampleRates));
+    let currentMin = minRate;
+    let currentMax = maxRate;
+
+    minLabel.textContent = `${minRate} kHz`;
+    maxLabel.textContent = `${maxRate} kHz`;
+
+    sliderContainer.innerHTML = `
+        <input type="range" class="min-range-bg" id="min-sample-rate" min="${minRate}" max="${maxRate}" value="${minRate}" step="1" style="width: 100%;">
+        <input type="range" class="max-range-bg" id="max-sample-rate" min="${minRate}" max="${maxRate}" value="${maxRate}" step="1" style="width: 100%; margin-top: 10px;">
+    `;
+
+    const minSlider = document.getElementById("min-sample-rate");
+    const maxSlider = document.getElementById("max-sample-rate");
+
+    function applyZebraStriping() {
+        const visibleRows = rows.filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function filterBySampleRate() {
+        const minVal = parseFloat(minSlider.value);
+        const maxVal = parseFloat(maxSlider.value);
+        currentMin = minVal;
+        currentMax = maxVal;
+
+        minLabel.textContent = `${minVal} kHz`;
+        maxLabel.textContent = `${maxVal} kHz`;
+
+        rows.forEach(row => {
+            const rateText = row.querySelector("button.add-to-builder")?.dataset.sampleRate || "0";
+            const rateVal = parseFloat(rateText.replace(/[^\d.]/g, "")) || 0;
+
+            row.style.display = (rateVal >= minVal && rateVal <= maxVal) ? "" : "none";
+        });
+
+        applyZebraStriping();
+    }
+
+    minSlider.addEventListener("input", () => {
+        if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+            minSlider.value = maxSlider.value;
+        }
+        filterBySampleRate();
+    });
+
+    maxSlider.addEventListener("input", () => {
+        if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+            maxSlider.value = minSlider.value;
+        }
+        filterBySampleRate();
+    });
+
+    filterBySampleRate();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("pcbuild-table");
+    const sliderContainer = document.getElementById("snr-slider");
+    const minLabel = document.getElementById("snr-min-label");
+    const maxLabel = document.getElementById("snr-max-label");
+
+    if (!table || !sliderContainer) return;
+
+    const rows = Array.from(table.querySelectorAll("tbody tr"));
+    const snrValues = rows.map(row => {
+        const snrText = row.querySelector("button.add-to-builder")?.dataset.snr || "0";
+        const cleaned = snrText.replace(/[^\d.]/g, ""); // remove dB and whitespace
+        const value = parseFloat(cleaned);
+        return isNaN(value) ? 0 : value;
+    });
+
+    const minSNR = Math.floor(Math.min(...snrValues));
+    const maxSNR = Math.ceil(Math.max(...snrValues));
+    let currentMin = minSNR;
+    let currentMax = maxSNR;
+
+    // Set default labels
+    minLabel.textContent = `${minSNR} dB`;
+    maxLabel.textContent = `${maxSNR} dB`;
+
+    // Create range sliders
+    sliderContainer.innerHTML = `
+        <input type="range" class="min-range-bg" id="min-snr" min="${minSNR}" max="${maxSNR}" value="${minSNR}" step="1" style="width: 100%;">
+        <input type="range" class="max-range-bg" id="max-snr" min="${minSNR}" max="${maxSNR}" value="${maxSNR}" step="1" style="width: 100%; margin-top: 10px;">
+    `;
+
+    const minSlider = document.getElementById("min-snr");
+    const maxSlider = document.getElementById("max-snr");
+
+    function applyZebraStriping() {
+        const visibleRows = rows.filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+        });
+    }
+
+    function filterBySNR() {
+        const minVal = parseFloat(minSlider.value);
+        const maxVal = parseFloat(maxSlider.value);
+        currentMin = minVal;
+        currentMax = maxVal;
+
+        minLabel.textContent = `${minVal} dB`;
+        maxLabel.textContent = `${maxVal} dB`;
+
+        rows.forEach(row => {
+            const snrText = row.querySelector("button.add-to-builder")?.dataset.snr || "0";
+            const snrVal = parseFloat(snrText.replace(/[^\d.]/g, "")) || 0;
+
+            row.style.display = (snrVal >= minVal && snrVal <= maxVal) ? "" : "none";
+        });
+
+        applyZebraStriping();
+    }
+
+    minSlider.addEventListener("input", () => {
+        if (parseFloat(minSlider.value) > parseFloat(maxSlider.value)) {
+            minSlider.value = maxSlider.value;
+        }
+        filterBySNR();
+    });
+
+    maxSlider.addEventListener("input", () => {
+        if (parseFloat(maxSlider.value) < parseFloat(minSlider.value)) {
+            maxSlider.value = minSlider.value;
+        }
+        filterBySNR();
+    });
+
+    // Initial application
+    filterBySNR();
+});
+</script>
+
+<script>
     document.addEventListener("DOMContentLoaded", function () {
         const table = document.getElementById("pcbuild-table");
         const tableRows = table.querySelectorAll("tbody tr");
-        const filterContainer = document.getElementById("channels-filter");
-        const channelsSet = new Set();
+        const filterContainer = document.getElementById("digital-audio-filter");
+        const audioSet = new Set();
 
-        const VISIBLE_COUNT = 4; // How many channels to show initially
+        const VISIBLE_COUNT = 4;
         let expanded = false;
 
-        // Collect unique channels from the `data-channels` attribute
+        // Collect all unique digital audio values
         tableRows.forEach(row => {
-            const channel = row.querySelector("button.add-to-builder")?.dataset.channels || "Unknown";
-            if (channel !== "Unknown" && channel !== "-") {
-                channelsSet.add(channel); // Collect unique channel values (like "7.1", "10", etc.)
-            }
+            const value = row.querySelector("button.add-to-builder")?.dataset.digitalAudio || "Unknown";
+            audioSet.add(value.trim());
         });
 
-        // Prepare checkboxes for each unique channel
-        const channels = Array.from(channelsSet).sort(); // Sort alphabetically
+        const values = Array.from(audioSet).sort();
         const checkboxElements = [];
 
-        channels.forEach(channel => {
+        // Only create "All" checkbox if it's NOT already in the DOM
+        if (!document.getElementById("digital-audio-all")) {
+            const allWrapper = document.createElement("label");
+            allWrapper.innerHTML = `<input type="checkbox" id="digital-audio-all" checked> All`;
+            allWrapper.style.display = 'block';
+            filterContainer.appendChild(allWrapper);
+        }
+
+        // Create individual checkboxes
+        values.forEach(value => {
             const label = document.createElement("label");
-            label.innerHTML = `<input type="checkbox" name="channel" value="${channel}" checked> ${channel}`;
-            label.style.display = 'block'; // Ensure each checkbox is on its own line
+            label.innerHTML = `<input type="checkbox" name="digital-audio" value="${value}" checked> ${value}`;
+            label.style.display = 'block';
             checkboxElements.push(label);
         });
 
-        // Append the checkboxes to the filter container
         checkboxElements.forEach((el, index) => {
             if (index >= VISIBLE_COUNT) {
-                el.style.display = 'none'; // Hide extra checkboxes initially
+                el.style.display = 'none';
             }
             filterContainer.appendChild(el);
         });
 
-        // Add Show more / Show less link for filtering
         const toggleLink = document.createElement("a");
         toggleLink.href = "#";
         toggleLink.textContent = "Show more";
@@ -330,7 +557,110 @@ function aawp_pcbuild_display_parts_sound_cards($atts) {
         toggleLink.style.color = "#0066cc";
         filterContainer.appendChild(toggleLink);
 
-        // Zebra stripe function to apply alternating row background
+        function applyZebraStriping() {
+            const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
+            visibleRows.forEach((row, index) => {
+                row.style.backgroundColor = (index % 2 === 0) ? "#d4d4d4" : "#ebebeb";
+            });
+        }
+
+        const allCheckbox = document.getElementById("digital-audio-all");
+
+        function updateAllCheckboxState() {
+            const allBoxes = Array.from(document.querySelectorAll("input[name='digital-audio']"));
+            const checkedBoxes = allBoxes.filter(cb => cb.checked);
+            allCheckbox.checked = checkedBoxes.length === allBoxes.length;
+        }
+
+        function applyAudioFilter() {
+            const selected = Array.from(document.querySelectorAll("input[name='digital-audio']:checked"))
+                .map(cb => cb.value);
+
+            tableRows.forEach(row => {
+                const value = row.querySelector("button.add-to-builder")?.dataset.digitalAudio?.trim();
+                row.style.display = selected.includes(value) ? "" : "none";
+            });
+
+            updateAllCheckboxState();
+            applyZebraStriping();
+        }
+
+        allCheckbox.addEventListener("change", function () {
+            const allBoxes = document.querySelectorAll("input[name='digital-audio']");
+            allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
+            applyAudioFilter();
+        });
+
+        filterContainer.addEventListener("change", function (e) {
+            if (e.target.name === "digital-audio") {
+                applyAudioFilter();
+            }
+        });
+
+        toggleLink.addEventListener("click", function (e) {
+            e.preventDefault();
+            expanded = !expanded;
+
+            checkboxElements.forEach((el, index) => {
+                if (index >= VISIBLE_COUNT) {
+                    el.style.display = expanded ? "block" : "none";
+                }
+            });
+
+            toggleLink.textContent = expanded ? "Show less" : "Show more";
+        });
+
+        applyAudioFilter();
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("pcbuild-table");
+        const tableRows = table.querySelectorAll("tbody tr");
+        const filterContainer = document.getElementById("channels-filter");
+        const channelsSet = new Set();
+
+        const VISIBLE_COUNT = 4;
+        let expanded = false;
+
+        // Collect unique channels
+        tableRows.forEach(row => {
+            const channel = row.querySelector("button.add-to-builder")?.dataset.channels || "Unknown";
+            if (channel !== "Unknown" && channel !== "-") {
+                channelsSet.add(channel);
+            }
+        });
+
+        const channels = Array.from(channelsSet).sort();
+        const checkboxElements = [];
+
+        // Create checkbox inputs
+        channels.forEach(channel => {
+            const label = document.createElement("label");
+            label.innerHTML = `<input type="checkbox" name="channel" value="${channel}" checked> ${channel}`;
+            label.style.display = 'block';
+            checkboxElements.push(label);
+        });
+
+        // Add checkboxes to DOM
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) {
+                el.style.display = 'none';
+            }
+            filterContainer.appendChild(el);
+        });
+
+        // Show more / Show less toggle
+        const toggleLink = document.createElement("a");
+        toggleLink.href = "#";
+        toggleLink.textContent = "Show more";
+        toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
+        toggleLink.style.marginTop = "5px";
+        toggleLink.style.fontSize = "14px";
+        toggleLink.style.color = "#0066cc";
+        filterContainer.appendChild(toggleLink);
+
         function applyZebraStriping() {
             const visibleRows = Array.from(table.querySelectorAll("tbody tr")).filter(row => row.style.display !== "none");
             visibleRows.forEach((row, index) => {
@@ -346,36 +676,31 @@ function aawp_pcbuild_display_parts_sound_cards($atts) {
             allCheckbox.checked = checkedBoxes.length === allBoxes.length;
         }
 
-        // Apply the channel filter based on selected checkboxes
         function applyChannelFilter() {
             const selected = Array.from(document.querySelectorAll("input[name='channel']:checked"))
-                .map(cb => cb.value);  // Get selected channel values (e.g., "7.1", "10", "44.1")
+                .map(cb => cb.value);
 
             tableRows.forEach(row => {
-                const channel = row.querySelector("button.add-to-builder")?.dataset.channels;  // Get the `data-channels` value
-                const show = selected.includes(channel);  // Show or hide the row based on the selected channels
-                row.style.display = show ? "" : "none";
+                const channel = row.querySelector("button.add-to-builder")?.dataset.channels;
+                row.style.display = selected.includes(channel) ? "" : "none";
             });
 
             updateAllCheckboxState();
             applyZebraStriping();
         }
 
-        // Toggle "All" checkbox functionality
         allCheckbox.addEventListener("change", function () {
             const allBoxes = document.querySelectorAll("input[name='channel']");
             allBoxes.forEach(cb => cb.checked = allCheckbox.checked);
             applyChannelFilter();
         });
 
-        // Individual checkbox change functionality
         filterContainer.addEventListener("change", function (e) {
             if (e.target.name === "channel") {
                 applyChannelFilter();
             }
         });
 
-        // Show more/less logic for checkboxes
         toggleLink.addEventListener("click", function (e) {
             e.preventDefault();
             expanded = !expanded;
@@ -389,7 +714,6 @@ function aawp_pcbuild_display_parts_sound_cards($atts) {
             toggleLink.textContent = expanded ? "Show less" : "Show more";
         });
 
-        // Initial apply of the filter
         applyChannelFilter();
     });
 </script>

@@ -262,7 +262,7 @@ function pcbuild_render_ui_shortcode() {
                             </div>
 
                             <!-- Sound Card selection row showing pricing, availability, and purchase options -->
-                            <div class="row" style="display:none">
+                            <div class="row">
                                 <div class="comp card">
                                     <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/sound-card'); ?>">
                                         <span class="componentName">Sound Cards</span>
@@ -281,7 +281,27 @@ function pcbuild_render_ui_shortcode() {
                                 <?php endif; ?>
                             </div>
 
-                            
+                            <div class="row">
+                                <div class="comp card">
+                                    <a href="javascript:void(0)" class="pc-part"
+                                        data-redirect="<?php echo site_url('/products/wired-network'); ?>">
+                                        <span class="componentName">Wired Network Adapters</span>
+                                    </a>
+                                </div>
+                                <div class="selection card">
+                                    <button class="selectionBTN">
+                                        <span style='font-size:20px;'>&#43;</span>
+                                        <a href="javascript:void(0)" class="pc-part"
+                                            data-redirect="<?php echo site_url('/products/wired-network'); ?>">
+                                            <span>Choose A Wired Network Adapter</span>
+                                        </a>
+                                    </button>
+                                </div>
+                                <?php if (!isMobile()): ?>
+                                <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php endif; ?>
+                            </div>
+
                             <div class="category-row">
                               <div class="category-label">Expansion Cards /<br> Networking</div>
                               <div class="category-items">
