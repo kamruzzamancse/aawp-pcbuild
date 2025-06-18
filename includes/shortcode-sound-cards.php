@@ -35,6 +35,7 @@ function aawp_pcbuild_display_parts_sound_cards($atts) {
     $display_items = array_slice($all_items, $start, $items_per_page);
 
     ob_start();
+    //include('parts-header.php');
     ?>
 
     <div style="background-color:#41466c; padding:20px; color:#fff; font-size:24px; font-weight:bold; text-align:center; margin-bottom:40px">
@@ -304,68 +305,148 @@ function aawp_pcbuild_display_parts_sound_cards($atts) {
                     ?>
 
                     <tr style="background-color: <?php echo $row_bg; ?>;">
-                        <td style="padding: 10px; text-align: center;">
-                            <?php if ($image): ?>
-                                <img src="<?php echo esc_url($image); ?>" alt="<?php echo esc_attr($title); ?>" style="width:125px; height:auto; border-radius:4px;">
-                            <?php else: ?>
-                                <span>No Image</span>
-                            <?php endif; ?>
-                        </td>
-                        <td style="padding: 10px; font-weight: 600;"><?php echo $title; ?></td>
-                        <td style="padding: 10px;"><?php echo $channels; ?></td>
-                        <td style="padding: 10px;"><?php echo $digital_audio; ?></td>
-                        <td style="padding: 10px;"><?php echo $snr; ?></td>
-                        <td style="padding: 10px;"><?php echo $sample_rate; ?></td>
-                        <td style="padding: 10px;"><?php echo $chipset; ?></td>
-                        <td style="padding: 10px;"><?php echo $interface; ?></td>
-                        <td style="padding: 10px;" data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"><?php echo $rating_count; ?></td>
-                        <td style="padding: 10px; font-weight: 600;"><?php echo esc_html($price); ?></td>
-                        <td style="padding:10px;">
-                            <button class="add-to-builder"
-                                data-asin="<?php echo esc_attr($asin); ?>"
-                                data-title="<?php echo esc_attr($full_title); ?>"
-                                data-image="<?php echo esc_url($image); ?>"
-                                data-base="<?php echo esc_attr($price); ?>"
-                                data-shipping="FREE"
-                                data-availability="<?php echo esc_attr($availability); ?>"
-                                data-price="<?php echo esc_attr($price); ?>"
-                                data-category="<?php echo esc_attr($category); ?>"
-                                data-affiliate-url="<?php echo esc_url($product_url); ?>"
-                                data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
-                                data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
-                                data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
-                                data-channels="<?php echo esc_attr($channels); ?>"
-                                data-digital-audio="<?php echo esc_attr($digital_audio); ?>"
-                                data-snr="<?php echo esc_attr($snr); ?>"
-                                data-sample-rate="<?php echo esc_attr($sample_rate); ?>"
-                                data-interface="<?php echo esc_attr($interface); ?>"
-                                style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
-                                <?php _e('Add', 'aawp-pcbuild'); ?>
-                            </button>
-                        </td>
-                    </tr>
+                    <td style="padding: 10px; text-align: center;">
+                        <?php if ($image): ?>
+                            <img src="<?php echo esc_url($image); ?>" alt="<?php echo esc_attr($title); ?>" style="width:125px; height:auto; border-radius:4px;">
+                        <?php else: ?>
+                            <span>No Image</span>
+                        <?php endif; ?>
+                    </td>
+                    <td style="padding: 10px; font-weight: 600;"><?php echo $title; ?></td>
+                    <td style="padding: 10px;"><?php echo $channels; ?></td>
+                    <td style="padding: 10px;"><?php echo $digital_audio; ?></td>
+                    <td style="padding: 10px;"><?php echo $snr; ?></td>
+                    <td style="padding: 10px;"><?php echo $sample_rate; ?></td>
+                    <td style="padding: 10px;"><?php echo $chipset; ?></td>
+                    <td style="padding: 10px;"><?php echo $interface; ?></td>
+                    <td style="padding: 10px;" data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"><?php echo $rating_count; ?></td>
+                    <td style="padding: 10px; font-weight: 600;"><?php echo esc_html($price); ?></td>
+                    <td style="padding:10px;">
+                    <button class="add-to-builder"
+                        data-asin="<?php echo esc_attr($asin); ?>"
+                        data-title="<?php echo esc_attr($full_title); ?>"
+                        data-image="<?php echo esc_url($image); ?>"
+                        data-base="<?php echo esc_attr($price); ?>"
+                        data-shipping="FREE"
+                        data-availability="<?php echo esc_attr($availability); ?>"
+                        data-price="<?php echo esc_attr($price); ?>"
+                        data-category="<?php echo esc_attr($category); ?>"
+                        data-affiliate-url="<?php echo esc_url($product_url); ?>"
+                        data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+                        data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
+                        data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
+                        data-channels="<?php echo esc_attr($channels); ?>"
+                        data-digital-audio="<?php echo esc_attr($digital_audio); ?>"
+                        data-snr="<?php echo esc_attr($snr); ?>"
+                        data-sample-rate="<?php echo esc_attr($sample_rate); ?>"
+                        data-interface="<?php echo esc_attr($interface); ?>"
+                        style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
+                        <?php _e('Add', 'aawp-pcbuild'); ?>
+                    </button>
+                </td>
+    
+                <!-- Mobile view structure - will be shown via CSS media queries -->
+                <td class="product-cell mobile-only" style="display:none;">
+                    <div class="image-container">
+                        <img src="<?php echo esc_url($image); ?>" alt="<?php echo $title; ?>" class="product-image">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name"><?php echo $title; ?></div>
+                        <div class="star-rating"><span class="review-count"><?php echo $rating_count; ?></span></div>
+                        
+                        <!-- Specs container - matching the desktop view data -->
+                        <div class="specs-container">
+                            <div class="spec-group">
+                                <div class="spec-label">Channels</div>
+                                <div class="spec-value"><?php echo esc_html($channels); ?></div>
+                            </div>
+                            <div class="spec-group">
+                                <div class="spec-label">Digital Audio</div>
+                                <div class="spec-value"><?php echo esc_html($digital_audio); ?></div>
+                            </div>
+                            <div class="spec-group">
+                                <div class="spec-label">SNR</div>
+                                <div class="spec-value"><?php echo esc_html($snr); ?></div>
+                            </div>
+                            <div class="spec-group">
+                                <div class="spec-label">Sample Rate</div>
+                                <div class="spec-value"><?php echo esc_html($sample_rate); ?></div>
+                            </div>
+                            <div class="spec-group">
+                                <div class="spec-label">Chipset</div>
+                                <div class="spec-value"><?php echo esc_html($chipset); ?></div>
+                            </div>
+                            <div class="spec-group">
+                                <div class="spec-label">Interface</div>
+                                <div class="spec-value"><?php echo esc_html($interface); ?></div>
+                            </div>
+                            <div class="spec-group">
+                                <div class="spec-label">Price</div>
+                                <div class="spec-value"><?php echo esc_html($price); ?></div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                
+                <!-- Price and Add button row for mobile -->
+                <td class="price-action-row mobile-only" style="display:none;">
+                    <div class="action-cell">
+                        <button class="add-to-builder" 
+                            data-asin="<?php echo esc_attr($asin); ?>"
+                            data-title="<?php echo esc_attr($full_title); ?>"
+                            data-image="<?php echo esc_url($image); ?>" 
+                            data-base="<?php echo esc_attr($price); ?>"
+                            data-shipping="FREE" 
+                            data-availability="<?php echo esc_attr($availability); ?>"
+                            data-price="<?php echo esc_attr($price); ?>"
+                            data-category="<?php echo esc_attr($category); ?>"
+                            data-affiliate-url="<?php echo esc_url($product_url); ?>"
+                            data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+                            data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
+                            data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
+                            data-channels="<?php echo esc_attr($channels); ?>"
+                            data-digital-audio="<?php echo esc_attr($digital_audio); ?>"
+                            data-snr="<?php echo esc_attr($snr); ?>"
+                            data-sample-rate="<?php echo esc_attr($sample_rate); ?>"
+                            data-interface="<?php echo esc_attr($interface); ?>"
+                            data-chipset="<?php echo esc_attr($chipset); ?>">
+                            <?php _e('Add', 'aawp-pcbuild'); ?>
+                        </button>
+                    </div>
+                </td>
+            </tr>
                     <?php endforeach; ?>
 
                     </tbody>
                 </table>
 
-                <?php if ($total_pages > 1): ?>
-                    <div style="margin-top: 20px; text-align: center;">
-                        <?php for ($i = 1; $i <= $total_pages; $i++):
-                            $url = add_query_arg('pcbuild_page', $i);
-                            $is_active = ($i === $current_page);
-                        ?>
-                            <a href="<?php echo esc_url($url); ?>"
-                                style="margin: 0 5px; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; text-decoration: none;
-                                <?php echo $is_active ? 'background-color: #007bff; color: white;' : 'color: #007bff;'; ?>">
-                                <?php echo $i; ?>
-                            </a>
-                        <?php endfor; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
+             <!-- Pagination UI -->
+            <?php if ($total_pages > 1): ?>
+                <div style="margin-top: 20px; text-align: center;">
+                    <?php for ($i = 1; $i <= $total_pages; $i++):
+                        $url = add_query_arg('pcbuild_page', $i);
+                        $is_active = ($i === $current_page);
+                    ?>
+                        <a href="<?php echo esc_url($url); ?>"
+                            style="margin: 0 5px; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; text-decoration: none;
+                            <?php echo $is_active ? 'background-color: #007bff; color: white;' : 'color: #007bff;'; ?>">
+                            <?php echo $i; ?>
+                        </a>
+                    <?php endfor; ?>
+                </div>
+            <?php endif; ?>
+
         </div>
     </div>
+</div>
+
+<style>
+    .spec-label {
+    font-weight: 700!important;
+    color: #000;
+    font-size: 14px!important;
+}
+</style>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -1069,6 +1150,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         const ratingValue = parseFloat(cell?.dataset.rating || '0');
                         return ratingValue;
                     }
+                    if (key === 'price' ) {
+                        const num = parseFloat(cell.innerText.replace(/[^0-9.]/g, ''));
+                        return isNaN(num) ? 0 : num;
+                    }
+
                     return cell?.innerText.trim().toLowerCase() || '';
                 };
 
@@ -1381,8 +1467,84 @@ document.addEventListener("DOMContentLoaded", function () {
     applyRatingFilter(); // Initial run
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const sidebarToggle = document.querySelector('.pcbuild-sidebar-toggle');
+  const sidebar = document.querySelector('.pcbuild-sidebar-mobile');
+
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    document.removeEventListener('click', handleOutsideClick);
+  }
+
+  function handleOutsideClick(event) {
+    if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+      closeSidebar();
+    }
+  }
+
+  sidebarToggle.addEventListener('click', function (event) {
+    event.stopPropagation();
+    if (sidebar.classList.contains('open')) {
+      closeSidebar();
+    } else {
+      sidebar.classList.add('open');
+      setTimeout(() => {
+        document.addEventListener('click', handleOutsideClick);
+      }, 0);
+    }
+  });
+
+  sidebar.addEventListener('click', function (event) {
+    event.stopPropagation();
+  });
+
+  // Add classes for android or ios devices to body for further CSS if needed
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  if (/android/i.test(ua)) {
+    document.body.classList.add('android-mobile');
+  } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+    document.body.classList.add('ios-mobile');
+  }
+
+  // Mobile/desktop table view toggle
+  function setupMobileView() {
+    const rows = document.querySelectorAll('#pcbuild-table tbody tr');
+
+    function isMobile() {
+      const ua = navigator.userAgent;
+      return (/Mobi|Android|iPhone|iPad|iPod/i.test(ua)) || window.innerWidth <= 768;
+    }
+
+    function updateView() {
+      const mobile = isMobile();
+
+      document.querySelectorAll('.mobile-only').forEach(el => {
+        el.style.display = mobile ? 'flex' : 'none';
+      });
+
+      rows.forEach(row => {
+        row.querySelectorAll('td:not(.mobile-only)').forEach(td => {
+          td.style.display = mobile ? 'none' : '';
+        });
+      });
+
+      const thead = document.querySelector('#pcbuild-table thead');
+      if (thead) {
+        thead.style.display = mobile ? 'none' : '';
+      }
+    }
+
+    updateView();
+    window.addEventListener('resize', updateView);
+  }
+
+  setupMobileView();
+});
+</script>
 
     <?php
+    //include('parts-footer.php');
     return ob_get_clean();
 }
 add_shortcode('pcbuild_parts_sound_cards', 'aawp_pcbuild_display_parts_sound_cards');

@@ -43,7 +43,7 @@ function aawp_pcbuild_display_parts_headphones($atts) {
     $display_items = array_slice($all_items, $start, $items_per_page);
 
     ob_start();
-    
+    //include('parts-header.php');
     ?>
 
 <div
@@ -128,15 +128,15 @@ function aawp_pcbuild_display_parts_headphones($atts) {
                 </div>
             </div>
 
-            <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+            <!-- <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
                 <div class="filter-header">
                     <strong>ENCLOSURE TYPE</strong>
                     <button class="filter-toggle">−</button>
                 </div>
                 <div class="filter-options" id="enclosure-type-filter">
-                    <!-- Filters will be injected here -->
+
                 </div>
-            </div>
+            </div> -->
 
             <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
                 <div class="filter-header">
@@ -183,46 +183,38 @@ function aawp_pcbuild_display_parts_headphones($atts) {
                             <span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Name</span>
                         </th>
                         <th class="sortable-header" data-key="type">
-                            <span class="sort-header-label">
-                                <span class="sort-arrow">&#9654;</span> Type
-                            </span>
+                            <span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Type</span>
                         </th>
+
                         <th class="sortable-header" data-key="frequency_response">
-                            <span class="sort-header-label">Frequency Response</span>
-                            <span class="sort-arrow">&#9654;</span>
+                            <span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Frequency
+                                Response</span>
                         </th>
 
                         <th class="sortable-header" data-key="microphone">
-                            <span class="sort-header-label">Microphone</span>
-                            <span class="sort-arrow">&#9654;</span>
+                            <span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Microphone</span>
                         </th>
 
-                        <th class="sortable-header" data-key="wireless">
-                            <span class="sort-header-label">Wireless</span>
-                            <span class="sort-arrow">&#9654;</span>
+                        <th class="sortable-header" colspan="2" data-key="wireless">
+                            <span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Wireless</span>
                         </th>
 
-                        <th class="sortable-header" colspan="2" data-key="enclosure_type">
-                            <span class="sort-header-label">Enclosure Type</span>
-                            <span class="sort-arrow">&#9654;</span>
-                        </th>
+                        <!-- <th class="sortable-header" colspan="2" data-key="enclosure_type">
+                            <span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Enclosure Type</span>
+                        </th> -->
 
                         <th class="sortable-header" data-key="color">
-                            <span class="sort-header-label">Color</span>
-                            <span class="sort-arrow">&#9654;</span>
+                            <span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Color</span>
                         </th>
-
 
                         <th class="sortable-header" data-key="rating">
-                            <span class="sort-header-label">
-                                <span class="sort-arrow">&#9654;</span> Rating
-                            </span>
+                            <span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Rating</span>
                         </th>
+
                         <th class="sortable-header" data-key="price">
-                            <span class="sort-header-label">
-                                <span class="sort-arrow">&#9654;</span> Price
-                            </span>
+                            <span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Price</span>
                         </th>
+
                         <th style="padding:10px;">Action</th>
                     </tr>
                 </thead>
@@ -283,14 +275,14 @@ function aawp_pcbuild_display_parts_headphones($atts) {
                     <tr class="product-row" style="background-color: <?php echo $row_bg; ?>">
                         <td style="padding: 10px;">
                             <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>"
-                                style="width:125px; height:125px; border-radius:4px;" />
+                                style="min-width:115px; height:115px; border-radius:4px;" />
                         </td>
                         <td style="font-weight:800;"><?php echo $title; ?></td>
-                        <td class="type-cell"><?php echo esc_html($type); ?></td>
+                        <td class="type-cell" style="min-width:100px;"><?php echo esc_html($type); ?></td>
                         <td><?php echo esc_html($frequency_response); ?></td>
                         <td class="microphone-cell"><?php echo esc_html($microphone); ?></td>
                         <td class="wireless-cell"><?php echo esc_html($wireless); ?></td>
-                        <td class="enclosure-type-cell"><?php echo esc_html($enclosure_type); ?></td>
+                        <!-- <td class="enclosure-type-cell"><?php echo esc_html($enclosure_type); ?></td> -->
                         <td class="anc-cell" style="padding:0; margin:0; border:0; width:0; font-size:0;">
                             <span style="display:none;"><?php echo esc_html($anc); ?></span>
                         </td>
@@ -312,6 +304,80 @@ function aawp_pcbuild_display_parts_headphones($atts) {
                                 style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
                                 <?php _e('Add', 'aawp-pcbuild'); ?>
                             </button>
+                        </td>
+
+                        <!-- Mobile view structure - now using same data as desktop -->
+                        <td class="product-cell mobile-only" style="display:none;">
+                            <div class="image-container">
+                                <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>" class="product-image">
+                            </div>
+                            <div class="product-info">
+                                <div class="product-name"><?php echo $title; ?></div>
+                                <div class="star-rating"><span class="review-count"><?php echo $rating_count; ?></span></div>
+
+                                <!-- Specs container - now matching the desktop view data exactly -->
+                                <div class="specs-container">
+                                    <div class="spec-group">
+                                        <div class="spec-label">Type</div>
+                                        <div class="spec-value"><?php echo esc_html($type); ?></div>
+                                    </div>
+                                    <div class="spec-group">
+                                        <div class="spec-label">Frequency Response</div>
+                                        <div class="spec-value"><?php echo esc_html($frequency_response); ?></div>
+                                    </div>
+                                    <div class="spec-group">
+                                        <div class="spec-label">Microphone</div>
+                                        <div class="spec-value"><?php echo esc_html($microphone); ?></div>
+                                    </div>
+                                    <div class="spec-group">
+                                        <div class="spec-label">Wireless</div>
+                                        <div class="spec-value"><?php echo esc_html($wireless); ?></div>
+                                    </div>
+                                    <div class="spec-group">
+                                        <div class="spec-label">ANC</div>
+                                        <div class="spec-value"><?php echo esc_html($anc); ?></div>
+                                    </div>
+                                    <div class="spec-group">
+                                        <div class="spec-label">Color</div>
+                                        <div class="spec-value"><?php echo esc_html($color); ?></div>
+                                    </div>
+                                    <div class="spec-group">
+                                        <div class="spec-label">Manufacturer</div>
+                                        <div class="spec-value"><?php echo esc_attr($manufacturer); ?></div>
+                                    </div>
+                                    <div class="spec-group">
+                                        <div class="spec-label">Price</div>
+                                        <div class="spec-value"><?php echo esc_html($price); ?></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <!-- Price and Add button row for mobile - now using same data as desktop -->
+                        <td class="price-action-row mobile-only" style="display:none;">
+                            <div class="action-cell">
+                                <button class="add-to-builder"
+                                    data-asin="<?php echo esc_attr($asin); ?>"
+                                    data-title="<?php echo esc_attr($full_title); ?>"
+                                    data-image="<?php echo esc_url($image); ?>"
+                                    data-base="<?php echo esc_attr($base_price); ?>"
+                                    data-shipping="FREE"
+                                    data-availability="<?php echo esc_attr($availability); ?>"
+                                    data-price="<?php echo esc_attr($base_price); ?>"
+                                    data-category="<?php echo esc_attr($category); ?>"
+                                    data-affiliate-url="<?php echo esc_url($product_url); ?>"
+                                    data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+                                    data-rating="<?php echo esc_attr($sellerRating); ?>"
+                                    data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
+                                    data-type="<?php echo esc_html($type); ?>"
+                                    data-frequency-response="<?php echo esc_html($frequency_response); ?>"
+                                    data-microphone="<?php echo esc_html($microphone); ?>"
+                                    data-wireless="<?php echo esc_html($wireless); ?>"
+                                    data-anc="<?php echo esc_html($anc); ?>"
+                                    data-color="<?php echo esc_html($color); ?>">
+                                    <?php echo esc_html__('Add', 'aawp-pcbuild'); ?>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -348,6 +414,11 @@ function aawp_pcbuild_display_parts_headphones($atts) {
     font-weight: 700 !important;
     color: #000;
     font-size: 14px !important;
+}
+
+.sortable-header {
+    white-space: nowrap;
+
 }
 </style>
 
@@ -1390,12 +1461,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function getColumnIndex(key) {
         const mapping = {
             name: 2,
-            core_count: 3,
-            base_clock: 4,
-            boost_clock: 5,
-            microarch: 6,
-            rating: 7,
-            price: 8
+            type: 3,
+            frequency_response: 4,
+            microphone: 5,
+            wireless: 6,
+            enclosure_type: 7,
+            color: 9,
+            rating: 10,
+            price: 11
         };
         return mapping[key];
     }
@@ -1576,6 +1649,13 @@ document.addEventListener("DOMContentLoaded", function() {
     applyColorFilter();
 });
 </script>
+
+
+
+
+
+
+
 
 <script>
 // Searching logic with zebra striping

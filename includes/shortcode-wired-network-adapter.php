@@ -107,15 +107,15 @@ function aawp_pcbuild_display_parts_wired_network($atts) {
             </div>
 
 
-            <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
+            <!-- <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
                 <div class="filter-header">
                     <strong>PORTS</strong>
                     <button class="filter-toggle">−</button>
                 </div>
                 <div class="filter-options" id="ports-filter">
-                    <!-- Filters will be injected here -->
+                   
                 </div>
-            </div>
+            </div> -->
 
             <div class="filter-group" style="margin-bottom: 20px; margin-top:20px;">
                 <div class="filter-header">
@@ -177,35 +177,35 @@ function aawp_pcbuild_display_parts_wired_network($atts) {
                 <?php include('rating-count.php'); ?>
                 <tbody>
                     <?php foreach ($display_items as $index => $item):
-    $row_bg = ($index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
-    $asin = $item['ASIN'] ?? '';
-    $full_title = $item['ItemInfo']['Title']['DisplayValue'] ?? 'Unknown Product';
-    $title = esc_html(implode(' ', array_slice(explode(' ', $full_title), 0, 4)));
-    $raw_title = esc_attr($full_title);
-    $image = $item['Images']['Primary']['Large']['URL'] ??
-             $item['Images']['Primary']['Medium']['URL'] ??
-             $item['Images']['Primary']['Small']['URL'] ?? '';
-    $raw_image = esc_url($image);
-    $price = $item['Offers']['Listings'][0]['Price']['DisplayAmount'] ?? 'N/A';
-    $base_price = $price;
-    $availability = $item['Offers']['Listings'][0]['Availability']['Message'] ?? '—';
-    $product_url = $item['DetailPageURL'] ?? '#';
-    $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
-    $features_string = implode(' ', $features);
-    $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
-    $color = $item['ItemInfo']['ProductInfo']['Color']['DisplayValue'] ?? '-';
+                $row_bg = ($index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+                $asin = $item['ASIN'] ?? '';
+                $full_title = $item['ItemInfo']['Title']['DisplayValue'] ?? 'Unknown Product';
+                $title = esc_html(implode(' ', array_slice(explode(' ', $full_title), 0, 4)));
+                $raw_title = esc_attr($full_title);
+                $image = $item['Images']['Primary']['Large']['URL'] ??
+                        $item['Images']['Primary']['Medium']['URL'] ??
+                        $item['Images']['Primary']['Small']['URL'] ?? '';
+                $raw_image = esc_url($image);
+                $price = $item['Offers']['Listings'][0]['Price']['DisplayAmount'] ?? 'N/A';
+                $base_price = $price;
+                $availability = $item['Offers']['Listings'][0]['Availability']['Message'] ?? '—';
+                $product_url = $item['DetailPageURL'] ?? '#';
+                $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
+                $features_string = implode(' ', $features);
+                $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown';
+                $color = $item['ItemInfo']['ProductInfo']['Color']['DisplayValue'] ?? '-';
 
-    // Detect Interface (USB, PCIe, etc.)
-    $interface = '-';
-    foreach ($features as $feature) {
-        if (preg_match('/(USB[\s\-]?(2\.0|3\.0|C)|PCI[\s\-]?[Ee]?)/i', $feature, $match)) {
-            $interface = strtoupper(trim($match[0]));
-            break;
-        }
-    }
+                // Detect Interface (USB, PCIe, etc.)
+                $interface = '-';
+                foreach ($features as $feature) {
+                    if (preg_match('/(USB[\s\-]?(2\.0|3\.0|C)|PCI[\s\-]?[Ee]?)/i', $feature, $match)) {
+                        $interface = strtoupper(trim($match[0]));
+                        break;
+                    }
+                }
 
-    $ports = '-';
-    $port_candidates = [];
+                $ports = '-';
+                $port_candidates = [];
     
     foreach ($features as $feature) {
         if (preg_match_all('~(?:(\d+)\s*[xX]\s*)?(\d+(\.\d+)?)(?:\s*)(Gbps|Gb/s|Mbps|Mb/s)~i', $feature, $matches, PREG_SET_ORDER)) {
@@ -252,57 +252,121 @@ function aawp_pcbuild_display_parts_wired_network($atts) {
     $rating_count = display_rating_and_count($sellerRating, $sellerCount);
 ?>
                     <tr class="product-row" style="background-color: <?php echo $row_bg; ?>">
-                        <td style="padding: 10px 0 10px 10px; width: 150px!important" title="<?php echo $raw_title; ?>">
-                            <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>"
-                                style="width:125px; height:125px; border-radius:4px;" />
-                        </td>
-                        <td style="font-weight:800;"><?php echo $title; ?></td>
-                        <td class="interface-cell" style="padding:10px;"><?php echo esc_html($interface); ?></td>
-                        <td class="color-cell" style="padding:10px;"><?php echo esc_html($color); ?></td>
-                        <td style="padding:10px;"
-                            data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>">
-                            <?php echo $rating_count; ?></td>
-                        <td class="price-cell" style="padding:10px;"><?php echo esc_html($price); ?></td>
-                        <td class="ports-cell" style="padding:0; margin:0; border:0; width:0; font-size:0;">
-                            <span style="display:none;"><?php echo esc_html($ports); ?></span>
-                        </td>
-                        
-                        <td style="padding:10px;">
-                            <button class="add-to-builder" data-asin="<?php echo esc_attr($asin); ?>"
-                                data-title="<?php echo esc_attr($full_title); ?>"
-                                data-image="<?php echo esc_url($image); ?>"
-                                data-base="<?php echo esc_attr($base_price); ?>" data-shipping="FREE"
-                                data-availability="<?php echo esc_attr($availability); ?>"
-                                data-price="<?php echo esc_attr($base_price); ?>"
-                                data-category="<?php echo esc_attr($category); ?>"
-                                data-affiliate-url="<?php echo esc_url($product_url); ?>"
-                                data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
-                                data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
-                                data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
-                                style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
-                                <?php _e('Add', 'aawp-pcbuild'); ?>
-                            </button>
-                        </td>
-                    </tr>
+    <td style="padding: 10px 0 10px 10px; width: 150px!important" title="<?php echo $raw_title; ?>">
+        <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>"
+            style="width:125px; height:125px; border-radius:4px;" />
+    </td>
+    <td style="font-weight:800;"><?php echo $title; ?></td>
+    <td class="interface-cell" style="padding:10px;"><?php echo esc_html($interface); ?></td>
+    <td class="color-cell" style="padding:10px;"><?php echo esc_html($color); ?></td>
+    <td style="padding:10px;"
+        data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>">
+        <?php echo $rating_count; ?></td>
+    <td class="price-cell" style="padding:10px;"><?php echo esc_html($price); ?></td>
+    <td class="ports-cell" style="padding:0; margin:0; border:0; width:0; font-size:0;">
+        <span style="display:none;"><?php echo esc_html($ports); ?></span>
+    </td>
+
+    <td style="padding:10px;">
+        <button class="add-to-builder" data-asin="<?php echo esc_attr($asin); ?>"
+            data-title="<?php echo esc_attr($full_title); ?>"
+            data-image="<?php echo esc_url($image); ?>"
+            data-base="<?php echo esc_attr($base_price); ?>" data-shipping="FREE"
+            data-availability="<?php echo esc_attr($availability); ?>"
+            data-price="<?php echo esc_attr($base_price); ?>"
+            data-category="<?php echo esc_attr($category); ?>"
+            data-affiliate-url="<?php echo esc_url($product_url); ?>"
+            data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+            data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
+            data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
+            data-interface="<?php echo esc_attr($interface); ?>"
+            data-color="<?php echo esc_attr($color); ?>"
+            data-ports="<?php echo esc_attr($ports); ?>"
+            style="padding:10px 18px; background-color:#28a745; color:#fff; border:none; border-radius:5px; cursor:pointer;">
+            <?php _e('Add', 'aawp-pcbuild'); ?>
+        </button>
+    </td>
+
+    <!-- Mobile view structure - will be shown via CSS media queries -->
+    <td class="product-cell mobile-only" style="display:none;">
+        <div class="image-container">
+            <img src="<?php echo $raw_image; ?>" alt="<?php echo $title; ?>" class="product-image">
+        </div>
+        <div class="product-info">
+            <div class="product-name"><?php echo $title; ?></div>
+            <div class="star-rating"><span class="review-count"><?php echo $rating_count; ?></span></div>
+
+            <!-- Specs container - matching the desktop view data -->
+            <div class="specs-container">
+                <div class="spec-group">
+                    <div class="spec-label">Interface</div>
+                    <div class="spec-value"><?php echo esc_html($interface); ?></div>
+                </div>
+                <div class="spec-group">
+                    <div class="spec-label">Color</div>
+                    <div class="spec-value"><?php echo esc_html($color); ?></div>
+                </div>
+                <div class="spec-group">
+                    <div class="spec-label">Ports</div>
+                    <div class="spec-value"><?php echo esc_html($ports); ?></div>
+                </div>
+                <!-- <div class="spec-group">
+                    <div class="spec-label">Manufacturer</div>
+                    <div class="spec-value"><?php echo esc_attr($manufacturer); ?></div>
+                </div> -->
+                <div class="spec-group">
+                    <div class="spec-label">Price</div>
+                    <div class="spec-value"><?php echo esc_html($price); ?></div>
+                </div>
+            </div>
+        </div>
+    </td>
+    
+    <!-- Price and Add button row for mobile -->
+    <td class="price-action-row mobile-only" style="display:none;">
+        <div class="action-cell">
+            <button class="add-to-builder"
+                data-asin="<?php echo esc_attr($asin); ?>"
+                data-title="<?php echo esc_attr($full_title); ?>"
+                data-image="<?php echo esc_url($image); ?>"
+                data-base="<?php echo esc_attr($base_price); ?>"
+                data-shipping="FREE"
+                data-availability="<?php echo esc_attr($availability); ?>"
+                data-price="<?php echo esc_attr($base_price); ?>"
+                data-category="<?php echo esc_attr($category); ?>"
+                data-affiliate-url="<?php echo esc_url($product_url); ?>"
+                data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
+                data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
+                data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
+                data-interface="<?php echo esc_attr($interface); ?>"
+                data-color="<?php echo esc_attr($color); ?>"
+                data-ports="<?php echo esc_attr($ports); ?>">
+                <?php echo esc_html__('Add', 'aawp-pcbuild'); ?>
+            </button>
+        </div>
+    </td>
+</tr>
+
                     <?php endforeach; ?>
+
                 </tbody>
 
             </table>
 
-            <!-- Pagination UI -->
+       <!-- Pagination UI -->
             <?php if ($total_pages > 1): ?>
-            <div style="margin-top: 20px; text-align: center;">
-                <?php for ($i = 1; $i <= $total_pages; $i++):
+                <div style="margin-top: 20px; text-align: center;">
+                    <?php for ($i = 1; $i <= $total_pages; $i++):
                         $url = add_query_arg('pcbuild_page', $i);
                         $is_active = ($i === $current_page);
                     ?>
-                <a href="<?php echo esc_url($url); ?>"
-                    style="margin: 0 5px; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; text-decoration: none;
+                        <a href="<?php echo esc_url($url); ?>"
+                            style="margin: 0 5px; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; text-decoration: none;
                             <?php echo $is_active ? 'background-color: #007bff; color: white;' : 'color: #007bff;'; ?>">
-                    <?php echo $i; ?>
-                </a>
-                <?php endfor; ?>
-            </div>
+                            <?php echo $i; ?>
+                        </a>
+                    <?php endfor; ?>
+                </div>
             <?php endif; ?>
 
         </div>
@@ -310,12 +374,16 @@ function aawp_pcbuild_display_parts_wired_network($atts) {
 </div>
 
 <style>
-.spec-label {
-    font-weight: 700 !important;
+    .spec-label {
+    font-weight: 700!important;
     color: #000;
-    font-size: 14px !important;
+    font-size: 14px!important;
 }
 </style>
+
+
+
+
 
 <script>
 // SELLER FILTERING
@@ -785,6 +853,253 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 <script>
+// PORTS filtering
+document.addEventListener("DOMContentLoaded", function() {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("ports-filter");
+    const portsSet = new Set();
+
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Step 1: Collect all unique ports values
+    tableRows.forEach(row => {
+        const port = row.querySelector(".ports-cell")?.textContent.trim() || '-';
+        portsSet.add(port);
+    });
+
+    const ports = Array.from(portsSet).sort();
+    const checkboxElements = [];
+
+    // Step 2: Build checkboxes
+    ports.forEach(port => {
+        const label = document.createElement("label");
+        label.innerHTML =
+            `<input type="checkbox" name="ports" value="${port}" checked> ${port}`;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    // Step 3: Render checkboxes
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) {
+            el.style.display = 'none';
+        }
+        filterContainer.appendChild(el);
+    });
+
+    // Step 4: Add Show More/Show Less link
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Step 5: Create "All" checkbox
+    const allCheckbox = document.createElement("label");
+    allCheckbox.innerHTML = `<input type="checkbox" id="ports-all" checked> All`;
+    filterContainer.insertBefore(allCheckbox, filterContainer.firstChild);
+
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
+            .filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+        });
+    }
+
+    // Step 6: Filtering logic
+    function applyPortsFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='ports']:checked"))
+            .map(cb => cb.value);
+        const isAll = document.getElementById("ports-all").checked;
+
+        tableRows.forEach(row => {
+            const port = row.querySelector(".ports-cell")?.textContent.trim() || '-';
+            const show = isAll || selected.includes(port);
+            row.style.display = show ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // "All" state updater
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='ports']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        document.getElementById("ports-all").checked = (checkedBoxes.length === allBoxes.length);
+    }
+
+    // Handle "All" checkbox
+    document.getElementById("ports-all").addEventListener("change", function() {
+        const allBoxes = document.querySelectorAll("input[name='ports']");
+        allBoxes.forEach(cb => cb.checked = this.checked);
+        applyPortsFilter();
+    });
+
+    // Handle individual port checkbox
+    filterContainer.addEventListener("change", function(e) {
+        if (e.target.name === "ports") {
+            applyPortsFilter();
+        }
+    });
+
+    // Show more / less toggling
+    toggleLink.addEventListener("click", function(e) {
+        e.preventDefault();
+        expanded = !expanded;
+
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) {
+                el.style.display = expanded ? "block" : "none";
+            }
+        });
+
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // Initial apply
+    applyPortsFilter();
+});
+</script>
+
+
+<script>
+// COLOR filtering (normalized)
+document.addEventListener("DOMContentLoaded", function() {
+    const table = document.getElementById("pcbuild-table");
+    const tableRows = table.querySelectorAll("tbody tr");
+    const filterContainer = document.getElementById("color-filter");
+    const colorMap = new Map(); // key = normalized, value = original (for display)
+
+    const VISIBLE_COUNT = 4;
+    let expanded = false;
+
+    // Step 1: Extract and normalize unique colors
+    tableRows.forEach(row => {
+        const colorRaw = row.querySelector(".color-cell")?.textContent.trim() || '-';
+        const normalized = colorRaw.toLowerCase();
+
+        // Only store first variant (preserves real display value)
+        if (!colorMap.has(normalized)) {
+            colorMap.set(normalized, colorRaw);
+        }
+    });
+
+    const sortedColors = Array.from(colorMap.keys()).sort();
+    const checkboxElements = [];
+
+    // Step 2: Create checkboxes
+    sortedColors.forEach(normalized => {
+        const labelText = colorMap.get(normalized);
+        const label = document.createElement("label");
+        label.innerHTML = `
+            <input type="checkbox" name="color" value="${normalized}" checked> ${labelText}
+        `;
+        label.style.display = 'block';
+        checkboxElements.push(label);
+    });
+
+    // Step 3: Render checkboxes (with show more logic)
+    checkboxElements.forEach((el, index) => {
+        if (index >= VISIBLE_COUNT) el.style.display = 'none';
+        filterContainer.appendChild(el);
+    });
+
+    // Step 4: Add Show More / Show Less toggle
+    const toggleLink = document.createElement("a");
+    toggleLink.href = "#";
+    toggleLink.textContent = "Show more";
+    toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
+    toggleLink.style.marginTop = "5px";
+    toggleLink.style.fontSize = "14px";
+    toggleLink.style.color = "#0066cc";
+    filterContainer.appendChild(toggleLink);
+
+    // Step 5: Add "All" checkbox
+    const allCheckbox = document.createElement("label");
+    allCheckbox.innerHTML = `<input type="checkbox" id="color-all" checked> All`;
+    filterContainer.insertBefore(allCheckbox, filterContainer.firstChild);
+
+    // Filter logic
+    function applyColorFilter() {
+        const selected = Array.from(document.querySelectorAll("input[name='color']:checked"))
+            .map(cb => cb.value);
+        const isAll = document.getElementById("color-all").checked;
+
+        tableRows.forEach(row => {
+            const color = row.querySelector(".color-cell")?.textContent.trim().toLowerCase() || '-';
+            const show = isAll || selected.includes(color);
+            row.style.display = show ? "" : "none";
+        });
+
+        updateAllCheckboxState();
+        applyZebraStriping();
+    }
+
+    // Zebra stripe helper
+    function applyZebraStriping() {
+        const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
+            .filter(row => row.style.display !== "none");
+        visibleRows.forEach((row, index) => {
+            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
+        });
+    }
+
+    // Update "All" checkbox
+    function updateAllCheckboxState() {
+        const allBoxes = Array.from(document.querySelectorAll("input[name='color']"));
+        const checkedBoxes = allBoxes.filter(cb => cb.checked);
+        document.getElementById("color-all").checked = (checkedBoxes.length === allBoxes.length);
+    }
+
+    // "All" checkbox logic
+    document.getElementById("color-all").addEventListener("change", function() {
+        const allBoxes = document.querySelectorAll("input[name='color']");
+        allBoxes.forEach(cb => cb.checked = this.checked);
+        applyColorFilter();
+    });
+
+    // Filter on individual checkbox change
+    filterContainer.addEventListener("change", function(e) {
+        if (e.target.name === "color") {
+            applyColorFilter();
+        }
+    });
+
+    // Show more / less toggle
+    toggleLink.addEventListener("click", function(e) {
+        e.preventDefault();
+        expanded = !expanded;
+
+        checkboxElements.forEach((el, index) => {
+            if (index >= VISIBLE_COUNT) {
+                el.style.display = expanded ? "block" : "none";
+            }
+        });
+
+        toggleLink.textContent = expanded ? "Show less" : "Show more";
+    });
+
+    // ✅ Reset all filters on page reload
+    window.addEventListener("pageshow", function() {
+        document.querySelectorAll("input[name='color']").forEach(cb => cb.checked = true);
+        document.getElementById("color-all").checked = true;
+        applyColorFilter();
+    });
+
+    // Initial load
+    applyColorFilter();
+});
+</script>
+
+
+<script>
 // SORTING LOGIC
 document.addEventListener('DOMContentLoaded', () => {
     const table = document.getElementById("pcbuild-table");
@@ -829,6 +1144,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const ratingValue = parseFloat(cell?.dataset.rating || '0');
                     return ratingValue;
                 }
+                 if (key === 'price') {
+                        const num = parseFloat(cell.innerText.replace(/[^0-9.]/g, ''));
+                        return isNaN(num) ? 0 : num;
+                    }
                 return cell?.innerText.trim().toLowerCase() || '';
             };
 
@@ -856,11 +1175,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const mapping = {
             name: 2,
             core_count: 3,
-            base_clock: 4,
-            boost_clock: 5,
-            microarch: 6,
-            rating: 7,
-            price: 8
+            color: 4,
+            rating: 5,
+            price: 6
         };
         return mapping[key];
     }
@@ -1057,242 +1374,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-
-<script>
-// PORTS filtering
-document.addEventListener("DOMContentLoaded", function() {
-    const table = document.getElementById("pcbuild-table");
-    const tableRows = table.querySelectorAll("tbody tr");
-    const filterContainer = document.getElementById("ports-filter");
-    const portsSet = new Set();
-
-    const VISIBLE_COUNT = 4;
-    let expanded = false;
-
-    // Step 1: Collect all unique ports values
-    tableRows.forEach(row => {
-        const port = row.querySelector(".ports-cell")?.textContent.trim() || '-';
-        portsSet.add(port);
-    });
-
-    const ports = Array.from(portsSet).sort();
-    const checkboxElements = [];
-
-    // Step 2: Build checkboxes
-    ports.forEach(port => {
-        const label = document.createElement("label");
-        label.innerHTML =
-            `<input type="checkbox" name="ports" value="${port}" checked> ${port}`;
-        label.style.display = 'block';
-        checkboxElements.push(label);
-    });
-
-    // Step 3: Render checkboxes
-    checkboxElements.forEach((el, index) => {
-        if (index >= VISIBLE_COUNT) {
-            el.style.display = 'none';
-        }
-        filterContainer.appendChild(el);
-    });
-
-    // Step 4: Add Show More/Show Less link
-    const toggleLink = document.createElement("a");
-    toggleLink.href = "#";
-    toggleLink.textContent = "Show more";
-    toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
-    toggleLink.style.marginTop = "5px";
-    toggleLink.style.fontSize = "14px";
-    toggleLink.style.color = "#0066cc";
-    filterContainer.appendChild(toggleLink);
-
-    // Step 5: Create "All" checkbox
-    const allCheckbox = document.createElement("label");
-    allCheckbox.innerHTML = `<input type="checkbox" id="ports-all" checked> All`;
-    filterContainer.insertBefore(allCheckbox, filterContainer.firstChild);
-
-    function applyZebraStriping() {
-        const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
-            .filter(row => row.style.display !== "none");
-        visibleRows.forEach((row, index) => {
-            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
-        });
-    }
-
-    // Step 6: Filtering logic
-    function applyPortsFilter() {
-        const selected = Array.from(document.querySelectorAll("input[name='ports']:checked"))
-            .map(cb => cb.value);
-        const isAll = document.getElementById("ports-all").checked;
-
-        tableRows.forEach(row => {
-            const port = row.querySelector(".ports-cell")?.textContent.trim() || '-';
-            const show = isAll || selected.includes(port);
-            row.style.display = show ? "" : "none";
-        });
-
-        updateAllCheckboxState();
-        applyZebraStriping();
-    }
-
-    // "All" state updater
-    function updateAllCheckboxState() {
-        const allBoxes = Array.from(document.querySelectorAll("input[name='ports']"));
-        const checkedBoxes = allBoxes.filter(cb => cb.checked);
-        document.getElementById("ports-all").checked = (checkedBoxes.length === allBoxes.length);
-    }
-
-    // Handle "All" checkbox
-    document.getElementById("ports-all").addEventListener("change", function() {
-        const allBoxes = document.querySelectorAll("input[name='ports']");
-        allBoxes.forEach(cb => cb.checked = this.checked);
-        applyPortsFilter();
-    });
-
-    // Handle individual port checkbox
-    filterContainer.addEventListener("change", function(e) {
-        if (e.target.name === "ports") {
-            applyPortsFilter();
-        }
-    });
-
-    // Show more / less toggling
-    toggleLink.addEventListener("click", function(e) {
-        e.preventDefault();
-        expanded = !expanded;
-
-        checkboxElements.forEach((el, index) => {
-            if (index >= VISIBLE_COUNT) {
-                el.style.display = expanded ? "block" : "none";
-            }
-        });
-
-        toggleLink.textContent = expanded ? "Show less" : "Show more";
-    });
-
-    // Initial apply
-    applyPortsFilter();
-});
-</script>
-
-
-<script>
-// COLOR filtering
-document.addEventListener("DOMContentLoaded", function() {
-    const table = document.getElementById("pcbuild-table");
-    const tableRows = table.querySelectorAll("tbody tr");
-    const filterContainer = document.getElementById("color-filter");
-    const colorSet = new Set();
-
-    const VISIBLE_COUNT = 4;
-    let expanded = false;
-
-    // Step 1: Get unique color values
-    tableRows.forEach(row => {
-        const color = row.querySelector(".color-cell")?.textContent.trim() || '-';
-        colorSet.add(color);
-    });
-
-    const colors = Array.from(colorSet).sort();
-    const checkboxElements = [];
-
-    // Step 2: Build checkboxes
-    colors.forEach(color => {
-        const label = document.createElement("label");
-        label.innerHTML =
-            `<input type="checkbox" name="color" value="${color}" checked> ${color}`;
-        label.style.display = 'block';
-        checkboxElements.push(label);
-    });
-
-    // Step 3: Render checkboxes
-    checkboxElements.forEach((el, index) => {
-        if (index >= VISIBLE_COUNT) {
-            el.style.display = 'none';
-        }
-        filterContainer.appendChild(el);
-    });
-
-    // Step 4: Add Show More/Show Less link
-    const toggleLink = document.createElement("a");
-    toggleLink.href = "#";
-    toggleLink.textContent = "Show more";
-    toggleLink.style.display = (checkboxElements.length > VISIBLE_COUNT) ? "inline-block" : "none";
-    toggleLink.style.marginTop = "5px";
-    toggleLink.style.fontSize = "14px";
-    toggleLink.style.color = "#0066cc";
-    filterContainer.appendChild(toggleLink);
-
-    // Step 5: Add "All" checkbox
-    const allCheckbox = document.createElement("label");
-    allCheckbox.innerHTML = `<input type="checkbox" id="color-all" checked> All`;
-    filterContainer.insertBefore(allCheckbox, filterContainer.firstChild);
-
-    function applyZebraStriping() {
-        const visibleRows = Array.from(table.querySelectorAll("tbody tr"))
-            .filter(row => row.style.display !== "none");
-        visibleRows.forEach((row, index) => {
-            row.style.backgroundColor = (index % 2 === 0) ? '#d4d4d4' : '#ebebeb';
-        });
-    }
-
-    function applyColorFilter() {
-        const selected = Array.from(document.querySelectorAll("input[name='color']:checked"))
-            .map(cb => cb.value);
-        const isAll = document.getElementById("color-all").checked;
-
-        tableRows.forEach(row => {
-            const color = row.querySelector(".color-cell")?.textContent.trim() || '-';
-            const show = isAll || selected.includes(color);
-            row.style.display = show ? "" : "none";
-        });
-
-        updateAllCheckboxState();
-        applyZebraStriping();
-    }
-
-    function updateAllCheckboxState() {
-        const allBoxes = Array.from(document.querySelectorAll("input[name='color']"));
-        const checkedBoxes = allBoxes.filter(cb => cb.checked);
-        document.getElementById("color-all").checked = (checkedBoxes.length === allBoxes.length);
-    }
-
-    document.getElementById("color-all").addEventListener("change", function() {
-        const allBoxes = document.querySelectorAll("input[name='color']");
-        allBoxes.forEach(cb => cb.checked = this.checked);
-        applyColorFilter();
-    });
-
-    filterContainer.addEventListener("change", function(e) {
-        if (e.target.name === "color") {
-            applyColorFilter();
-        }
-    });
-
-    toggleLink.addEventListener("click", function(e) {
-        e.preventDefault();
-        expanded = !expanded;
-
-        checkboxElements.forEach((el, index) => {
-            if (index >= VISIBLE_COUNT) {
-                el.style.display = expanded ? "block" : "none";
-            }
-        });
-
-        toggleLink.textContent = expanded ? "Show less" : "Show more";
-    });
-
-    // Initial apply
-    applyColorFilter();
-});
-</script>
-
-
-
-
-
-
-
-
 <script>
 // Searching logic with zebra striping
 document.addEventListener("DOMContentLoaded", function() {
@@ -1328,79 +1409,82 @@ document.addEventListener("DOMContentLoaded", function() {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const sidebarToggle = document.querySelector('.pcbuild-sidebar-toggle');
-    const sidebar = document.querySelector('.pcbuild-sidebar-mobile');
+  const sidebarToggle = document.querySelector('.pcbuild-sidebar-toggle');
+  const sidebar = document.querySelector('.pcbuild-sidebar-mobile');
 
-    function closeSidebar() {
-        sidebar.classList.remove('open');
-        document.removeEventListener('click', handleOutsideClick);
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    document.removeEventListener('click', handleOutsideClick);
+  }
+
+  function handleOutsideClick(event) {
+    if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+      closeSidebar();
+    }
+  }
+
+  sidebarToggle.addEventListener('click', function (event) {
+    event.stopPropagation();
+    if (sidebar.classList.contains('open')) {
+      closeSidebar();
+    } else {
+      sidebar.classList.add('open');
+      setTimeout(() => {
+        document.addEventListener('click', handleOutsideClick);
+      }, 0);
+    }
+  });
+
+  sidebar.addEventListener('click', function (event) {
+    event.stopPropagation();
+  });
+
+  // Add classes for android or ios devices to body for further CSS if needed
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  if (/android/i.test(ua)) {
+    document.body.classList.add('android-mobile');
+  } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+    document.body.classList.add('ios-mobile');
+  }
+
+  // Mobile/desktop table view toggle
+  function setupMobileView() {
+    const rows = document.querySelectorAll('#pcbuild-table tbody tr');
+
+    function isMobile() {
+      const ua = navigator.userAgent;
+      return (/Mobi|Android|iPhone|iPad|iPod/i.test(ua)) || window.innerWidth <= 768;
     }
 
-    function handleOutsideClick(event) {
-        if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
-            closeSidebar();
-        }
+    function updateView() {
+      const mobile = isMobile();
+
+      document.querySelectorAll('.mobile-only').forEach(el => {
+        el.style.display = mobile ? 'flex' : 'none';
+      });
+
+      rows.forEach(row => {
+        row.querySelectorAll('td:not(.mobile-only)').forEach(td => {
+          td.style.display = mobile ? 'none' : '';
+        });
+      });
+
+      const thead = document.querySelector('#pcbuild-table thead');
+      if (thead) {
+        thead.style.display = mobile ? 'none' : '';
+      }
     }
 
-    sidebarToggle.addEventListener('click', function(event) {
-        event.stopPropagation();
-        if (sidebar.classList.contains('open')) {
-            closeSidebar();
-        } else {
-            sidebar.classList.add('open');
-            setTimeout(() => {
-                document.addEventListener('click', handleOutsideClick);
-            }, 0);
-        }
-    });
+    updateView();
+    window.addEventListener('resize', updateView);
+  }
 
-    sidebar.addEventListener('click', function(event) {
-        event.stopPropagation();
-    });
-
-    // Add classes for android or ios devices to body for further CSS if needed
-    const ua = navigator.userAgent || navigator.vendor || window.opera;
-    if (/android/i.test(ua)) {
-        document.body.classList.add('android-mobile');
-    } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
-        document.body.classList.add('ios-mobile');
-    }
-
-    // Mobile/desktop table view toggle
-    function setupMobileView() {
-        const rows = document.querySelectorAll('#pcbuild-table tbody tr');
-
-        function isMobile() {
-            const ua = navigator.userAgent;
-            return (/Mobi|Android|iPhone|iPad|iPod/i.test(ua)) || window.innerWidth <= 768;
-        }
-
-        function updateView() {
-            const mobile = isMobile();
-
-            document.querySelectorAll('.mobile-only').forEach(el => {
-                el.style.display = mobile ? 'flex' : 'none';
-            });
-
-            rows.forEach(row => {
-                row.querySelectorAll('td:not(.mobile-only)').forEach(td => {
-                    td.style.display = mobile ? 'none' : '';
-                });
-            });
-
-            const thead = document.querySelector('#pcbuild-table thead');
-            if (thead) {
-                thead.style.display = mobile ? 'none' : '';
-            }
-        }
-
-        updateView();
-        window.addEventListener('resize', updateView);
-    }
-
-    setupMobileView();
+  setupMobileView();
 });
 </script>
+
+
+
 
 <?php
     //include('parts-footer.php');

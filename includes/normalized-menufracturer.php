@@ -1,0 +1,63 @@
+<?php
+function normalize_manufacturer($name) {
+                            $normalized = strtolower($name);
+                            $normalized = preg_replace('/[\s\-\–\—\‐]+/', '', $normalized); // remove spaces, hyphens, etc.
+
+                            $map = [
+                                'asus' => 'ASUS',
+                                'alfa' => 'Alfa',
+                                'amazon' => 'Amazon',
+                                'auscoumer' => 'Auscoumer',
+                                'buaniih' => 'BUANIIH',
+                                'bubucam' => 'BUBUCAM',
+                                'blueshadow' => 'Blueshadow',
+                                'brostrend' => 'BrosTrend',
+                                'brostrendtechnologyllc' => 'BrosTrend',
+                                'dlink' => 'D-Link',
+                                'dlinksystemsinc' => 'D-Link',
+                                'dragobud' => 'DragoBud',
+                                'edup' => 'EDUP',
+                                'eelager' => 'EELAGER',
+                                'edimax' => 'Edimax',
+                                'elecmoga' => 'ElecMoga',
+                                'ffenvi' => 'F FENVI',
+                                'febsmartcoltd' => 'FebSmart Co.,LTD',
+                                'flimjibg' => 'Flimjibg',
+                                'foxtec' => 'Foxtec',
+                                'gigabyte' => 'GIGABYTE',
+                                'genbasic' => 'GenBasic',
+                                'greenyellow' => 'GreenYellow',
+                                'hebespace' => 'HEBESPACE',
+                                'iogear' => 'IOGEAR',
+                                'keistuo' => 'KEISTUO',
+                                'lotekoo' => 'LOTEKOO',
+                                'linkstekllc' => 'LinksTek LLC',
+                                'newfast' => 'NEWFAST',
+                                'nicgiga' => 'NICGIGA',
+                                'netgear' => 'Netgear',
+                                'nilone' => 'Nilone',
+                                'nineplus' => 'Nineplus',
+                                'nipeal' => 'Nipeal',
+                                'proudstar' => 'Proudstar',
+                                'rengoga' => 'RENGOGA',
+                                'realtech' => 'RealTek',
+                                'realtek' => 'RealTek',
+                                'shenzhenxinhuatiantechnologycoltd' => 'SHEN ZHEN XIN HUA TIAN TECHNOLOGY CO., LTD',
+                                'shenzhencudytechnologycoltd' => 'Shenzhen Cudy Technology Co., Ltd.',
+                                'shenzhenhoutiannetworkcommunicationtechnologycoltd' => 'Shenzhen Houtian Network Communication Technology Co.,Ltd',
+                                'shenzhenxunmantechnologycoltd' => 'Shenzhen Xunman Technology Co., Ltd.',
+                                'tec' => 'TEC',
+                                'tplink' => 'TP-Link',
+                                'tp-link' => 'TP-Link',
+                                'techkeyshenzhendenostradecoltd' => 'Techkey/Shenzhen Denos Trade Co., Ltd.',
+                                'tenda' => 'Tenda',
+                                'ugreengrouplimited' => 'Ugreen Group Limited',
+                                'wavlink' => 'WAVLINK',
+                                'wirelessforce' => 'Wirelessforce',
+                                'wodgreat' => 'Wodgreat',
+                                'workedin' => 'Worked in',
+                            ];
+
+                            return $map[$normalized] ?? ucwords($name);
+                        }
+?>
