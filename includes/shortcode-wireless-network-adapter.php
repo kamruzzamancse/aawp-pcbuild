@@ -46,7 +46,7 @@ function aawp_pcbuild_display_parts_wireless_network_adapter($atts) {
     //include('parts-header.php');
     ?>
 
-    <div style="background-color:#41466c; padding:20px; color:#fff; font-size:24px; font-weight:bold; text-align:center; margin-bottom:40px">
+    <div style="background-color:#41466c; padding:20px; color:#fff; font-size:24px; font-weight:bold; text-align:center; margin-bottom:40px; text-transform: capitalize">
         Choose A <?php echo esc_html($category); ?>
     </div>
     <div style="width:90%; margin:0 auto; font-family:sans-serif;">
@@ -153,31 +153,28 @@ function aawp_pcbuild_display_parts_wireless_network_adapter($atts) {
                             <th class="sortable-header" data-key="name">
                                 <span class="sort-header-label"><span class="sort-arrow">&#9654;</span> Name</span>
                             </th>                      
-                            <th class="sortable-header" data-key="core_count">
+                            <th class="sortable-header" data-key="Protocol">
                                 <span class="sort-header-label">
                                     <span class="sort-arrow">&#9654;</span> Protocol
                                 </span>
                             </th>
-                            <th class="sortable-header" data-key="base_clock">
+                            <th class="sortable-header" data-key="Interface">
                                 <span class="sort-header-label">
                                     <span class="sort-arrow">&#9654;</span> Interface
                                 </span>
                             </th>
-                            <th class="sortable-header" data-key="boost_clock">
+                            <th class="sortable-header" data-key="Color">
                                 <span class="sort-header-label">
                                     <span class="sort-arrow">&#9654;</span> Color
                                 </span>
                             </th>
-                            <!-- <th class="sortable-header" data-key="microarch">
-                                <span class="sort-header-label">
-                                    <span class="sort-arrow">&#9654;</span> Microarchitecture
-                                </span>
-                            </th> -->
+
                             <th class="sortable-header" data-key="rating">
                                 <span class="sort-header-label">
                                     <span class="sort-arrow">&#9654;</span> Seller Rating
                                 </span>
                             </th>
+                             
                             <th class="sortable-header" data-key="price">
                                 <span class="sort-header-label">
                                     <span class="sort-arrow">&#9654;</span> Price
@@ -190,76 +187,151 @@ function aawp_pcbuild_display_parts_wireless_network_adapter($atts) {
                     <?php include('rating-count.php'); ?>
                     <?php
 
-function render_star_rating($rating, $max_stars = 5) {
-    $html = '';
-    $full_stars = floor($rating);
-    $half_star = ($rating - $full_stars) >= 0.25 && ($rating - $full_stars) < 0.75;
-    $empty_stars = $max_stars - $full_stars - ($half_star ? 1 : 0);
 
-    for ($i = 0; $i < $full_stars; $i++) {
-        $html .= '<span style="color: #FF960C;">&#9733;</span>'; // full
-    }
-    if ($half_star) {
-        $html .= '<span style="color: #FF960C;">&#189;</span>'; // half
-    }
-    for ($i = 0; $i < $empty_stars; $i++) {
-        $html .= '<span style="color: #ccc;">&#9733;</span>'; // empty
-    }
-    return $html;
-}
+                    function normalize_color($value) {
+                        $value = trim(strtolower($value));
+
+                        // Known valid colors (you can expand this list)
+                        $colors = [
+                            'black', 'white', 'blue', 'red', 'gold', 'green', 'yellow',
+                            'silver', 'grey', 'gray', 'orange', 'pink', 'purple', 'multicolor', 'multicolored', 'deep black', 'matte black'
+                        ];
+
+                        // Separate with commas, semicolons, or dashes
+                        $parts = preg_split('/[\s,\-;\/]+/', $value);
+                        $matched_colors = [];
+
+                        foreach ($parts as $part) {
+                            $part = trim($part);
+                            if (in_array($part, $colors)) {
+                                $matched_colors[] = ucwords($part);
+                            }
+                        }
+
+                        if (!empty($matched_colors)) {
+                            return implode(' / ', array_unique($matched_colors));
+                        }
+
+                        return '—'; // fallback if no match
+                    }
+
+                        // Place this BEFORE the foreach loop (and only once)
+                        function normalize_manufacturer($name) {
+                            $normalized = strtolower($name);
+                            $normalized = preg_replace('/[\s\-\–\—\‐]+/', '', $normalized); // remove spaces, hyphens, etc.
+
+                            $map = [
+                                'asus' => 'ASUS',
+                                'alfa' => 'Alfa',
+                                'amazon' => 'Amazon',
+                                'auscoumer' => 'Auscoumer',
+                                'buaniih' => 'BUANIIH',
+                                'bubucam' => 'BUBUCAM',
+                                'blueshadow' => 'Blueshadow',
+                                'brostrend' => 'BrosTrend',
+                                'brostrendtechnologyllc' => 'BrosTrend',
+                                'dlink' => 'D-Link',
+                                'dlinksystemsinc' => 'D-Link',
+                                'dragobud' => 'DragoBud',
+                                'edup' => 'EDUP',
+                                'eelager' => 'EELAGER',
+                                'edimax' => 'Edimax',
+                                'elecmoga' => 'ElecMoga',
+                                'ffenvi' => 'F FENVI',
+                                'febsmartcoltd' => 'FebSmart Co.,LTD',
+                                'flimjibg' => 'Flimjibg',
+                                'foxtec' => 'Foxtec',
+                                'gigabyte' => 'GIGABYTE',
+                                'genbasic' => 'GenBasic',
+                                'greenyellow' => 'GreenYellow',
+                                'hebespace' => 'HEBESPACE',
+                                'iogear' => 'IOGEAR',
+                                'keistuo' => 'KEISTUO',
+                                'lotekoo' => 'LOTEKOO',
+                                'linkstekllc' => 'LinksTek LLC',
+                                'newfast' => 'NEWFAST',
+                                'nicgiga' => 'NICGIGA',
+                                'netgear' => 'Netgear',
+                                'nilone' => 'Nilone',
+                                'nineplus' => 'Nineplus',
+                                'nipeal' => 'Nipeal',
+                                'proudstar' => 'Proudstar',
+                                'rengoga' => 'RENGOGA',
+                                'realtech' => 'RealTek',
+                                'realtek' => 'RealTek',
+                                'shenzhenxinhuatiantechnologycoltd' => 'SHEN ZHEN XIN HUA TIAN TECHNOLOGY CO., LTD',
+                                'shenzhencudytechnologycoltd' => 'Shenzhen Cudy Technology Co., Ltd.',
+                                'shenzhenhoutiannetworkcommunicationtechnologycoltd' => 'Shenzhen Houtian Network Communication Technology Co.,Ltd',
+                                'shenzhenxunmantechnologycoltd' => 'Shenzhen Xunman Technology Co., Ltd.',
+                                'tec' => 'TEC',
+                                'tplink' => 'TP-Link',
+                                'tp-link' => 'TP-Link',
+                                'techkeyshenzhendenostradecoltd' => 'Techkey/Shenzhen Denos Trade Co., Ltd.',
+                                'tenda' => 'Tenda',
+                                'ugreengrouplimited' => 'Ugreen Group Limited',
+                                'wavlink' => 'WAVLINK',
+                                'wirelessforce' => 'Wirelessforce',
+                                'wodgreat' => 'Wodgreat',
+                                'workedin' => 'Worked in',
+                            ];
+
+                            return $map[$normalized] ?? ucwords($name);
+                        }
 ?>
+                    <tbody>
+                    <?php foreach ($display_items as $index => $item):
+                        $asin = $item['ASIN'] ?? '';
+                        $full_title = $item['ItemInfo']['Title']['DisplayValue'] ?? 'Unknown Product';
+                        $title = esc_html(implode(' ', array_slice(explode(' ', $full_title), 0, 4)));
+                        $raw_title = esc_attr($full_title);
+                        $image = $item['Images']['Primary']['Large']['URL'] ?? '';
+                        $price = $item['Offers']['Listings'][0]['Price']['DisplayAmount'] ?? 'N/A';
+                        $product_url = $item['DetailPageURL'] ?? '#';
+                        $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
+                        $features_string = implode(' ', $features);
+                        // $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown Manufacturer';
 
-<tbody>
-<?php foreach ($display_items as $index => $item):
-    $asin = $item['ASIN'] ?? '';
-    $full_title = $item['ItemInfo']['Title']['DisplayValue'] ?? 'Unknown Product';
-    $title = esc_html(implode(' ', array_slice(explode(' ', $full_title), 0, 4)));
-    $raw_title = esc_attr($full_title);
-    $image = $item['Images']['Primary']['Large']['URL'] ?? '';
-    $price = $item['Offers']['Listings'][0]['Price']['DisplayAmount'] ?? 'N/A';
-    $product_url = $item['DetailPageURL'] ?? '#';
-    $features = $item['ItemInfo']['Features']['DisplayValues'] ?? [];
-    $features_string = implode(' ', $features);
-    $manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown Manufacturer';
+                        $raw_manufacturer = $item['ItemInfo']['ByLineInfo']['Manufacturer']['DisplayValue'] ?? 'Unknown Manufacturer';
+                        $normalized_manufacturer = normalize_manufacturer($raw_manufacturer);
 
-    // Rating
-    $sellerCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? '0';
-    $rating_count = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? '0';
 
-    // Color
-    $color = $item['ItemInfo']['ProductInfo']['Color']['DisplayValue'] ?? '—';
+                        // Rating
+                        $sellerCount = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackCount'] ?? '0';
+                        $sellerRating = $item['Offers']['Listings'][0]['MerchantInfo']['FeedbackRating'] ?? '0';
+                        $rating_count = display_rating_and_count($sellerRating, $sellerCount);
+                        // Color
+                        $raw_color = $item['ItemInfo']['ProductInfo']['Color']['DisplayValue'] ?? '';
+                        $color = normalize_color($raw_color);
 
-    // Refined Protocol detection
-    $protocol = '—';
-    $protocol_keywords = ['Wi-Fi 7', 'Wi-Fi 6E', 'Wi-Fi 6', 'Wi-Fi 5', 'Wi-Fi 4', '802.11ac', '802.11ax', '802.11n'];
-    foreach ($protocol_keywords as $keyword) {
-        if (stripos($features_string, $keyword) !== false) {
-            $protocol = $keyword;
-            break;
-        }
-    }
 
-    // Refined Interface detection
-    $interface = '—';
-    $interface_keywords = ['USB Type-A 3.0', 'USB Type-A 2.0', 'USB 3.0', 'USB 2.0', 'PCIe x1', 'PCIe', 'RJ45'];
-    foreach ($interface_keywords as $keyword) {
-        if (stripos($features_string, $keyword) !== false) {
-            $interface = $keyword;
-            break;
-        }
-    }
+                        // Refined Protocol detection
+                        $protocol = '—';
+                        $protocol_keywords = ['Wi-Fi 7', 'Wi-Fi 6E', 'Wi-Fi 6', 'Wi-Fi 5', 'Wi-Fi 4', '802.11ac', '802.11ax', '802.11n'];
+                        foreach ($protocol_keywords as $keyword) {
+                            if (stripos($features_string, $keyword) !== false) {
+                                $protocol = $keyword;
+                                break;
+                            }
+                        }
 
-?>
+                        // Refined Interface detection
+                        $interface = '—';
+                        $interface_keywords = ['USB Type-A 3.0', 'USB Type-A 2.0', 'USB 3.0', 'USB 2.0', 'PCIe x1', 'PCIe', 'RJ45'];
+                        foreach ($interface_keywords as $keyword) {
+                            if (stripos($features_string, $keyword) !== false) {
+                                $interface = $keyword;
+                                break;
+                            }
+                        }
+
+                    ?>
 <tr data-protocol="<?php echo esc_attr($protocol); ?>" data-interface="<?php echo esc_attr($interface); ?>">
-    <td><img src="<?php echo esc_url($image); ?>" alt="<?php echo $raw_title; ?>" width="80" /></td>
-    <td><?php echo $title; ?></td>
+    <td style="padding: 10px 0 10px 10px; width: 150px!important"><img src="<?php echo esc_url($image); ?>" alt="<?php echo $raw_title; ?>" style="width:125px; height:125px; border-radius:4px;" /></td>
+    <td style="font-weight:800;"><?php echo $title; ?></td>
     <td><?php echo esc_html($protocol); ?></td>
     <td><?php echo esc_html($interface); ?></td>
     <td><?php echo esc_html($color); ?></td>
-    <td>
-        <?php echo render_star_rating((float)$rating_count); ?>
-        <span style="color:#555;">(<?php echo esc_html($sellerCount); ?>)</span>
-    </td>
+   <td style="padding:10px;" data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"><?php echo $rating_count; ?></td>
     <td><?php echo esc_html($price); ?></td>
     <td style="padding:10px;">
         <button class="add-to-builder"
@@ -273,7 +345,7 @@ function render_star_rating($rating, $max_stars = 5) {
             data-affiliate-url="<?php echo esc_url($product_url); ?>"
             data-rating="<?php echo isset($sellerRating) ? esc_attr($sellerRating) : ''; ?>"
             data-features="<?php echo esc_attr(implode(', ', $features)); ?>"
-            data-manufacturer="<?php echo esc_attr($manufacturer); ?>"
+            data-manufacturer="<?php echo esc_attr($normalized_manufacturer); ?>"
             data-interface="<?php echo esc_html($interface); ?>"
             data-protocol="<?php echo esc_html($protocol); ?>"
             data-color="<?php echo esc_html($color); ?>"
@@ -1613,12 +1685,11 @@ document.addEventListener("DOMContentLoaded", function () {
         function getColumnIndex(key) {
             const mapping = {
                 name: 2,
-                core_count: 3,
-                base_clock: 4,
-                boost_clock: 5,
-                microarch: 6,
-                rating: 7,
-                price: 8
+                Protocol: 3,
+                Interface: 4,
+                Color: 5,
+                rating: 6,
+                price: 7
             };
             return mapping[key];
         }
