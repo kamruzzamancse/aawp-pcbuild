@@ -48,7 +48,7 @@ function aawp_pcbuild_display_parts_headphones($atts) {
 
 <div
     style="background-color:#41466c; padding:20px; color:#fff; font-size:24px; font-weight:bold; text-align:center; margin-bottom:40px">
-    Choose A <?php echo esc_html($category); ?>
+    Choose A Headphone
 </div>
 <div style="width:90%; margin:0 auto; font-family:sans-serif;">
     <div class="pcbuilder-container" style="display:flex; gap:20px; margin-top:20px;">

@@ -281,6 +281,7 @@ function pcbuild_render_ui_shortcode() {
                                 <?php endif; ?>
                             </div>
 
+                            <!-- Wired Network Adapters selection row -->
                             <div class="row">
                                 <div class="comp card">
                                     <a href="javascript:void(0)" class="pc-part"
@@ -303,7 +304,7 @@ function pcbuild_render_ui_shortcode() {
                             </div>
 
                             <!-- Wireless Network Adapters selection row -->
-                            <div id="wireless-network-adapter-row" class="row" >
+                            <div class="row" >
                                 <div class="comp card">
                                     <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/wireless-network-adapters'); ?>">
                                         <span class="componentName">Wireless Network Adapters</span>
@@ -321,6 +322,27 @@ function pcbuild_render_ui_shortcode() {
                                     <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
                                 <?php endif; ?>
                             </div>
+
+                            <!-- Headphone selection row -->
+                            <div class="row">
+                                <div class="comp card">
+                                    <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/headphones'); ?>">
+                                        <span class="componentName">Headphones</span>
+                                    </a>
+                                </div>
+                                <div class="selection card">
+                                    <button class="selectionBTN">
+                                        <span style='font-size:20px;'>&#43;</span>
+                                        <a href="javascript:void(0)" class="pc-part" data-redirect="<?php echo site_url('/products/headphones'); ?>">
+                                            <span>Choose A Headphone</span>
+                                        </a>
+                                    </button>
+                                </div>
+                                <?php if (!isMobile()): ?>
+                                    <?php foreach ($cards as $card) echo "<div class='{$card} card'></div>"; ?>
+                                <?php endif; ?>
+                            </div>
+
 
                             <div class="category-row">
                               <div class="category-label">Expansion Cards /<br> Networking</div>
